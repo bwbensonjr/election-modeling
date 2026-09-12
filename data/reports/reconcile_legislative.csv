@@ -1,0 +1,5 @@
+election_id,election_date,office,district_display,measure,precinct_sum,published,difference
+105591,2010-11-02,State Senate,Worcester and Norfolk,blanks,2655,2656,-1.0
+105591,2010-11-02,State Senate,Worcester and Norfolk,all_others,48,47,1.0
+105765,2011-05-10,State Representative,6th Worcester,total,7946,7945,1.0
+105765,2011-05-10,State Representative,6th Worcester,candidate_totals,"[71, 1275, 3269, 3325]","[71, 1275, 3269, 3324]",

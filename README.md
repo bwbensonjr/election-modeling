@@ -137,6 +137,28 @@ model survives a map change. Splitting by year rather than randomly
 matters here because districts repeat across cycles and a random split
 would leak the same district's behavior between train and test.
 
+### Published training data
+
+The precinct-level data set described by this section is built and committed
+by the collection pipeline in [`docs/pipeline.md`](docs/pipeline.md), with the
+column-by-column schema in [`docs/schema.md`](docs/schema.md).
+
+- [`data/precinct/ma_precinct_training_set.csv.gz`](data/precinct/ma_precinct_training_set.csv.gz)
+  - 14,188 rows, one per legislative race per precinct
+  - 623 contested State Representative and State Senate races, general and
+    special, spanning 2010 through 2024
+  - `dem_margin` and `PVI_N` computed at precinct grain, with
+    `incumbent_status`, `pres_elec`, `is_special` and `num_candidates` carried
+    from the race
+  - Against 679 rows in the district-level table the current model uses
+
+Coverage matches the cutoff derived above. Of the 1,651 legislative elections
+in the window, 1,650 have precinct-level returns; the 2011 3rd Berkshire
+special reports municipality totals only. 2.4% of rows have no `PVI_N`,
+almost all of them precincts created after 2020 that no earlier presidential
+election covers, and 1.1% sit in precincts split between two districts. Both
+are flagged per row rather than dropped.
+
 ## Model Enhancements
 
 - Incorporate OCPF fundraising data

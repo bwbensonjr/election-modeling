@@ -1,1 +1,10 @@
 *~
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Raw upstream responses and third-party GIS inputs are re-downloadable
+# inputs, not outputs: too large to commit and reproducible from cache/*.
+cache/

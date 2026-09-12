@@ -1,0 +1,9 @@
+pvi_year,redistricting_cycle,mapoli_pvi_year,office,districts_matched,districts_published,baseline_offset,max_spread_about_offset,tolerance,within_tolerance,outliers
+2016,2011,2016,State Senate,39,40,0.7466,0.0034,0.05,True,0
+2016,2011,2016,State Representative,160,160,0.7465,0.0062,0.05,True,0
+2020,2011,2020,State Senate,39,40,-0.2104,0.0,0.05,True,0
+2020,2011,2020,State Representative,160,160,-0.2104,0.0,0.05,True,0
+2020,2021,2022,State Senate,30,40,0.0016,0.2199,5.0,True,0
+2020,2021,2022,State Representative,118,160,-0.0015,2.9902,5.0,True,0
+2024,2021,2024,State Senate,30,40,0.0069,0.1469,5.0,True,0
+2024,2021,2024,State Representative,160,160,0.0035,1.8301,5.0,True,0

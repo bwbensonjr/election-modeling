@@ -1,0 +1,7 @@
+election_year,dem_votes,gop_votes,dem_candidate,gop_candidate,source
+2004,59028444,62040610,John Kerry,George W. Bush,FEC official federal election results 2004
+2008,69498516,59948323,Barack Obama,John McCain,FEC official federal election results 2008
+2012,65915795,60933504,Barack Obama,Mitt Romney,FEC official federal election results 2012; matches ma-election-db ma_national_presidential_baseline.csv
+2016,65853514,62984828,Hillary Clinton,Donald Trump,FEC official federal election results 2016; matches mapoli R/pvi_utils.R US_Clinton_16/US_Trump_16
+2020,81281502,74222593,Joe Biden,Donald Trump,FEC official federal election results 2020; matches mapoli R/pvi_utils.R US_Biden_20/US_Trump_20
+2024,75017626,77301997,Kamala Harris,Donald Trump,FEC official federal election results 2024; matches mapoli R/pvi_utils.R US_Harris_24/US_Trump_24
