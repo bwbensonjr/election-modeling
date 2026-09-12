@@ -10,10 +10,11 @@ and State Representative races.
 ## Resources 
 
 - Data sources
-  - [`bwbensonjr/ma-election-db`](https://github.com/bwbensonjr/ma-election-db)
+  - [`bwbensonjr/ma-election-db`](https://github.com/bwbensonjr/ma-election-db) - District-level elections and fine-grained census data
   - [MA Commonwealth Election Statistics](https://electionstats.state.ma.us/)
   - [`bwbensonjr/ocpf-cli`](https://github.com/bwbensonjr/ocpf-cli) - OCPF command-line tool 
   - [Massachusetts Office of Campaign and Political Finance](https://www.ocpf.us/)
+  - [`bwbensonjr/mapoli`](https://github.com/bwbensonjr/mapoli) - Scripts for gathering precinct-level election results
 - Prior art
   - [`bwbensonjr/mapoli/model`](https://github.com/bwbensonjr/mapoli/tree/master/model)
 - Model use cases
@@ -46,7 +47,13 @@ dem_margin ~ PVI_N + incumbent_status + pres_elec
 
 ## Plan
 
-- Define the granularity, variables, and data sources
+- Define the data sources, granularity, and variables
+  - Data sources - We should look at the data and scripts in these `bwbensonjr` repositories:
+    - [`bwbensonjr/ma-election-db`](https://github.com/bwbensonjr/ma-election-db)
+      - District-level election results
+      - Precinct-level census and demographic data
+    - [`bwbensonjr/mapoli/pvi`](https://github.com/bwbensonjr/mapoli/tree/master/pvi) - Scripts for precinct-level election results
+  - Granularity - Our preference is to use precinct-level data, but we may use district-level results for years where we do not have precinct-level data.
 - Define model accuracy measurement and scoring
 - Gather the data and rebuild the baseline model and evaluate its accuracy
 - Put together expanded variable data set and evaluate the variables via principle component analysis (PCA) or something similar.
