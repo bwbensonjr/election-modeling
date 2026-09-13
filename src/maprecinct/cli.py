@@ -7,6 +7,7 @@ Stages are ordered by dependency and can be run individually or together:
     uv run maprecinct districts
     uv run maprecinct pvi
     uv run maprecinct training
+    uv run maprecinct races
     uv run maprecinct validate
     uv run maprecinct all
 """
@@ -61,6 +62,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("districts", help="derive precinct-to-district mappings")
     sub.add_parser("pvi", help="compute precinct PVI for every required dataset")
     sub.add_parser("training", help="assemble the race-precinct training table")
+    sub.add_parser("races", help="roll the training table up to one row per race")
     sub.add_parser("validate", help="run the PVI and training validations")
     sub.add_parser("all", help="run every stage in order")
 
@@ -82,21 +84,28 @@ def main(argv: list[str] | None = None) -> int:
         from . import training
 
         training.build_and_write()
+    elif args.command == "races":
+        from . import races
+
+        races.build_and_write()
     elif args.command == "validate":
-        from . import validate, validate_training
+        from . import races, validate, validate_training
 
         validate.run()
         validate_training.run()
+        races.validate_rollup()
     elif args.command == "all":
-        from . import districts, pvi, training, validate, validate_training
+        from . import districts, pvi, races, training, validate, validate_training
 
         _fetch("all")
         _normalize()
         districts.build_and_write()
         pvi.build_all()
         training.build_and_write()
+        races.build_and_write()
         validate.run()
         validate_training.run()
+        races.validate_rollup()
     else:
         return 1
 

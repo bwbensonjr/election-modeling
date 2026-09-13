@@ -131,11 +131,18 @@ presidential precinct data runs out first.
 
 ### Train/test split
 
-The 2021 redistricting gives a natural temporal holdout: train on 2010
-through 2020 and test on 2022 and 2024, which also tests whether the
-model survives a map change. Splitting by year rather than randomly
-matters here because districts repeat across cycles and a random split
-would leak the same district's behavior between train and test.
+Splitting by year rather than randomly matters here because districts repeat
+across cycles and a random split would leak the same district's behavior
+between train and test.
+
+A single split on the 2021 redistricting -- train on 2010 through 2020, test
+on 2022 and 2024 -- was the initial plan. The implemented procedure generalises
+it to a rolling-origin schedule over every election year from 2014 onward,
+which scores 424 races instead of 128 and, by including the odd years, puts 24
+special elections in the holdout instead of none. The redistricting boundary
+is still tested: the 2022 fold trains entirely on the old map and predicts on
+the new one, and `redistricting_cycle` is a reported segment. See
+[`docs/scoring.md`](docs/scoring.md).
 
 ### Published training data
 
@@ -159,6 +166,60 @@ almost all of them precincts created after 2020 that no earlier presidential
 election covers, and 1.1% sit in precincts split between two districts. Both
 are flagged per row rather than dropped.
 
+## Baseline Model and Scoring
+
+The baseline model is reproduced on the collected data and evaluated by a
+fixed scoring procedure, so later variables and algorithms are measured
+against an unmoved yardstick.
+
+- **Model.** `dem_margin ~ PVI_N + incumbent_status + pres_elec`, Gaussian
+  likelihood, fit at race grain with Bambi/PyMC. Coefficients agree with the
+  same fit on the existing district-level table to within 0.07 posterior
+  standard deviations once one documented PVI baseline offset is removed.
+- **Scoring.** Rolling-origin holdout: each fold trains on every race strictly
+  before its year and predicts that year's races, over every election year
+  from 2014 through 2024. Pooled holdout of 424 races, 24 of them special.
+  RMSE in margin points is the primary score, reported with calibration and
+  win-side metrics and broken out per fold and per segment. See
+  [`docs/scoring.md`](docs/scoring.md).
+- **Race-grain training table.**
+  [`data/race/ma_race_training_set.csv.gz`](data/race/ma_race_training_set.csv.gz),
+  623 races rolled up from the precinct table, described in
+  [`docs/race_schema.md`](docs/race_schema.md).
+
+```bash
+uv run legmodel score                              # score every variant
+uv run legmodel compare baseline baseline_special  # paired comparison
+```
+
+### Baseline accuracy
+
+| Segment | Races | RMSE | Coverage (90%) | Win accuracy |
+|---|---|---|---|---|
+| Pooled | 424 | 15.61 | 0.892 | 0.918 |
+| General elections | 400 | 14.96 | 0.902 | 0.922 |
+| Special elections | 24 | 23.99 | 0.708 | 0.833 |
+| No Democratic candidate | 11 | 28.35 | 0.364 | 0.818 |
+
+### First result: does `is_special` help?
+
+**Not overall.** Pooled RMSE moves from 15.608 to 15.641, a difference of
+-0.033 with a 90% interval of [-0.143, +0.078], which contains zero: the data
+does not separate the two models. The pooled figure hides two real and
+opposite effects. The term lowers RMSE on the 24 holdout special elections by
+1.13 points, and raises it on the other 400 races by 0.14, and because
+specials are 5.7% of the holdout the second outweighs the first.
+
+On specials it does cut the baseline's large pessimism about Democrats, from
+-11.56 points of bias to -8.46. The recommendation is to keep `baseline` as
+the reference model and use `baseline_special` when the question is about a
+special election. Full writeup in
+[`docs/is_special_result.md`](docs/is_special_result.md).
+
+The comparison also surfaced larger failures than the one under test: races
+with no Democratic candidate (36% interval coverage) and an unabsorbed
+presidential-year bias swinging from -6.4 to +2.7 points.
+
 ## Model Enhancements
 
 - Incorporate OCPF fundraising data
@@ -167,15 +228,15 @@ are flagged per row rather than dropped.
 
 ## Plan
 
-- Define the data sources, granularity, and variables
+- [x] Define the data sources, granularity, and variables
   - Data sources - We should look at the data and scripts in these `bwbensonjr` repositories:
     - [`bwbensonjr/ma-election-db`](https://github.com/bwbensonjr/ma-election-db)
       - District-level election results
       - Precinct-level census and demographic data
     - [`bwbensonjr/mapoli/pvi`](https://github.com/bwbensonjr/mapoli/tree/master/pvi) - Scripts for precinct-level election results
   - Granularity - Our preference is to use precinct-level data, but we may use district-level results for years where we do not have precinct-level data.
-- Define model accuracy measurement and scoring
-- Gather the data and rebuild the baseline model and evaluate its accuracy
+- [x] Define model accuracy measurement and scoring - [`docs/scoring.md`](docs/scoring.md)
+- [x] Gather the data and rebuild the baseline model and evaluate its accuracy - [`docs/is_special_result.md`](docs/is_special_result.md)
 - Put together expanded variable data set and evaluate the variables via principle component analysis (PCA) or something similar.
 - Evaluate different machine learning algorithm alternatives to Bayesian regression and decide on how to matrix testing of algorithms vs. variables.
 - Iteratively test model alternatives

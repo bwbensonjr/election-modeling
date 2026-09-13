@@ -98,3 +98,4 @@ Roughly 93% of remapped precincts match exactly by identifier. Rows marked
 | `data/precinct/ma_precinct_district.csv.gz` | Precinct to district mapping per redistricting cycle |
 | `data/pvi/ma_precinct_pvi.csv.gz` | Precinct PVI, keyed by `pvi_year` and `redistricting_cycle` |
 | `data/reference/*.csv` | National presidential baselines, the race-year to PVI mapping, and the redistricting cycle spans |
+| `data/race/ma_race_training_set.csv.gz` | The district-grain rollup of this table, one row per race. See [`race_schema.md`](race_schema.md) |

@@ -1,7 +1,8 @@
 # Precinct data pipeline
 
 Collects Massachusetts precinct-level election results and assembles the
-race-precinct training table described in [`schema.md`](schema.md).
+race-precinct training table described in [`schema.md`](schema.md), then rolls
+it up to the race-grain table described in [`race_schema.md`](race_schema.md).
 
 ## Prerequisites
 
@@ -48,7 +49,7 @@ without refetching:
 ```bash
 uv run maprecinct normalize && uv run maprecinct districts \
   && uv run maprecinct pvi && uv run maprecinct training \
-  && uv run maprecinct validate
+  && uv run maprecinct races && uv run maprecinct validate
 ```
 
 `cache/` is gitignored. Deleting it costs a full refetch; deleting anything
