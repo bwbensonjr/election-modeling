@@ -105,6 +105,15 @@ OUTCOME_COLUMNS = frozenset(
         "write_in_votes",
         "top_write_in_votes",
         "total_votes",
+        # OCPF's own feeds carry the result. `isWinner` is on both the
+        # historical `finsummaries` rows and the current depository rows, and a
+        # predictor built from it would be the answer to the question being
+        # asked (campaign-finance spec, "An outcome field is never read as a
+        # predictor").
+        "is_winner",
+        "isWinner",
+        "dem_is_winner",
+        "won",
     }
 )
 
@@ -246,6 +255,28 @@ class UnknownPredictorError(ValueError):
     """A variant names a column the race table does not carry."""
 
 
+# Predictors that cannot be derived before the fold year begins. Each names the
+# column carrying the as-of date it was measured to, which must be published
+# with every fit that uses it: a dated predictor's value is meaningless without
+# its date, and the choice of date is the difference between a forecast and a
+# postdiction (margin-model spec, "A predictor must be knowable before its fold
+# year's election").
+DATED_PREDICTORS = {}
+
+
+def register_dated(predictor: str, as_of_column: str) -> None:
+    """Declare that a predictor is knowable only during its fold year."""
+    DATED_PREDICTORS[predictor] = as_of_column
+
+
+class MissingAsOfDateError(ValueError):
+    """A predictor knowable only during the fold year declared no as-of date."""
+
+
+class AsOfDateAfterElectionError(ValueError):
+    """A dated predictor's as-of date falls on or after the election it predicts."""
+
+
 class MissingGroupPriorError(ValueError):
     """A group effect was declared without a prior for its standard deviation.
 
@@ -349,6 +380,10 @@ class Variant:
     # uses").
     target_accept: float | None = None
     tune: int | None = None
+    # The as-of date every dated predictor this variant carries was measured
+    # to. Required when a predictor is not knowable before the fold year, and
+    # published with every fit either way.
+    as_of: str = ""
 
     @property
     def formula(self) -> str:
@@ -380,6 +415,14 @@ class Variant:
         """Fail loudly on a predictor the table does not carry."""
         for predictor in self.predictors:
             check_knowable(predictor)
+        dated = [p for p in self.predictors if p in DATED_PREDICTORS]
+        if dated and not self.as_of:
+            raise MissingAsOfDateError(
+                f"variant {self.name!r} declares {sorted(dated)}, which cannot "
+                "be derived before the fold year begins, but sets no as_of "
+                "date; a dated predictor's value is meaningless without the "
+                "date it was measured to"
+            )
         for group in self.group_effects:
             if group_term(group) not in self.priors:
                 raise MissingGroupPriorError(
@@ -511,3 +554,28 @@ def resolve(names=None) -> list[Variant]:
     if names is None:
         return list(REGISTRY.values())
     return [get(name) for name in names]
+
+
+def check_as_of(variant: "Variant", election_dates) -> None:
+    """Refuse a dated predictor measured on or after the election it predicts.
+
+    The whole point of measuring money to a stated date is that the date falls
+    before the votes are cast. A date on or after election day would be reading
+    the result, so it is refused rather than fit (margin-model spec, "The as-of
+    date is before the election it predicts").
+    """
+    import pandas as pd
+
+    if not variant.as_of:
+        return
+    as_of = pd.Timestamp(variant.as_of)
+    dates = pd.to_datetime(pd.Series(list(election_dates)).dropna())
+    if dates.empty:
+        return
+    earliest = dates.min()
+    if as_of >= earliest:
+        raise AsOfDateAfterElectionError(
+            f"variant {variant.name!r} declares as_of {variant.as_of}, which is "
+            f"on or after the election on {earliest.date()}; a predictor "
+            "measured then would be reading the result"
+        )

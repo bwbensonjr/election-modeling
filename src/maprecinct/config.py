@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 CACHE_DIR = ROOT / "cache"
 ELECTIONSTATS_CACHE = CACHE_DIR / "electionstats"
+OCPF_CACHE = CACHE_DIR / "ocpf"
 GIS_CACHE = CACHE_DIR / "gis"
 
 DATA_DIR = ROOT / "data"

@@ -90,6 +90,9 @@ def score_variant(
     predictions, coefficients, diagnostics = [], [], []
 
     for fold in built:
+        # A dated predictor must have been measured before the election it
+        # predicts, checked per fold against that fold's own holdout races.
+        variants.check_as_of(variant, fold.holdout["election_date"])
         try:
             fitted = fitmod.fit(
                 variant, fold.train, fold=fold.year, definition=definition.name
@@ -193,6 +196,14 @@ def scorecard(
             for definition, name, fold in failed
             if name == variant_name and definition == definition_name
         )
+        variant_as_of = sorted(
+            {
+                str(row.as_of)
+                for row in diagnostics.itertuples()
+                if row.variant == variant_name and row.definition == definition_name
+                and str(getattr(row, "as_of", "")) not in ("", "nan")
+            }
+        )
         variant_refused = sorted(
             fold
             for definition, name, fold in refused
@@ -223,6 +234,7 @@ def scorecard(
                 "pres_bias_gap": bias_presidential - bias_midterm,
                 "folds_failing_diagnostics": ",".join(str(f) for f in variant_failed),
                 "folds_refused": ",".join(str(f) for f in variant_refused),
+                "as_of": ",".join(variant_as_of),
             }
         )
         for fold, fold_group in group.groupby("fold", sort=True):
@@ -283,6 +295,7 @@ def scorecard(
         "pres_bias_gap",
         "folds_failing_diagnostics",
         "folds_refused",
+        "as_of",
         "skipped_years",
     ]
     return card[ordered]

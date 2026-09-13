@@ -122,6 +122,11 @@ class Diagnostics:
     draws: int = DRAWS
     chains: int = CHAINS
     group_prior: str = ""
+    # The as-of date of any dated predictor the variant carries. Published so
+    # that no metric is ambiguous about the point in time its predictors were
+    # measured at (model-scoring spec, "A dated predictor's as-of date travels
+    # with the scores").
+    as_of: str = ""
     # Training races carrying within-group variation for a predictor that is
     # nearly spanned by the variant's grouping factor. Empty when the variant
     # has no group effect, or when nothing is close to confounded.
@@ -159,6 +164,7 @@ class Diagnostics:
             # CSV reads as missing data, and "this fit used the library's own
             # priors" is a fact about the fit, not an absence of one.
             "group_prior": self.group_prior or "library defaults",
+            "as_of": self.as_of or "not dated",
             "separating_races": self.separating_races or "none",
             "refused_reason": self.refused_reason,
         }
@@ -192,6 +198,7 @@ def refused(
         ),
         tune=TUNE if variant.tune is None else variant.tune,
         group_prior=variant.prior_declaration,
+        as_of=variant.as_of,
         refused_reason=reason,
     )
 
@@ -355,6 +362,7 @@ def fit(
         draws=DRAWS,
         chains=CHAINS,
         group_prior=variant.prior_declaration,
+        as_of=variant.as_of,
         separating_races=", ".join(
             f"{term}={count}" for term, count in sorted(separating.items())
         ),
