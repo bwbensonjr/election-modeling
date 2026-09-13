@@ -240,3 +240,135 @@ presidential-year bias swinging from -6.4 to +2.7 points.
 - Put together expanded variable data set and evaluate the variables via principle component analysis (PCA) or something similar.
 - Evaluate different machine learning algorithm alternatives to Bayesian regression and decide on how to matrix testing of algorithms vs. variables.
 - Iteratively test model alternatives
+
+## Open Questions
+
+Decisions deferred from the baseline modelling work, recorded here to seed a
+later OpenSpec proposal. The first three are all the same underlying question
+-- *who counts as a candidate, and what is the margin measured against* -- and
+should be settled together, because each one rebuilds the training table and
+invalidates the published scorecard. Deciding them one at a time means
+rebuilding and republishing three times.
+
+All figures below are from the committed scorecard and the 623-race table.
+
+### 1. A two-party response, restricted to Democrat-versus-Republican races
+
+Restrict training and test to races with both a Democrat and a Republican, and
+define the response as the two-party margin, `(dem - gop) / (dem + gop)`,
+the way `PVI_N` is already computed.
+
+**The case for it.** The response and the predictor are currently measured
+against different denominators: `dem_margin` divides by every named candidate,
+while `PVI_N` divides by two-party presidential votes. A race with a strong
+third candidate therefore has a compressed margin relative to what PVI
+predicts, and the model has no way to know it. Making the two definitionally
+parallel removes that mismatch. On the same 517 races, PVI's correlation with
+the response rises from **0.705 to 0.724** when the response is switched to
+two-party -- a clean comparison, since only the definition changes.
+
+It also subsumes questions 2 and 3: non-major-party write-ins leave the
+denominator automatically, and races with no Democrat are excluded by
+construction.
+
+**The cost.** 517 of 623 races have both a Democrat and a Republican (83.0%).
+The pooled holdout falls from **424 races to 346** (-18%).
+
+| | Now | D-vs-R only |
+|---|---|---|
+| Total races | 623 | 517 |
+| Pooled holdout | 424 | 346 |
+| Holdout specials | 24 | 22 |
+| Smallest training fold (2014) | 199 | 171 |
+
+The 106 races dropped are 93 where a Democrat faced a non-Republican
+(74 unenrolled, 8 Green-Rainbow, 4 Libertarian, 3 Pirate, 2 United
+Independent, 2 Workers Party) and 13 with no Democrat. Specials barely suffer,
+24 down to 22, which matters because specials are the scarce resource.
+
+**What changes for races that stay.** The median race does not move at all.
+35 races (6.8%) shift by more than 1 point, 5 by more than 10, and the largest
+shift is 54.4 points (16th Essex 2014). So this is a no-op for most of the
+data and decisive for a handful.
+
+**Open sub-question.** Dropping 106 races is a real loss of training data, and
+those races still happen and may still need rating. An alternative is to keep
+them but model them separately, or to keep the two-party response and admit
+the strongest non-Republican as the comparison where no Republican ran. Worth
+testing both ways rather than assuming the restriction is free.
+
+### 2. Whether a write-in counts as a candidate, and above what threshold
+
+Races are currently filtered on `num_candidates >= 2` from `ma-election-db`,
+which counts ballot lines, matching `ma_leg_model.R`. Write-ins are therefore
+excluded from the contested/uncontested decision but *are* counted in the
+`dem_margin` denominator when they appear in the precinct returns.
+
+**Races a threshold would admit**, out of 1,027 currently excluded as
+uncontested. All are one ballot line plus a write-in:
+
+| Threshold (share of named-candidate votes) | Races added |
+|---|---|
+| 0% (any write-in) | +16 |
+| 2% | +10 |
+| 5% | +3 |
+| 8% or 10% | +1 |
+| 15% | 0 |
+
+**Races already included whose denominator carries a write-in:** 8, of which
+exactly one is material -- 28th Middlesex 2013, where John F. Hanlon's write-in
+took 37.5%. The other seven run 0.2% to 4.8%.
+
+That one race gives three different answers depending on the rule, which is
+the clearest illustration of what is at stake:
+
+| Rule | `dem_margin` |
+|---|---|
+| Write-ins excluded from the denominator | +21.2 |
+| Current: in the denominator, not the comparison | +14.13 |
+| mapoli: write-in *is* the comparison candidate | +1.68 |
+
+Note that excluding write-ins moves further from the reference, not closer.
+
+A single threshold applied consistently in both places -- admitting a race and
+counting toward the denominator -- is the tidiest rule. Around 5% would admit
+genuine write-in campaigns such as 2nd Plymouth 2024 (11.0%) and keep Hanlon
+in the denominator, while dropping sub-1% protest write-ins. Question 1 would
+settle this by side effect if adopted.
+
+### 3. Races with no Democratic candidate
+
+The baseline's worst segment by a wide margin: 11 holdout races, **28.35
+RMSE** against a pooled 15.61, and **36% coverage** of the 90% predictive
+interval. The model is confidently wrong about them nine times in ten.
+
+They are currently kept, with `dem_margin` defined as the negation of the
+leader's margin over the strongest remaining candidate. Options are to keep
+and add a `no_dem_candidate` term, to model them separately, or to exclude
+them -- which is what question 1 would do.
+
+### 4. Presidential-year bias that `pres_elec` cannot absorb
+
+Not a data question, but surfaced by the same scorecard and worth testing in
+the same pass. The baseline runs **6.4 points too Republican** in
+non-presidential years and **2.7 points too Democratic** in presidential ones.
+A single binary term applied identically to every race cannot correct a swing
+of that shape. A year effect, or an interaction between `pres_elec` and
+incumbency, is worth registering as a variant.
+
+### 5. Whether `num_candidates` belongs in the baseline
+
+Deferred from the baseline change. It is the third term in the fullest R
+variant. Adding it is a one-line variant declaration scored by the existing
+harness, so it costs almost nothing to answer -- it simply was not the question
+that change set out to settle. If question 1 is adopted, a two-party response
+makes it largely redundant.
+
+### Sequencing note
+
+Questions 1 through 3 change the training table; 4 and 5 only add variants.
+The harness handles the second kind already (`legmodel score`, then
+`legmodel compare`). The first kind needs a comparison mode the harness does
+not yet have: `legmodel compare` pairs on identical holdout races, and two
+filter settings produce different race sets, so comparing them means scoring
+on the intersection and reporting separately what each side admits.
