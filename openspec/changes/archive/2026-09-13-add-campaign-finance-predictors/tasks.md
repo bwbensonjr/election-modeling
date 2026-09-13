@@ -89,18 +89,18 @@
 
 ## 5. Race-grain rollup
 
-- [ ] 5.1 Roll the candidate table up to the race, carrying the Democratic and
+- [x] 5.1 Roll the candidate table up to the race, carrying the Democratic and
   opponent money for each measure and window, plus
   `money_candidates_matched`, `money_candidates_total` and `money_complete`;
   verify the race figures are reproducible from the candidate rows and that a
   disagreement fails the build
-- [ ] 5.2 Record unavailable money as missing rather than zero, and verify a
+- [x] 5.2 Record unavailable money as missing rather than zero, and verify a
   race where every candidate was matched and raised nothing is distinguishable
   from one where a filer was not found
-- [ ] 5.3 Add the money and match columns to `ma_race_training_set.csv.gz` and
+- [x] 5.3 Add the money and match columns to `ma_race_training_set.csv.gz` and
   document them in `docs/race_schema.md`; verify the documented column list
   matches the committed header
-- [ ] 5.4 Verify every pre-existing column in the race table is byte-for-byte
+- [x] 5.4 Verify every pre-existing column in the race table is byte-for-byte
   unchanged by the rebuild
 
 ## 6. The as-of date in the model
@@ -118,31 +118,31 @@
 
 ## 7. The money sweep
 
-- [ ] 7.1 Register `baseline_money_share`, `baseline_money_logratio`,
+- [x] 7.1 Register `baseline_money_share`, `baseline_money_logratio`,
   `baseline_money_diff` and `baseline_money_both` per design D5, each oriented
   so a larger value favours the Democrat; verify a race with equal money takes
   the scale's neutral value
-- [ ] 7.2 Verify each money variant either filters to `money_complete` races
+- [x] 7.2 Verify each money variant either filters to `money_complete` races
   or carries an explicit unknown indicator, and that none imputes
-- [ ] 7.3 Score every money variant under every scored definition at the
+- [x] 7.3 Score every money variant under every scored definition at the
   primary window, and verify the pooled holdout count is reported alongside
   the baseline's so the cost of restricting to complete races is visible
-- [ ] 7.4 Score the adopted money variant at the second window and report the
+- [x] 7.4 Score the adopted money variant at the second window and report the
   cutoff sensitivity
-- [ ] 7.5 Run the paired comparisons against `baseline` and verify each is
+- [x] 7.5 Run the paired comparisons against `baseline` and verify each is
   reported per incumbency segment as well as pooled, with small segments
   marked
-- [ ] 7.6 Verify the untouched variants' rows are unchanged after the rescore,
+- [x] 7.6 Verify the untouched variants' rows are unchanged after the rescore,
   as in the previous change
 
 ## 8. Publish
 
-- [ ] 8.1 Write `docs/money_results.md`: the feed-era seam, the leakage
+- [x] 8.1 Write `docs/money_results.md`: the feed-era seam, the leakage
   measurements, the match rate and its residual, the four measures and which
   the data separates --- including "none of them" if that is the answer
-- [ ] 8.2 State the endogeneity caveat in the writeup, and verify the result
+- [x] 8.2 State the endogeneity caveat in the writeup, and verify the result
   is not presented as evidence that spending changes outcomes
-- [ ] 8.3 Document the collection stage and the two windows in
+- [x] 8.3 Document the collection stage and the two windows in
   `docs/pipeline.md` and the as-of date in `docs/scoring.md`
-- [ ] 8.4 Update `README.md`'s planned work and, if a money variant is
+- [x] 8.4 Update `README.md`'s planned work and, if a money variant is
   adopted, the accuracy table

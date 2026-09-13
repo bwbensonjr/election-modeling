@@ -156,6 +156,60 @@ difference is -0.31 [-0.83, +0.38] — undecided. The gap is almost entirely the
 78 races `two_party` drops, which `current` scores at 25.3. A pooled
 comparison would have read a refusal to predict hard races as accuracy.
 
+## Dated predictors and the as-of date
+
+Most predictors here are knowable before their fold year even begins: a
+district's PVI, who the incumbent is, whether the year carries a presidential
+race. Campaign finance is not. The rule a variant must satisfy is therefore
+that its predictors are knowable **before its fold year's election**, and a
+predictor that becomes knowable only during the year has to declare an as-of
+date that is published with every fit using it.
+
+A money figure without the date it was measured on is not interpretable, and
+the difference between two dates is the difference between a forecast and a
+postdiction. So:
+
+- The variant declares `as_of`. A variant naming a dated predictor without one
+  is refused, and the error names the predictor.
+- Where the predictor was measured a fixed distance before each race's own
+  election, the declaration is relative -- `election-14d`, `election-60d` --
+  and the per-race dates are carried in the race table. Every holdout race is
+  then checked individually: a date on or after that race's election is
+  refused rather than fit.
+- The date reaches `fit_diagnostics.csv` and the scorecard's pooled row, both
+  as an `as_of` column. A variant carrying no dated predictor records
+  `not dated` rather than a blank, so "this fit used no dated predictor" and
+  "nobody recorded the date" do not look the same.
+
+**Two as-of dates are two results.** The same contrast measured 14 and 60 days
+out is registered as two variants and published as separate rows. The
+comparison between them is a comparison of measurement dates, not of model
+structure, and it is what makes a result's sensitivity to the cutoff
+measurable rather than assumed.
+
+## Variants that exclude races
+
+A variant may declare `requires`, naming boolean columns a race must carry for
+that variant to be fit on it. `money_complete` is the case this exists for: a
+candidate whose OCPF filer could not be found has unknown money, which is a
+different fact from a candidate who raised nothing, and a variant may not
+quietly turn the first into the second. It either excludes those races or
+carries an explicit unknown indicator. **It may not impute**, and a variant
+whose predictor is missing on a race it would be fit on is refused rather than
+fit.
+
+The exclusion applies before the folds are built, so an excluded race is
+absent from training as well as from the holdout, and the variant's pooled
+`n_races` in the scorecard is the count it was actually scored on. That count
+sits beside the baseline's, which is how the cost of restricting to complete
+races is read.
+
+A restriction can empty a fold entirely -- the 2023 fold holds one race, and
+that race's opponent has no filer. The scorecard's pooled row therefore
+carries `folds_absent` alongside `folds_refused` and
+`folds_failing_diagnostics`, so a year this variant could not score is
+recorded rather than merely missing.
+
 ## Segments
 
 Metrics are broken out per fold and by `office`, `is_special`, `pres_elec`,
@@ -215,6 +269,7 @@ them or took the defaults:
 | `group_prior` | The variant's declared priors, or `library defaults` where it declared none |
 | `separating_races` | For a variant with a group effect, how many training races keep a predictor from being exactly collinear with the grouping factor. `none` when nothing is close |
 | `refused_reason` | Set when the fold was refused before sampling, so a fold that was never fit is distinguishable from one that was fit and sampled badly |
+| `as_of` | The date any dated predictor was measured to, or `not dated`. See above |
 
 This exists because a variant can be made to converge by raising
 `target_accept`, and a result obtained that way is a different claim from one

@@ -150,6 +150,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{'':<24}   target_accept: {spec.target_accept}")
             if spec.tune is not None:
                 print(f"{'':<24}   tune: {spec.tune}")
+            if spec.as_of:
+                print(f"{'':<24}   as of: {spec.as_of}")
+            if spec.requires:
+                print(f"{'':<24}   requires: {', '.join(spec.requires)}")
     elif args.command == "definitions":
         from . import definitions
 

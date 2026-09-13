@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 
-from . import config, filer_match, ocpf, races as races_module
+from . import build, config, filer_match, ocpf, races as races_module
 
 # Parallelism for the roster stage. Modest on purpose: this is a public API and
 # the work is cached after the first run.
@@ -162,10 +162,171 @@ def collect(resolved: pd.DataFrame | None = None, write: bool = True) -> pd.Data
     frame = pd.concat([frame, unmatched], ignore_index=True)
     frame = frame.sort_values(["election_year", "election_id", "role"])
     if write:
-        config.write_csv(frame, CANDIDATE_FINANCE) if hasattr(config, "write_csv") else None
-        if not hasattr(config, "write_csv"):
-            CANDIDATE_FINANCE.parent.mkdir(parents=True, exist_ok=True)
-            frame.to_csv(CANDIDATE_FINANCE, index=False, compression="gzip")
-            print(f"wrote {len(frame):>7} rows -> "
-                  f"{CANDIDATE_FINANCE.relative_to(config.ROOT)}")
+        build.write_csv(frame, CANDIDATE_FINANCE)
+    return frame
+
+
+# --- Race-grain rollup -------------------------------------------------------
+
+# The money columns the race table carries, one per role, measure and window.
+MEASURES = tuple(CATEGORIES)
+WINDOWS = tuple(WINDOW_LEADS)
+
+MONEY_COLUMNS = tuple(
+    f"{role}_{measure}_{window}"
+    for role, _ in ROLES
+    for measure in MEASURES
+    for window in WINDOWS
+)
+AS_OF_COLUMNS = tuple(f"money_as_of_{window}" for window in WINDOWS)
+MATCH_COLUMNS = ("money_candidates_matched", "money_candidates_total", "money_complete")
+RACE_MONEY_COLUMNS = ("election_id",) + AS_OF_COLUMNS + MONEY_COLUMNS + MATCH_COLUMNS
+
+# Money is compared between the two sides, so a hundredth of a dollar of
+# disagreement between a race row and the candidate rows behind it is already
+# a rollup that did not come from those rows.
+MONEY_TOLERANCE = 0.005
+
+
+class MoneyDisagreementError(ValueError):
+    """A race's money columns do not follow from its candidate rows."""
+
+
+class AsOfAfterElectionError(ValueError):
+    """A money figure was accumulated to a date on or after its own election."""
+
+
+def _one_race_money(group: pd.DataFrame) -> dict:
+    """The race-grain money row for one race's candidate rows.
+
+    An unmatched candidate contributes no money at all rather than a zero: a
+    filer that was never found and a filer that raised nothing are different
+    facts, and collapsing them would put a large fake zero exactly where the
+    match is hardest (design.md, D4).
+    """
+    matched = group["match_rule"].isin(filer_match.MATCHED_RULES)
+    row = {
+        "election_id": int(group["election_id"].iloc[0]),
+        "money_candidates_matched": int(matched.sum()),
+        "money_candidates_total": int(len(group)),
+        "money_complete": bool(matched.all()),
+    }
+    for window in WINDOWS:
+        dates = group[f"as_of_{window}"].dropna().unique()
+        if len(dates) > 1:
+            raise MoneyDisagreementError(
+                f"election {row['election_id']}: candidate rows disagree on "
+                f"as_of_{window} = {sorted(dates)}"
+            )
+        # A race whose candidates were all unmatched has no collected window,
+        # so its as-of date is recomputed from the election date rather than
+        # left blank: the date the race would have been measured to is a
+        # property of the race, not of whether a filer was found.
+        row[f"money_as_of_{window}"] = (
+            str(dates[0])
+            if len(dates)
+            else window_for(group["election_date"].iloc[0], WINDOW_LEADS[window])[1]
+            .date()
+            .isoformat()
+        )
+    for role, _ in ROLES:
+        side = group[group["role"] == role]
+        for measure in MEASURES:
+            for window in WINDOWS:
+                column = f"{role}_{measure}_{window}"
+                values = side[f"{measure}_{window}"].dropna() if len(side) else []
+                row[column] = float(values.iloc[0]) if len(values) else pd.NA
+    return row
+
+
+def race_money(candidates: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Roll the candidate finance table up to one row per race."""
+    if candidates is None:
+        candidates = pd.read_csv(CANDIDATE_FINANCE)
+    rows = [
+        _one_race_money(group)
+        for _, group in candidates.groupby("election_id", sort=False)
+    ]
+    frame = pd.DataFrame(rows, columns=list(RACE_MONEY_COLUMNS))
+    for column in MONEY_COLUMNS:
+        frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    return frame.sort_values("election_id", ignore_index=True)
+
+
+def check_as_of(races: pd.DataFrame) -> None:
+    """Refuse a money figure measured on or after the election it describes."""
+    election = pd.to_datetime(races["election_date"])
+    for column in AS_OF_COLUMNS:
+        if column not in races.columns:
+            continue
+        as_of = pd.to_datetime(races[column])
+        late = races[as_of >= election]
+        if len(late):
+            first = late.iloc[0]
+            raise AsOfAfterElectionError(
+                f"{len(late)} races carry {column} on or after their own "
+                f"election, beginning with election {first['election_id']} "
+                f"({first[column]} against {first['election_date']}); a figure "
+                "measured then would be reading the result"
+            )
+
+
+def check_consistency(races: pd.DataFrame, candidates: pd.DataFrame | None = None) -> None:
+    """Fail unless every race's money follows from its own candidate rows.
+
+    The race table is published alongside the candidate table it was built
+    from, so a reader can check one against the other. This is that check run
+    at build time, so a disagreement stops the build rather than being
+    published (race-training-set spec, "A race row agrees with its candidate
+    rows").
+    """
+    if not set(MONEY_COLUMNS) <= set(races.columns):
+        return
+    expected = race_money(candidates).set_index("election_id")
+    published = races.set_index("election_id")
+    shared = published.index.intersection(expected.index)
+    missing = published.index.difference(expected.index)
+    if len(missing):
+        raise MoneyDisagreementError(
+            f"{len(missing)} races carry money columns with no candidate rows "
+            f"behind them, beginning with election {missing[0]}"
+        )
+    disagreements = []
+    for column in MONEY_COLUMNS:
+        left = published.loc[shared, column]
+        right = expected.loc[shared, column]
+        differs = (left.isna() != right.isna()) | (
+            (left - right).abs() > MONEY_TOLERANCE
+        ).fillna(False)
+        for election_id in left.index[differs]:
+            disagreements.append(
+                f"  election {election_id}: {column} published "
+                f"{left[election_id]!r} against {right[election_id]!r} rolled up"
+            )
+    for column in AS_OF_COLUMNS + MATCH_COLUMNS:
+        left = published.loc[shared, column].astype(str)
+        right = expected.loc[shared, column].astype(str)
+        for election_id in left.index[left != right]:
+            disagreements.append(
+                f"  election {election_id}: {column} published "
+                f"{left[election_id]!r} against {right[election_id]!r} rolled up"
+            )
+    if disagreements:
+        raise MoneyDisagreementError(
+            f"{len(disagreements)} race money values do not follow from the "
+            "candidate rows behind them:\n" + "\n".join(disagreements[:20])
+        )
+    check_as_of(races)
+
+
+def build_and_write() -> pd.DataFrame:
+    """Run the whole collection, then rebuild the race table over it."""
+    from . import races as races_build
+
+    resolved = resolve()
+    publish_unmatched(resolved)
+    print(match_summary(resolved).to_string(index=False))
+    frame = collect(resolved)
+    print(ocpf.STATS.summary())
+    races_build.build_and_write()
     return frame

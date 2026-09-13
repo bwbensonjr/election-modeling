@@ -112,6 +112,56 @@ vote-weighted margin is -9.6 and the precinct average is +13.3.
 `data/race/race_pvi_coverage.csv` carries the same coverage figures for every
 race including any excluded one, with a stated reason for each exclusion.
 
+## Campaign finance
+
+Rolled up from `data/race/ma_race_finance.csv.gz`, the candidate-grain table
+[`maprecinct finance`](pipeline.md) writes. Each figure is the money a
+candidate's OCPF committee reported over the **365 days ending a stated number
+of days before that race's own election** -- reconstructed from report line
+items, never read from a published cumulative total, which is a full-calendar-
+year figure that includes money raised after the polls closed.
+
+Two windows are carried, so a result's sensitivity to the cutoff is
+measurable: `primary` ends 14 days before the election and `wide` ends 60 days
+before. The trailing window matters most for the 38 specials, whose campaigns
+are funded in the previous calendar year; a year-to-date window would score a
+January special as though nobody raised anything.
+
+The race figures are derived from the candidate rows rather than recomputed,
+and the build fails if the two disagree.
+
+| Column | Type | Description |
+|---|---|---|
+| `money_as_of_primary` | date | The date `*_primary` money was accumulated to: 14 days before `election_date`, for every race |
+| `money_as_of_wide` | date | The same for `*_wide`: 60 days before `election_date` |
+| `dem_receipts_primary` | float | Dollars the candidate on the Democratic side of the margin reported receiving in the year ending `money_as_of_primary`. Missing where that candidate was not matched to a filer |
+| `dem_receipts_wide` | float | The same over the wider window |
+| `dem_expenditures_primary` | float | Dollars that candidate reported spending over the primary window |
+| `dem_expenditures_wide` | float | The same over the wider window |
+| `opp_receipts_primary` | float | Receipts for `opponent_candidate` over the primary window |
+| `opp_receipts_wide` | float | The same over the wider window |
+| `opp_expenditures_primary` | float | Expenditures for `opponent_candidate` over the primary window |
+| `opp_expenditures_wide` | float | The same over the wider window |
+| `money_candidates_matched` | integer | How many of the race's two candidates were resolved to an OCPF filer |
+| `money_candidates_total` | integer | How many candidates the race's money was sought for. 2 in every race |
+| `money_complete` | boolean | Both candidates matched. True in 611 of 633 races |
+
+**Unavailable money is missing, not zero.** A candidate whose filer was never
+found has no money columns; a candidate who was matched and reported nothing
+has zero. The two are different facts, and collapsing them would put a large
+fake zero exactly where the match is hardest, biasing any coefficient toward
+zero and producing a null result that looks like evidence. 22 races carry a
+null on one side for want of a filer; 9 races carry a genuine zero on one side
+with both candidates matched. No race has both sides at zero.
+
+A variant using these columns must therefore either filter on `money_complete`
+or carry an explicit unknown indicator. It may not impute.
+
+The 22 incomplete races fall in 2010 (3), 2014 (8), 2018 (2), 2020 (1), 2022
+(4), 2023 (2) and 2024 (2). Every unmatched candidate is named, with the
+filers that were considered, in
+`data/reports/ocpf_unmatched_candidates.csv`.
+
 ## Validation against the published district-level table
 
 `maprecinct validate` compares every race against `mapoli`'s

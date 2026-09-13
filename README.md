@@ -194,6 +194,12 @@ against an unmoved yardstick.
   633 races rolled up from the precinct table, described in
   [`docs/race_schema.md`](docs/race_schema.md), with the candidate roster in
   [`data/race/ma_race_candidates.csv.gz`](data/race/ma_race_candidates.csv.gz).
+- **Campaign finance.**
+  [`data/race/ma_race_finance.csv.gz`](data/race/ma_race_finance.csv.gz), one
+  row per candidate per race, carrying receipts and expenditures accumulated to
+  a stated pre-election date. Rolled up into the race table's money columns.
+  Collected by `uv run maprecinct finance`; see
+  [`docs/money_results.md`](docs/money_results.md).
 
 ```bash
 uv run legmodel definitions                        # list the data definitions
@@ -237,9 +243,11 @@ presidential-year bias swinging from -6.4 to +2.7 points. Both are settled in
 
 ## Model Enhancements
 
-- Incorporate OCPF fundraising data
+- [x] Incorporate OCPF fundraising data -- [`docs/money_results.md`](docs/money_results.md)
 - A finer-grained incumbency variable (take into account number of years)
 - Incorporate Census demographic data
+- Candidate-committee money is collected; independent expenditures, PAC money
+  and party committee spending are not, and are a separate collection problem
 
 ## Plan
 
@@ -254,20 +262,24 @@ presidential-year bias swinging from -6.4 to +2.7 points. Both are settled in
 - [x] Gather the data and rebuild the baseline model and evaluate its accuracy - [`docs/is_special_result.md`](docs/is_special_result.md)
 - [x] Settle the data definition -- who counts as a candidate and what the margin is measured against - [`docs/definition_result.md`](docs/definition_result.md)
 - [x] Test the deferred variables: presidential-year bias and `num_candidates` - [`docs/variant_results.md`](docs/variant_results.md)
+- [x] Collect OCPF campaign finance and test it as a predictor - [`docs/money_results.md`](docs/money_results.md)
 - Put together expanded variable data set and evaluate the variables via principle component analysis (PCA) or something similar.
 - Evaluate different machine learning algorithm alternatives to Bayesian regression and decide on how to matrix testing of algorithms vs. variables.
 - Resolve the [open issues](#open-issues) carried forward. The `baseline_year` convergence failure is resolved; special elections and the provisional data definition remain.
 - Iteratively test model alternatives
 ## Answered Questions
 
-The five questions deferred from the baseline work are settled. Questions 1
-through 3 were decided together, because each rebuilds the training table and
-invalidates the scorecard; 4 and 5 are variant declarations scored by the
-existing harness.
+The five questions deferred from the baseline work are settled, and campaign
+finance -- the enhancement this README has carried as planned work since the
+project started -- is answered alongside them. Questions 1 through 3 were
+decided together, because each rebuilds the training table and invalidates the
+scorecard; 4, 5 and 6 are variant declarations scored by the existing harness,
+though 6 also adds a collection stage and new columns.
 
 Full writeups: [`docs/definition_result.md`](docs/definition_result.md) for the
 data definitions, [`docs/variant_results.md`](docs/variant_results.md) for the
-variants, and [`docs/definitions.md`](docs/definitions.md) for the mechanism.
+variants, [`docs/money_results.md`](docs/money_results.md) for campaign
+finance, and [`docs/definitions.md`](docs/definitions.md) for the mechanism.
 
 ### The data definition
 
@@ -353,6 +365,21 @@ decidedly *worse* under the strict two-party definition (-0.064
 [-0.107, -0.023]). Once the response is measured on a two-party denominator the
 term adds variance without adding signal, exactly as anticipated.
 
+**6. Campaign finance — the largest gain measured so far.**
+`baseline_money_logratio` adds the log ratio of Democratic to opponent
+receipts, measured 14 days before each race's own election, and lowers pooled
+RMSE by **+1.700 [+1.128, +2.255]** — roughly twice what the year intercept
+was worth. The effect is concentrated in open seats (+3.686
+[+2.481, +4.872]) and undecided against a Democratic incumbent.
+
+Money is never read from OCPF's published cumulative figure, which is a full
+calendar-year total fetched after the fact and therefore includes money raised
+after the polls closed — 28% and 70% of two cycles' totals for one Boston
+filer. Every figure is reconstructed from report line items over a window
+ending at a stated pre-election date. **The result is not evidence that
+spending changes outcomes**; see
+[`docs/money_results.md`](docs/money_results.md#endogeneity).
+
 ### Accuracy under the adopted definition
 
 | Variant | Segment | Races | RMSE | Coverage (90%) | Win accuracy |
@@ -362,20 +389,31 @@ term adds variance without adding signal, exactly as anticipated.
 | `baseline` | Special elections | 24 | 24.76 | 0.708 | 0.833 |
 | `baseline_national_env` | Pooled | 413 | 14.24 | 0.923 | 0.915 |
 | `baseline_national_env` | General elections | 389 | 13.55 | 0.931 | 0.915 |
-| `baseline_national_env` | Special elections | 24 | **22.68** | **0.792** | **0.917** |
-| `baseline_year` | Pooled | 413 | **14.21** | **0.927** | **0.927** |
-| `baseline_year` | General elections | 389 | **13.45** | **0.938** | **0.933** |
+| `baseline_national_env` | Special elections | 24 | 22.68 | 0.792 | **0.917** |
+| `baseline_year` | Pooled | 413 | 14.21 | **0.927** | **0.927** |
+| `baseline_year` | General elections | 389 | 13.45 | **0.938** | **0.933** |
 | `baseline_year` | Special elections | 24 | 23.25 | 0.750 | 0.833 |
+| `baseline_money_logratio` | Pooled | 398 | **13.37** | 0.895 | 0.920 |
+| `baseline_money_logratio` | General elections | 376 | **12.81** | 0.904 | 0.928 |
+| `baseline_money_logratio` | Special elections | 22 | **20.73** | 0.727 | 0.773 |
 
 These supersede the baseline table above but are not the same measurement:
 different races and a different response. `current` stays registered and
 scorable, so the earlier figures remain reproducible.
 
-The two adopted variants are close on pooled RMSE and differ in where they
-help. `baseline_year` is better on general elections and on win accuracy;
-`baseline_national_env` is better on special elections and is the only one
-usable for a forward prediction. Neither is a strict improvement on the
-other.
+**The money row is scored on 398 races, not 413.** It excludes the 15 holdout
+races where a candidate could not be resolved to an OCPF filer, because a
+missing filer and a candidate who raised nothing are different facts and the
+variant may not impute one into the other. The paired comparison above scores
+both models on those same 398 races, so it is a like-for-like difference.
+
+Of the three, `baseline_money_logratio` is much the most accurate, including
+on special elections, which are the model's worst segment. It loses a little
+interval calibration relative to `baseline_year` and gives up the ability to
+score the 15 unmatched races at all. `baseline_year` is best calibrated;
+`baseline_national_env` is the only one of the older pair usable for a forward
+prediction, and the money term is too — a figure measured 14 days out is
+knowable before the election it predicts.
 
 ## Open Issues
 

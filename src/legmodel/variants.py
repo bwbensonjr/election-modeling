@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+import numpy as np
 import pandas as pd
 
 from . import config
@@ -90,6 +91,81 @@ DERIVED = {
     },
 }
 
+# The money windows the race table carries, each named by how far before a
+# race's own election it was measured. The window is trailing rather than
+# calendar year-to-date, so a January special is measured over the year its
+# campaign was actually funded in (design.md, D2).
+MONEY_WINDOWS = {
+    "primary": "14 days before the election",
+    "wide": "60 days before the election",
+}
+
+# Receipts rather than expenditures. Both are collected, and the same contrasts
+# are available over either, but spending is closer to the outcome in time and
+# more likely to respond to a race already tightening (design.md, D5).
+MONEY_MEASURE = "receipts"
+
+# In thousands of dollars, so the coefficient on an absolute advantage is
+# readable in margin points per thousand rather than per dollar.
+MONEY_DIFF_SCALE = 1000.0
+
+
+def money_columns(window: str) -> tuple[str, str]:
+    """The race table's Democratic and opponent money columns for a window."""
+    return (
+        f"dem_{MONEY_MEASURE}_{window}",
+        f"opp_{MONEY_MEASURE}_{window}",
+    )
+
+
+def money_as_of_column(window: str) -> str:
+    return f"money_as_of_{window}"
+
+
+# Four contrasts over the same two columns, all oriented so that a larger value
+# is a Democratic advantage, because the response is a margin and a predictor
+# tracking one candidate's fundraising alone measures race salience rather than
+# advantage (design.md, D5). Which of them the data separates is the scoring
+# harness's question, not one to settle by argument here.
+for _window, _when in MONEY_WINDOWS.items():
+    _dem, _opp = money_columns(_window)
+    DERIVED.update(
+        {
+            f"money_share_{_window}": {
+                "from": (_dem, _opp),
+                "description": (
+                    "the Democratic share of the race's total receipts as of "
+                    f"{_when}; 0.5 when the two sides raised the same"
+                ),
+            },
+            f"money_logratio_{_window}": {
+                "from": (_dem, _opp),
+                "description": (
+                    "log of the ratio of Democratic to opponent receipts as of "
+                    f"{_when}, each offset by a dollar so a genuine zero is "
+                    "admitted; 0 when the two sides raised the same"
+                ),
+            },
+            f"money_diff_{_window}": {
+                "from": (_dem, _opp),
+                "description": (
+                    "Democratic minus opponent receipts as of "
+                    f"{_when}, in thousands of dollars; 0 when the two sides "
+                    "raised the same"
+                ),
+            },
+            f"money_log_dem_{_window}": {
+                "from": (_dem,),
+                "description": f"log1p of Democratic receipts as of {_when}",
+            },
+            f"money_log_opp_{_window}": {
+                "from": (_opp,),
+                "description": f"log1p of opponent receipts as of {_when}",
+            },
+        }
+    )
+del _window, _when, _dem, _opp
+
 # A predictor computed from the fold year's own results would leak the outcome
 # into the fit. None of the derived predictors may be built from these.
 OUTCOME_COLUMNS = frozenset(
@@ -169,6 +245,21 @@ def derive(races: "pd.DataFrame") -> "pd.DataFrame":
         frame["pres_elec_x_incumbent_gop"] = pres * (
             frame["incumbent_status"] == "GOP_Incumbent"
         ).astype(int)
+    for window in MONEY_WINDOWS:
+        dem_column, opp_column = money_columns(window)
+        if dem_column not in frame.columns or opp_column not in frame.columns:
+            continue
+        # Missing money stays missing through every contrast. A race whose
+        # filer was never found must not arrive at the fit as a candidate who
+        # raised nothing (design.md, D4), and a variant carrying one of these
+        # predictors is refused before it can (`check_complete`).
+        dem, opp = frame[dem_column], frame[opp_column]
+        total = dem + opp
+        frame[f"money_share_{window}"] = (dem / total).where(total > 0)
+        frame[f"money_logratio_{window}"] = np.log((dem + 1.0) / (opp + 1.0))
+        frame[f"money_diff_{window}"] = (dem - opp) / MONEY_DIFF_SCALE
+        frame[f"money_log_dem_{window}"] = np.log1p(dem)
+        frame[f"money_log_opp_{window}"] = np.log1p(opp)
     return frame
 
 
@@ -267,6 +358,36 @@ DATED_PREDICTORS = {}
 def register_dated(predictor: str, as_of_column: str) -> None:
     """Declare that a predictor is knowable only during its fold year."""
     DATED_PREDICTORS[predictor] = as_of_column
+
+
+# Every money contrast is knowable only during the election year, and the date
+# it was measured to is a property of the race rather than of the run: the
+# window ends a fixed number of days before each race's own election, so the
+# calendar date differs from race to race and is carried in the table.
+for _window in MONEY_WINDOWS:
+    for _form in ("share", "logratio", "diff", "log_dem", "log_opp"):
+        register_dated(f"money_{_form}_{_window}", money_as_of_column(_window))
+del _window, _form
+
+# What a variant writes in `as_of` when its predictors were measured a fixed
+# distance before each race's own election rather than on one calendar date.
+# The per-race dates are in the column `DATED_PREDICTORS` names.
+RELATIVE_AS_OF = {
+    window: f"election-{lead}d"
+    for window, lead in (("primary", 14), ("wide", 60))
+}
+
+
+class MissingPredictorValueError(ValueError):
+    """A variant's predictor is missing for a race it would be fit on.
+
+    A money figure is missing where the candidate could not be matched to a
+    filer, which is a different fact from a candidate who raised nothing. A
+    variant carrying such a predictor has to say what it does about those
+    races -- filter them out, or carry an explicit unknown indicator -- and is
+    refused here rather than allowed to impute (campaign-finance spec, "A
+    filer with no money is distinct from no filer").
+    """
 
 
 class MissingAsOfDateError(ValueError):
@@ -382,8 +503,16 @@ class Variant:
     tune: int | None = None
     # The as-of date every dated predictor this variant carries was measured
     # to. Required when a predictor is not knowable before the fold year, and
-    # published with every fit either way.
+    # published with every fit either way. Either a calendar date, or one of
+    # the `RELATIVE_AS_OF` declarations, for a predictor measured a fixed
+    # distance before each race's own election.
     as_of: str = ""
+    # Boolean columns a race must carry for this variant to be fit on it. This
+    # is how a variant says what it does about races whose predictor is
+    # unavailable: it excludes them, and its holdout count is published
+    # alongside the baseline's so the cost of excluding them is visible
+    # (design.md, D4).
+    requires: tuple[str, ...] = ()
 
     @property
     def formula(self) -> str:
@@ -436,6 +565,7 @@ class Variant:
         available = set(columns) | set(DERIVED)
         missing = [p for p in self.predictors if p not in available]
         missing += [g for g in self.group_effects if g not in set(columns)]
+        missing += [c for c in self.requires if c not in set(columns)]
         if missing:
             raise UnknownPredictorError(
                 f"variant {self.name!r} names {missing} which the race table "
@@ -537,6 +667,54 @@ register(
 )
 
 
+# The money sweep. Four contrasts over the same two columns, registered rather
+# than reasoned down to one, because which of them the data separates is the
+# question the harness exists to answer and the standing rule is that a
+# comparison whose interval spans zero is published as undecided rather than
+# settled by argument (design.md, D5).
+#
+# Each is registered at both windows. The primary window ends 14 days before
+# each race's election -- late enough to have captured the campaign, early
+# enough to be a forecast, and just before the pre-election reporting deadline
+# rather than after it. The second exists so the sensitivity of any result to
+# that cutoff is measurable rather than assumed (design.md, D2).
+MONEY_FORMS = {
+    "share": ("money_share_{window}",),
+    "logratio": ("money_logratio_{window}",),
+    "diff": ("money_diff_{window}",),
+    "both": ("money_log_dem_{window}", "money_log_opp_{window}"),
+}
+
+MONEY_FORM_DESCRIPTIONS = {
+    "share": "the Democratic share of the race's total receipts",
+    "logratio": "the log ratio of Democratic to opponent receipts",
+    "diff": "the Democratic receipts advantage in thousands of dollars",
+    "both": "log receipts for each side as separate terms",
+}
+
+for _window in MONEY_WINDOWS:
+    _suffix = "" if _window == "primary" else f"_{_window}"
+    for _form, _terms in MONEY_FORMS.items():
+        register(
+            Variant(
+                name=f"baseline_money_{_form}{_suffix}",
+                predictors=BASELINE_PREDICTORS
+                + tuple(term.format(window=_window) for term in _terms),
+                # Races where a candidate could not be matched to a filer are
+                # excluded rather than imputed: a missing filer and a candidate
+                # who raised nothing are different facts, and a fake zero would
+                # land exactly where the match is hardest (design.md, D4).
+                requires=("money_complete",),
+                as_of=RELATIVE_AS_OF[_window],
+                description=(
+                    f"the baseline plus {MONEY_FORM_DESCRIPTIONS[_form]}, "
+                    f"measured {MONEY_WINDOWS[_window]}"
+                ),
+            )
+        )
+del _window, _suffix, _form, _terms
+
+
 def get(name: str) -> Variant:
     try:
         return REGISTRY[name]
@@ -556,26 +734,107 @@ def resolve(names=None) -> list[Variant]:
     return [get(name) for name in names]
 
 
-def check_as_of(variant: "Variant", election_dates) -> None:
+def restrict(variant: "Variant", races: "pd.DataFrame") -> "pd.DataFrame":
+    """The races a variant's declared requirements admit.
+
+    Applied before the folds are built, so a variant that excludes a race
+    excludes it from training as well as from scoring, and its published
+    holdout count is the count it was actually scored on.
+    """
+    if not variant.requires:
+        return races
+    keep = pd.Series(True, index=races.index)
+    for column in variant.requires:
+        if column not in races.columns:
+            raise UnknownPredictorError(
+                f"variant {variant.name!r} requires column {column!r}, which "
+                "the race table does not carry"
+            )
+        keep &= races[column].astype(bool)
+    return races[keep].copy()
+
+
+def check_complete(variant: "Variant", prepared: "pd.DataFrame", where: str) -> None:
+    """Refuse a variant whose predictor is missing for a race it would use."""
+    incomplete = {}
+    for predictor in variant.predictors:
+        for column in expand(predictor):
+            if column not in prepared.columns:
+                continue
+            missing = int(prepared[column].isna().sum())
+            if missing:
+                incomplete[column] = missing
+    if incomplete:
+        detail = ", ".join(f"{c} on {n} races" for c, n in sorted(incomplete.items()))
+        raise MissingPredictorValueError(
+            f"variant {variant.name!r} has missing predictor values in its "
+            f"{where}: {detail}. Declare `requires` so the variant excludes "
+            "those races, or carry an explicit unknown indicator; the one "
+            "thing it may not do is impute"
+        )
+
+
+def check_as_of(variant: "Variant", holdout) -> None:
     """Refuse a dated predictor measured on or after the election it predicts.
 
     The whole point of measuring money to a stated date is that the date falls
     before the votes are cast. A date on or after election day would be reading
     the result, so it is refused rather than fit (margin-model spec, "The as-of
     date is before the election it predicts").
-    """
-    import pandas as pd
 
+    A variant declaring a calendar date is checked against the earliest
+    election it predicts. A variant whose predictors were measured a fixed
+    distance before each race's own election has a different date per race, so
+    it is checked per race against the column carrying them -- which is the
+    stronger check, since it reaches every race rather than only the earliest.
+    """
     if not variant.as_of:
         return
-    as_of = pd.Timestamp(variant.as_of)
-    dates = pd.to_datetime(pd.Series(list(election_dates)).dropna())
+    frame = holdout if isinstance(holdout, pd.DataFrame) else None
+    dates = pd.Series(
+        list(frame["election_date"]) if frame is not None else list(holdout)
+    )
+    dates = pd.to_datetime(dates.dropna())
     if dates.empty:
         return
-    earliest = dates.min()
-    if as_of >= earliest:
-        raise AsOfDateAfterElectionError(
-            f"variant {variant.name!r} declares as_of {variant.as_of}, which is "
-            f"on or after the election on {earliest.date()}; a predictor "
-            "measured then would be reading the result"
+
+    if variant.as_of not in RELATIVE_AS_OF.values():
+        as_of = pd.Timestamp(variant.as_of)
+        earliest = dates.min()
+        if as_of >= earliest:
+            raise AsOfDateAfterElectionError(
+                f"variant {variant.name!r} declares as_of {variant.as_of}, which is "
+                f"on or after the election on {earliest.date()}; a predictor "
+                "measured then would be reading the result"
+            )
+        return
+
+    dated = [p for p in variant.predictors if p in DATED_PREDICTORS]
+    if not dated:
+        raise MissingAsOfDateError(
+            f"variant {variant.name!r} declares the relative as_of "
+            f"{variant.as_of!r} but carries no dated predictor to measure"
         )
+    if frame is None:
+        raise AsOfDateAfterElectionError(
+            f"variant {variant.name!r} declares the relative as_of "
+            f"{variant.as_of!r}, whose date differs per race, so it cannot be "
+            "checked against election dates alone"
+        )
+    for column in sorted({DATED_PREDICTORS[p] for p in dated}):
+        if column not in frame.columns:
+            raise MissingAsOfDateError(
+                f"variant {variant.name!r} names dated predictors measured to "
+                f"{column!r}, which the race table does not carry"
+            )
+        measured = pd.to_datetime(frame[column])
+        late = measured >= pd.to_datetime(frame["election_date"])
+        if late.any():
+            first = frame[late].iloc[0]
+            raise AsOfDateAfterElectionError(
+                f"variant {variant.name!r} would be fit on {int(late.sum())} "
+                f"races whose {column} falls on or after their own election, "
+                f"beginning with election {first['election_id']} "
+                f"({first[column]} against {first['election_date']}); a "
+                "predictor measured then would be reading the result"
+            )

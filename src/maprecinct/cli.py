@@ -8,6 +8,7 @@ Stages are ordered by dependency and can be run individually or together:
     uv run maprecinct pvi
     uv run maprecinct training
     uv run maprecinct races
+    uv run maprecinct finance
     uv run maprecinct validate
     uv run maprecinct all
 """
@@ -63,6 +64,9 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("pvi", help="compute precinct PVI for every required dataset")
     sub.add_parser("training", help="assemble the race-precinct training table")
     sub.add_parser("races", help="roll the training table up to one row per race")
+    sub.add_parser(
+        "finance", help="collect OCPF campaign finance and rebuild the race table"
+    )
     sub.add_parser("validate", help="run the PVI and training validations")
     sub.add_parser("all", help="run every stage in order")
 
@@ -88,14 +92,31 @@ def main(argv: list[str] | None = None) -> int:
         from . import races
 
         races.build_and_write()
+    elif args.command == "finance":
+        from . import finance
+
+        finance.build_and_write()
     elif args.command == "validate":
-        from . import races, validate, validate_training
+        import pandas as pd
+
+        from . import finance, races, validate, validate_training
 
         validate.run()
         validate_training.run()
         races.validate_rollup()
+        finance.check_consistency(pd.read_csv(races.RACE_FILE))
     elif args.command == "all":
-        from . import districts, pvi, races, training, validate, validate_training
+        import pandas as pd
+
+        from . import (
+            districts,
+            finance,
+            pvi,
+            races,
+            training,
+            validate,
+            validate_training,
+        )
 
         _fetch("all")
         _normalize()
@@ -103,9 +124,13 @@ def main(argv: list[str] | None = None) -> int:
         pvi.build_all()
         training.build_and_write()
         races.build_and_write()
+        # Resolution reads the race table, so the collection runs after it and
+        # rebuilds it with the money columns attached.
+        finance.build_and_write()
         validate.run()
         validate_training.run()
         races.validate_rollup()
+        finance.check_consistency(pd.read_csv(races.RACE_FILE))
     else:
         return 1
 

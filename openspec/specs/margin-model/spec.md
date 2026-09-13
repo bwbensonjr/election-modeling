@@ -221,11 +221,18 @@ ambiguous about which response it was fit against.
 - **THEN** the system fails with an error naming the predictor and the
   definition, rather than fitting a degenerate design matrix
 
-### Requirement: A predictor must be knowable before its fold year
+### Requirement: A predictor must be knowable before its fold year's election
 
 Every predictor a variant uses SHALL be derivable from information available
-before its fold year begins. A variant SHALL NOT use a quantity that can only
-be known once the fold year's elections have occurred.
+before its fold year's election occurs. A variant SHALL NOT use a quantity
+that can only be known once that election has happened.
+
+A predictor that is knowable before the fold year *begins* satisfies this by a
+wider margin, and SHALL be treated as the stronger case. A predictor that
+becomes knowable only during the fold year SHALL declare an explicit as-of
+date, and that date SHALL be published with every fit that uses the predictor,
+because a dated predictor's value is meaningless without it and the choice of
+date is the difference between a forecast and a postdiction.
 
 #### Scenario: A year effect is specified so the holdout year is predictable
 
@@ -250,6 +257,27 @@ be known once the fold year's elections have occurred.
 - **WHEN** a variant declares a predictor computed from the fold year's own
   results
 - **THEN** the system refuses to score it and names the predictor
+
+#### Scenario: A predictor knowable only during the fold year declares a date
+
+- **WHEN** a variant declares a predictor that cannot be derived before the
+  fold year begins
+- **THEN** the variant declares an as-of date for it
+- **AND** a variant that declares such a predictor without an as-of date is
+  refused with an error naming the predictor
+
+#### Scenario: The as-of date is before the election it predicts
+
+- **WHEN** a dated predictor is used for a fold
+- **THEN** its as-of date falls strictly before that fold's election date
+- **AND** a date on or after the election date is refused rather than fit
+
+#### Scenario: The as-of date is published with the result
+
+- **WHEN** a fit using a dated predictor is published
+- **THEN** the as-of date is carried in that fit's published record
+- **AND** two fits of the same variant at different as-of dates are
+  distinguishable in the published outputs
 
 ### Requirement: A predictor constant within a grouping level is rejected
 
@@ -344,3 +372,45 @@ answered by the existing scoring harness.
 - **THEN** both results are published
 - **AND** the report states whether the term carries information the two-party
   response already absorbs
+
+### Requirement: Campaign-finance variants are registered as a contrast sweep
+
+The system SHALL register variants carrying candidate campaign finance, and
+they SHALL express the money as a contrast between the race's candidates
+rather than as a single candidate's amount, so the predictor has the same
+orientation as the response.
+
+At minimum the registered contrasts SHALL include the signed difference in
+money between the Democratic and Republican candidates, the Democratic share
+of the race's total money, and a ratio on the log scale. Each SHALL be scored
+by the existing harness under every scored definition.
+
+#### Scenario: The money contrast is oriented like the response
+
+- **WHEN** a money variant is declared
+- **THEN** its predictor increases when the Democratic candidate has the money
+  advantage
+- **AND** a race with no money advantage in either direction takes a value of
+  zero, or the scale's neutral point
+
+#### Scenario: A money measure that does not separate is reported as undecided
+
+- **WHEN** a money variant is compared to the baseline
+- **THEN** the paired comparison is reported under the existing rule
+- **AND** a measure whose interval spans zero is published as undecided rather
+  than being dropped from the writeup
+
+#### Scenario: A zero-money race is distinguished from an unknown-money race
+
+- **WHEN** a race's money is unavailable because a candidate could not be
+  matched
+- **THEN** the race is not fit as though the candidate raised nothing
+- **AND** the variant either excludes the race or carries an explicit
+  indicator that the money is unknown
+
+#### Scenario: The money effect is reported by incumbency
+
+- **WHEN** a money variant is scored
+- **THEN** its effect is reported within each incumbency segment as well as
+  pooled
+- **AND** a measure that helps only in open seats is identifiable as such

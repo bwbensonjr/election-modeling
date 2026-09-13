@@ -148,6 +148,14 @@ two_party_or_strongest,165499,2024,State Representative,1st Worcester,fails elig
 two_party_or_strongest,165404,2024,State Representative,22nd Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
 two_party_or_strongest,165371,2024,State Representative,2nd Franklin,fails eligibility criterion 'has_democrat': a Democrat stood
 two_party_or_strongest,165377,2024,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+write_in_5pct,126188,2014,State Representative,22nd Middlesex,fewer than two candidates at a 5% write-in threshold
+write_in_5pct,126285,2014,State Representative,5th Hampden,fewer than two candidates at a 5% write-in threshold
+write_in_5pct,140929,2020,State Representative,10th Norfolk,fewer than two candidates at a 5% write-in threshold
+write_in_5pct,140800,2020,State Senate,4th Middlesex,fewer than two candidates at a 5% write-in threshold
+write_in_5pct,140796,2020,State Senate,Cape and Islands,fewer than two candidates at a 5% write-in threshold
+write_in_5pct,154500,2022,State Representative,13th Essex,fewer than two candidates at a 5% write-in threshold
+write_in_5pct,160299,2023,State Representative,9th Suffolk,fewer than two candidates at a 5% write-in threshold
+write_in_5pct,160911,2024,State Representative,6th Worcester,fewer than two candidates at a 5% write-in threshold
 no_dem_excluded,126188,2014,State Representative,22nd Middlesex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
 no_dem_excluded,126285,2014,State Representative,5th Hampden,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
 no_dem_excluded,140929,2020,State Representative,10th Norfolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
@@ -181,11 +189,3 @@ no_dem_train_only,154500,2022,State Representative,13th Essex,"fails eligibility
 no_dem_train_only,160299,2023,State Representative,9th Suffolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
 no_dem_train_only,160911,2024,State Representative,6th Worcester,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
 no_dem_train_only,165453,2024,State Representative,2nd Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-write_in_5pct,126188,2014,State Representative,22nd Middlesex,fewer than two candidates at a 5% write-in threshold
-write_in_5pct,126285,2014,State Representative,5th Hampden,fewer than two candidates at a 5% write-in threshold
-write_in_5pct,140929,2020,State Representative,10th Norfolk,fewer than two candidates at a 5% write-in threshold
-write_in_5pct,140800,2020,State Senate,4th Middlesex,fewer than two candidates at a 5% write-in threshold
-write_in_5pct,140796,2020,State Senate,Cape and Islands,fewer than two candidates at a 5% write-in threshold
-write_in_5pct,154500,2022,State Representative,13th Essex,fewer than two candidates at a 5% write-in threshold
-write_in_5pct,160299,2023,State Representative,9th Suffolk,fewer than two candidates at a 5% write-in threshold
-write_in_5pct,160911,2024,State Representative,6th Worcester,fewer than two candidates at a 5% write-in threshold

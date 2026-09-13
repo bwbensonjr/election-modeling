@@ -63,8 +63,9 @@ def check_compatible(
     """
     variant.validate(races.columns)
     # Expanded against the prepared frame: a categorical's indicator columns
-    # only exist once `prepare` has built them.
-    prepared = variants.prepare(races)
+    # only exist once `prepare` has built them, and a derived predictor only
+    # exists once `derive` has computed it.
+    prepared = variants.prepare(variants.restrict(variant, races))
     degenerate = [
         column
         for predictor in variant.predictors
@@ -75,9 +76,13 @@ def check_compatible(
         raise fitmod.UnidentifiablePredictorError(
             f"variant {variant.name!r} names {degenerate}, which "
             f"{'is' if len(degenerate) == 1 else 'are'} constant across all "
-            f"{len(races)} races that definition {definition.name!r} admits, so "
-            "the effect cannot be estimated under this definition"
+            f"{len(prepared)} races that definition {definition.name!r} admits "
+            f"and variant {variant.name!r} requires, so the effect cannot be "
+            "estimated under this definition"
         )
+    # Nothing downstream may fill a missing predictor in: a race whose money is
+    # unknown is excluded by the variant's own `requires`, never imputed.
+    variants.check_complete(variant, prepared, "admitted races")
 
 
 def score_variant(
@@ -86,13 +91,20 @@ def score_variant(
     definition: definitions.Definition,
 ) -> tuple:
     """Fit and predict every fold for one variant under one definition."""
-    built, skipped = folds.build(races)
+    admitted = variants.restrict(variant, races)
+    if len(admitted) != len(races):
+        print(
+            f"    {variant.name} requires [{', '.join(variant.requires)}]: "
+            f"{len(admitted)} of {len(races)} races admitted, "
+            f"{len(races) - len(admitted)} excluded"
+        )
+    built, skipped = folds.build(admitted)
     predictions, coefficients, diagnostics = [], [], []
 
     for fold in built:
         # A dated predictor must have been measured before the election it
         # predicts, checked per fold against that fold's own holdout races.
-        variants.check_as_of(variant, fold.holdout["election_date"])
+        variants.check_as_of(variant, fold.holdout)
         try:
             fitted = fitmod.fit(
                 variant, fold.train, fold=fold.year, definition=definition.name
@@ -119,6 +131,9 @@ def score_variant(
                 f"{fold.n_holdout:>3}  REFUSED -- {exc}"
             )
             continue
+        variants.check_complete(
+            variant, variants.prepare(fold.holdout), f"fold {fold.year} holdout"
+        )
         draws = fitted.predict_draws(fold.holdout)
         per_race = metrics.per_race(draws, fold.holdout["response"].to_numpy())
 
@@ -209,6 +224,16 @@ def scorecard(
             for definition, name, fold in refused
             if name == variant_name and definition == definition_name
         )
+        # A fold a variant's own race restriction emptied. Reported rather than
+        # left to the absence of a row: "this variant excluded every race that
+        # year" and "nobody scored that year" must not look the same, which is
+        # the same reason `skipped_years` exists at the definition level.
+        variant_absent = sorted(
+            set(folds.ELIGIBLE_FOLD_YEARS)
+            - set(group["fold"].unique())
+            - set(variant_refused)
+            - set(skipped)
+        )
 
         # Pooled over races, not averaged over folds: the 2023 fold holds one
         # race and the 2014 fold holds 95.
@@ -234,6 +259,7 @@ def scorecard(
                 "pres_bias_gap": bias_presidential - bias_midterm,
                 "folds_failing_diagnostics": ",".join(str(f) for f in variant_failed),
                 "folds_refused": ",".join(str(f) for f in variant_refused),
+                "folds_absent": ",".join(str(f) for f in variant_absent),
                 "as_of": ",".join(variant_as_of),
             }
         )
@@ -295,6 +321,7 @@ def scorecard(
         "pres_bias_gap",
         "folds_failing_diagnostics",
         "folds_refused",
+        "folds_absent",
         "as_of",
         "skipped_years",
     ]

@@ -21,8 +21,19 @@ BOOTSTRAP_SEED = 20260912
 INTERVAL_PERCENTILES = (5, 95)
 
 # Segments reported alongside the pooled difference. The special-election one
-# is the point of the first comparison this harness runs.
-COMPARISON_SEGMENTS = ["is_special", "office", "pres_elec", "no_dem_candidate"]
+# is the point of the first comparison this harness runs; `incumbent_status` is
+# the point of the money comparisons, where the prior is specific -- money
+# should matter most in an open seat and least against an entrenched incumbent,
+# and a pooled null that hid an open-seat effect would be a wrong conclusion
+# rather than an incomplete one (model-scoring spec, "The money sweep is
+# reported per incumbency segment").
+COMPARISON_SEGMENTS = [
+    "is_special",
+    "office",
+    "pres_elec",
+    "no_dem_candidate",
+    "incumbent_status",
+]
 
 
 def term_difference(left: str, right: str) -> tuple[list, list]:
@@ -69,7 +80,10 @@ def paired_frame(
     """
     predictions = predictions[predictions["definition"] == definition]
     columns = ["election_id", "fold", "squared_error", "observed", "prediction"]
-    a = predictions[predictions["variant"] == left][columns + score.SEGMENTS]
+    segments = score.SEGMENTS + [
+        s for s in COMPARISON_SEGMENTS if s not in score.SEGMENTS
+    ]
+    a = predictions[predictions["variant"] == left][columns + segments]
     b = predictions[predictions["variant"] == right][columns]
     if a.empty or b.empty:
         raise ValueError(f"no holdout predictions for {left!r} or {right!r}")
@@ -120,6 +134,10 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
         "verdict": verdict,
         "races_favouring_left": int((paired["squared_error_difference"] < 0).sum()),
         "races_favouring_right": int((paired["squared_error_difference"] > 0).sum()),
+        # Marked rather than omitted: a segment too small to carry weight is
+        # still evidence about where a variant helps, and suppressing it would
+        # hide the odd-year folds, which are the special-election evidence.
+        "small_sample": len(paired) < score.SMALL_SAMPLE,
     }
 
 
@@ -195,6 +213,7 @@ def run(
                 "ci_low",
                 "ci_high",
                 "verdict",
+                "small_sample",
             ]
         ]
         .round(4)

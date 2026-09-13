@@ -36,8 +36,14 @@ uv run maprecinct normalize      # normalize payloads and reconcile totals
 uv run maprecinct districts      # derive precinct-to-district mappings
 uv run maprecinct pvi            # compute precinct PVI
 uv run maprecinct training       # assemble the training table
+uv run maprecinct races          # roll the training table up to the race
+uv run maprecinct finance        # collect OCPF campaign finance (network)
 uv run maprecinct validate       # compare against mapoli's published values
 ```
+
+`finance` runs after `races` because candidate resolution reads the race
+table, and it rebuilds that table with the money columns attached when it is
+done.
 
 ## Rebuilding from cache
 
@@ -49,7 +55,8 @@ without refetching:
 ```bash
 uv run maprecinct normalize && uv run maprecinct districts \
   && uv run maprecinct pvi && uv run maprecinct training \
-  && uv run maprecinct races && uv run maprecinct validate
+  && uv run maprecinct races && uv run maprecinct finance \
+  && uv run maprecinct validate
 ```
 
 `cache/` is gitignored. Deleting it costs a full refetch; deleting anything
@@ -62,6 +69,54 @@ uv run maprecinct fetch presidential --force
 
 The 2001-cycle precinct boundary layer is downloaded into `cache/gis/` the
 first time a stage needs it.
+
+## Campaign finance
+
+`maprecinct finance` attaches OCPF campaign finance to each race, at candidate
+grain, and writes `data/race/ma_race_finance.csv.gz`. It needs `ocpf>=0.4.2`
+on the path, which `uv sync` installs.
+
+It runs in two stages, separated because the uncertainty lives entirely in the
+first.
+
+**Resolution.** Each race's candidate roster comes from `ocpf race --json`,
+with `--special` for a special election, addressed by district code wherever
+the present map still carries the district. Candidates are then matched to
+filers *within that district-year*, where a roster holds one to eight names:
+surname first, allowing multi-word surnames, with a given-name prefix breaking
+a shared surname. A statewide cross-year index was tried and rejected -- it
+matched `Leah Cole` to `Cole, Stephen R.`, and a wrong match is worse than no
+match, because it attributes one campaign's money to another candidate.
+
+The matching rule used is recorded on every candidate row. **1,244 of 1,266
+candidates match, 98.3%**, against a 76-84% baseline measured for a naive
+surname match. The 22 that do not are published with the filers that were
+considered in `data/reports/ocpf_unmatched_candidates.csv`, and 10 of them sat
+in a district-year whose roster held a single filer -- their opponent never
+registered a committee at all.
+
+**Collection.** For each matched candidate, receipts and expenditures are
+totalled over **the 365 days ending a fixed number of days before that race's
+own election**: 14 days for the `primary` window and 60 for the `wide` one.
+The figures are reconstructed from report line items through `search/items`
+with `withSummary=true`, which returns a date-bounded count and total in one
+call and works uniformly back to 2010.
+
+The published cumulative totals are never used as the measure. Fetched after a
+cycle, OCPF's "year to date" figure reports the whole calendar year -- 411 of
+428 rows in 2020 carry a bank report end date of 12/31 -- so it includes money
+raised after the polls closed. For one Boston filer that is 28% of the 2024
+total and 70% of the 2020 total.
+
+The window is trailing rather than calendar year-to-date, and relative to each
+race's own election rather than to a fixed date, because a special election
+held in January is funded in the previous calendar year and a race held in
+March has no October.
+
+Responses are cached under `cache/ocpf/`, keyed by endpoint and query, and
+each `ocpf` invocation's output is cached too, so a rerun costs neither a
+subprocess nor a request. The run reports its cache hits and fetches when it
+finishes.
 
 ## Scope
 
@@ -90,6 +145,7 @@ Every stage writes its checks to `data/reports/` rather than failing silently.
 | `training_excluded_races.csv` | Races kept out of the training table, with the reason |
 | `training_missing_pvi.csv` | Training rows with no PVI value |
 | `training_rollup_validation.csv` | District rollups against the existing district-level table, with each divergence categorised |
+| `ocpf_unmatched_candidates.csv` | Candidates no OCPF filer could be resolved for, with the race, the district and the filers considered. Written even when empty |
 
 An empty report is the expected outcome for the reconciliation checks. The
 validation reports are expected to be non-empty and are interpreted, not
@@ -104,6 +160,13 @@ merely counted: see `schema.md` for what the categories mean.
 
 The cache holds 7.1 MB across 1,657 payloads. One legislative election is
 rejected rather than cached, leaving 1,650 usable; see below.
+
+`maprecinct finance` is a separate cold cost: 7,238 cached OCPF responses at
+30 MB, of which 637 are `ocpf` CLI invocations for the rosters and 6,601 are
+`search/items` summaries, roughly one per matched candidate per window per
+category. `cache/ocpf/` is gitignored like the rest of `cache/`, so a fresh
+checkout refetches it; the tables it produces are committed, and every stage
+after collection reads only those.
 
 ## Known upstream discrepancies
 

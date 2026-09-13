@@ -95,6 +95,12 @@ RACE_COLUMNS = [
     "precincts_split_across_districts",
 ]
 
+# The candidate-grain campaign finance table, rolled up to the race and
+# appended to `RACE_COLUMNS` when it exists. The race table is published
+# without money until the collection has been run, so the money columns are
+# conditional rather than required (campaign-finance spec).
+CANDIDATE_FINANCE = RACE_DIR / "ma_race_finance.csv.gz"
+
 
 class InconsistentRaceError(ValueError):
     """A race's precinct rows disagree on an attribute that describes the race."""
@@ -231,6 +237,38 @@ def district_pvi(rows: pd.DataFrame) -> pd.DataFrame:
     return agg.reset_index()
 
 
+def attach_money(races: pd.DataFrame) -> tuple[pd.DataFrame, list]:
+    """Add the campaign-finance columns rolled up from the candidate table.
+
+    Derived from the published candidate rows rather than recomputed, so the
+    race row and the candidate rows cannot disagree, and checked against them
+    before the table is written (race-training-set spec, "A race row agrees
+    with its candidate rows").
+    """
+    from . import finance
+
+    if not CANDIDATE_FINANCE.exists():
+        print(
+            f"SKIP campaign finance: {CANDIDATE_FINANCE.relative_to(config.ROOT)} "
+            "not found (run `uv run maprecinct finance` to collect it)"
+        )
+        return races, []
+    money = finance.race_money(pd.read_csv(CANDIDATE_FINANCE))
+    merged = races.merge(money, on="election_id", how="left")
+    absent = merged["money_candidates_total"].isna()
+    if absent.any():
+        raise finance.MoneyDisagreementError(
+            f"{int(absent.sum())} races have no candidate rows in "
+            f"{CANDIDATE_FINANCE.name}, beginning with election "
+            f"{merged.loc[absent, 'election_id'].iloc[0]}; rerun "
+            "`uv run maprecinct finance` after rebuilding the race table"
+        )
+    merged["money_candidates_matched"] = merged["money_candidates_matched"].astype(int)
+    merged["money_candidates_total"] = merged["money_candidates_total"].astype(int)
+    merged["money_complete"] = merged["money_complete"].astype(bool)
+    return merged, list(finance.RACE_MONEY_COLUMNS[1:])
+
+
 def build_rows(rows: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Assemble the race table and the PVI coverage report."""
     races = carry_attributes(rows)
@@ -267,7 +305,8 @@ def build_rows(rows: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     published["precincts_split_across_districts"] = published[
         "precincts_split_across_districts"
     ].astype(int)
-    published = published[RACE_COLUMNS].sort_values(
+    published, money_columns = attach_money(published)
+    published = published[RACE_COLUMNS + money_columns].sort_values(
         ["election_date", "office", "district_display"], ignore_index=True
     )
     return published, coverage
@@ -324,8 +363,11 @@ def response_shift_summary(races: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_and_write() -> pd.DataFrame:
+    from . import finance
+
     rows = pd.read_csv(training.TRAINING_FILE)
     races, coverage = build_rows(rows)
+    finance.check_consistency(races)
 
     build.write_csv(races, RACE_FILE)
     build.write_csv(build_roster(races["election_id"]), ROSTER_FILE)
