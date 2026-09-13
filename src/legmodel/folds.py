@@ -38,10 +38,20 @@ class Fold:
 
 
 def build(races: pd.DataFrame) -> tuple[list[Fold], list[int]]:
-    """The fold schedule, and the eligible years that produced no fold."""
+    """The fold schedule, and the eligible years that produced no fold.
+
+    A race a definition marks unscoreable still trains -- that is what the
+    train-only no-Democrat treatment means -- but never enters a holdout, so
+    the `scoreable` flag is applied to the holdout side only.
+    """
+    scoreable = (
+        races["scoreable"].astype(bool)
+        if "scoreable" in races.columns
+        else pd.Series(True, index=races.index)
+    )
     folds, skipped = [], []
     for year in ELIGIBLE_FOLD_YEARS:
-        holdout = races[races["election_year"] == year]
+        holdout = races[(races["election_year"] == year) & scoreable]
         if holdout.empty:
             skipped.append(year)
             continue

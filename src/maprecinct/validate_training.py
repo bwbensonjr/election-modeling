@@ -19,6 +19,12 @@ CATEGORY_AGREES = "agrees"
 CATEGORY_NO_DEM = "reference_no_democrat_precedence_bug"
 CATEGORY_MULTI_DEM = "reference_compares_against_second_democrat"
 CATEGORY_SLOT_LIMIT = "reference_denominator_omits_candidates"
+# The write-in threshold changed which races are contested, so these races
+# exist here and not in the reference at all. That is the intended effect of
+# design.md D2, not a disagreement about a race both sources carry, and it is
+# named rather than left to vanish in an inner join.
+CATEGORY_WRITE_IN_ADMITTED = "admitted_by_write_in_absent_from_reference"
+CATEGORY_ABSENT = "absent_from_reference"
 CATEGORY_UNEXPLAINED = "unexplained"
 
 # The published summary can describe at most four candidates per race.
@@ -38,7 +44,14 @@ def run(rows: pd.DataFrame | None = None) -> pd.DataFrame:
     summaries = config.general_summaries()
 
     rolled = rows.groupby(
-        ["election_id", "no_dem_candidate", "office", "district_display", "election_year"],
+        [
+            "election_id",
+            "no_dem_candidate",
+            "admitted_by_write_in",
+            "office",
+            "district_display",
+            "election_year",
+        ],
         as_index=False,
     )[["dem_votes", "opponent_votes", "candidate_votes"]].sum()
     rolled["rollup_margin"] = (
@@ -47,7 +60,7 @@ def run(rows: pd.DataFrame | None = None) -> pd.DataFrame:
     ) * 100
 
     merged = rolled.merge(
-        reference[["election_id", "dem_margin"]], on="election_id", how="inner"
+        reference[["election_id", "dem_margin"]], on="election_id", how="left"
     ).merge(
         summaries[["election_id", *SLOT_VOTE_COLUMNS]],
         on="election_id",
@@ -61,6 +74,15 @@ def run(rows: pd.DataFrame | None = None) -> pd.DataFrame:
     merged["difference"] = merged["rollup_margin"] - merged["dem_margin"]
 
     def categorise(row) -> str:
+        if pd.isna(row["dem_margin"]):
+            # The reference does not carry this race, so there is nothing to
+            # disagree with. A race the write-in threshold admitted is the
+            # expected case; anything else is a real gap worth seeing.
+            return (
+                CATEGORY_WRITE_IN_ADMITTED
+                if row["admitted_by_write_in"]
+                else CATEGORY_ABSENT
+            )
         if abs(row["difference"]) <= TOLERANCE:
             return CATEGORY_AGREES
         if row["no_dem_candidate"]:
@@ -90,6 +112,7 @@ def run(rows: pd.DataFrame | None = None) -> pd.DataFrame:
             "candidate_count",
             "dem_candidate_count",
             "no_dem_candidate",
+            "admitted_by_write_in",
         ]
     ].sort_values("difference", key=abs, ascending=False, ignore_index=True)
 

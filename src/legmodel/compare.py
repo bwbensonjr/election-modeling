@@ -21,13 +21,18 @@ INTERVAL_PERCENTILES = (5, 95)
 COMPARISON_SEGMENTS = ["is_special", "office", "pres_elec", "no_dem_candidate"]
 
 
-def paired_frame(predictions: pd.DataFrame, left: str, right: str) -> pd.DataFrame:
-    """One row per race carrying both variants' errors.
+def paired_frame(
+    predictions: pd.DataFrame, left: str, right: str, definition: str
+) -> pd.DataFrame:
+    """One row per race carrying both variants' errors, within one definition.
 
     An inner join on `election_id` is what enforces the pairing: a race missing
     from either variant's holdout leaves the comparison entirely, rather than
-    being scored for one side only.
+    being scored for one side only. Both sides are taken from the same
+    definition, so this compares variants; comparing definitions is a different
+    operation with different hazards (compare_definitions.py).
     """
+    predictions = predictions[predictions["definition"] == definition]
     columns = ["election_id", "fold", "squared_error", "observed", "prediction"]
     a = predictions[predictions["variant"] == left][columns + score.SEGMENTS]
     b = predictions[predictions["variant"] == right][columns]
@@ -83,22 +88,36 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
     }
 
 
-def run(left: str, right: str) -> pd.DataFrame:
+def run(
+    left: str,
+    right: str,
+    definition: str | None = None,
+    write: bool = True,
+) -> pd.DataFrame:
+    from . import definitions as definitions_module
+
     if not config.HOLDOUT_PREDICTIONS.exists():
         raise FileNotFoundError(
             f"{config.HOLDOUT_PREDICTIONS.relative_to(config.ROOT)} is missing; "
             "run `uv run legmodel score` first"
         )
+    definition = definition or definitions_module.adopted().name
     predictions = pd.read_csv(config.HOLDOUT_PREDICTIONS)
-    paired = paired_frame(predictions, left, right)
+    scoped = predictions[predictions["definition"] == definition]
+    if scoped.empty:
+        raise ValueError(
+            f"no holdout predictions under definition {definition!r}; "
+            f"scored definitions are {sorted(predictions['definition'].unique())}"
+        )
+    paired = paired_frame(predictions, left, right, definition)
 
     dropped = {
-        name: len(predictions[predictions["variant"] == name]) - len(paired)
+        name: len(scoped[scoped["variant"] == name]) - len(paired)
         for name in (left, right)
     }
     print(
-        f"paired comparison of {left!r} against {right!r} on {len(paired)} races "
-        f"held out by both"
+        f"paired comparison of {left!r} against {right!r} under definition "
+        f"{definition!r} on {len(paired)} races held out by both"
         + (f"; dropped {dropped}" if any(dropped.values()) else "")
     )
 
@@ -109,9 +128,11 @@ def run(left: str, right: str) -> pd.DataFrame:
             rows.append(_row(group, left, right, segment, str(value), rng))
 
     report = pd.DataFrame(rows)
+    report.insert(0, "definition", definition)
     report["bootstrap_resamples"] = BOOTSTRAP_RESAMPLES
     report["bootstrap_seed"] = BOOTSTRAP_SEED
-    config.write_csv(report.round(6), config.VARIANT_COMPARISON)
+    if write:
+        config.write_csv(report.round(6), config.VARIANT_COMPARISON)
 
     print()
     print(

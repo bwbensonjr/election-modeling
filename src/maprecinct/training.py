@@ -10,13 +10,19 @@ from __future__ import annotations
 
 import pandas as pd
 
-from . import build, config, crosswalk, pvi
+from . import build, candidates, config, crosswalk, pvi
 
 KEY = crosswalk.KEY
 
 TRAINING_FILE = config.PRECINCT_DIR / "ma_precinct_training_set.csv.gz"
 EXCLUDED_REPORT = "training_excluded_races.csv"
 MISSING_PVI_REPORT = "training_missing_pvi.csv"
+
+# The table is built at the most permissive rule -- any named write-in counts
+# as a candidate -- so that every stricter threshold is a filter over the
+# published table rather than a rebuild (design.md, D2). A definition applies
+# its own threshold downstream.
+BUILD_WRITE_IN_THRESHOLD = 0.0
 
 # Legislative elections held on a presidential general election day.
 PRESIDENTIAL_ELECTION_DATES = {
@@ -41,6 +47,7 @@ TRAINING_COLUMNS = [
     "ward",
     "precinct",
     "dem_margin",
+    "dem_margin_two_party",
     "PVI_N",
     "incumbent_status",
     "pres_elec",
@@ -54,8 +61,19 @@ TRAINING_COLUMNS = [
     "opponent_party",
     "dem_votes",
     "opponent_votes",
+    "gop_votes",
+    "write_in_votes",
+    "top_write_in_votes",
     "candidate_votes",
     "total_votes",
+    # Race-level flags any declared definition selects on, repeated across the
+    # race's precincts so the table can be filtered at either grain.
+    "major_party_race",
+    "contested_on_ballot_lines",
+    "admitted_by_write_in",
+    "num_candidates_admitted",
+    "write_in_share",
+    "top_write_in_share",
     "pvi_year",
     "pvi_provenance",
     "precinct_split_across_districts",
@@ -75,14 +93,40 @@ def incumbent_status(party_incumbent) -> str:
     return "GOP_Incumbent"
 
 
-def _race_candidates(race_rows: pd.DataFrame) -> pd.DataFrame:
-    """District-level totals per candidate for one race."""
-    return (
-        race_rows[race_rows["row_kind"] == "candidate"]
-        .groupby(["candidate", "party"], as_index=False, dropna=False)["votes"]
-        .sum()
-        .sort_values("votes", ascending=False, ignore_index=True)
-    )
+class UnresolvableThresholdError(ValueError):
+    """A race needs per-precinct write-in detail the published columns lack."""
+
+
+def assert_thresholds_resolvable(all_totals: pd.DataFrame) -> None:
+    """Every threshold must be resolvable from the two published write-in columns.
+
+    A stricter threshold drops a write-in from the denominator, so recovering
+    that denominator from the published table means subtracting the dropped
+    write-in's precinct votes. With one write-in the answer is
+    `top_write_in_votes`; with two it is that or `write_in_votes` minus it. With
+    three or more the subsets stop being distinguishable, and the race would
+    need per-candidate precinct detail the table does not carry.
+
+    Across the window no race has more than two named write-ins, so this holds,
+    but it holds as a checked fact rather than an assumption (design.md, D4).
+    """
+    per_race = all_totals[all_totals["is_write_in"]].groupby("election_id").size()
+    ambiguous = per_race[per_race > 2]
+    if len(ambiguous):
+        listing = ", ".join(
+            f"election {election_id} ({count} write-ins)"
+            for election_id, count in ambiguous.items()
+        )
+        raise UnresolvableThresholdError(
+            "these races carry more than two named write-ins, so a threshold "
+            f"cannot be resolved from the published columns alone: {listing}"
+        )
+
+
+def _strongest(totals: pd.DataFrame, party: str) -> dict | None:
+    """The strongest admitted candidate of a party, or None if it did not run."""
+    matches = totals[totals["party"] == party]
+    return matches.iloc[0].to_dict() if len(matches) else None
 
 
 def _select_contest(totals: pd.DataFrame) -> tuple[dict | None, dict | None]:
@@ -116,15 +160,38 @@ def _precinct_votes(race_rows: pd.DataFrame, candidate: str) -> pd.Series:
     return rows.set_index([*KEY])["votes"]
 
 
+def _precinct_votes_over(race_rows: pd.DataFrame, names) -> pd.Series:
+    """Precinct votes summed over a set of candidates."""
+    rows = race_rows[
+        (race_rows["row_kind"] == "candidate") & (race_rows["candidate"].isin(names))
+    ]
+    return rows.groupby([*KEY])["votes"].sum()
+
+
 def build_rows(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build training rows from normalized legislative results."""
     summaries = config.general_summaries().set_index("election_id")
+    all_totals = candidates.race_candidate_totals(results)
+    assert_thresholds_resolvable(all_totals)
+    totals_by_race = dict(tuple(all_totals.groupby("election_id", sort=False)))
     frames, excluded = [], []
 
     for election_id, race in results.groupby("election_id", sort=False):
         meta = summaries.loc[election_id]
+        # The published summary counts ballot lines; a write-in has no line, so
+        # this is the pre-change contested test and is kept as a flag rather
+        # than as the filter.
         num_candidates = int(meta["num_candidates"])
-        if num_candidates < 2:
+        contested_on_ballot_lines = num_candidates >= 2
+
+        race_totals = totals_by_race[election_id]
+        admitted_mask = candidates.admitted(race_totals, BUILD_WRITE_IN_THRESHOLD)
+        totals = race_totals[admitted_mask].reset_index(drop=True)
+        write_ins = totals[totals["is_write_in"]]
+        write_in_share = float(write_ins["share"].sum())
+        top_write_in_share = float(write_ins["share"].max()) if len(write_ins) else 0.0
+
+        if len(totals) < 2:
             excluded.append(
                 {
                     "election_id": election_id,
@@ -132,11 +199,13 @@ def build_rows(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
                     "office": meta["office"],
                     "district_display": meta["district_display"],
                     "reason": "uncontested: fewer than two candidates",
+                    "num_candidates_admitted": len(totals),
+                    "write_in_share": write_in_share,
+                    "top_write_in_share": top_write_in_share,
                 }
             )
             continue
 
-        totals = _race_candidates(race)
         dem, opponent = _select_contest(totals)
         if opponent is None:
             excluded.append(
@@ -146,22 +215,26 @@ def build_rows(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
                     "office": meta["office"],
                     "district_display": meta["district_display"],
                     "reason": "no usable two-candidate contest",
+                    "num_candidates_admitted": len(totals),
+                    "write_in_share": write_in_share,
+                    "top_write_in_share": top_write_in_share,
                 }
             )
             continue
 
+        admitted_names = set(totals["candidate"])
         precinct_totals = (
             race[race["row_kind"] == "total"].set_index([*KEY])["votes"].rename("total")
         )
         # ma-election-db's percent_dem and percent_gop are shares of the votes
         # cast for named candidates, not of all votes cast: blanks and the
         # all-others bucket are excluded from the denominator. The precinct
-        # margin uses the same base so the two are comparable.
-        precinct_candidate_votes = (
-            race[race["row_kind"] == "candidate"]
-            .groupby([*KEY])["votes"]
-            .sum()
-            .rename("candidate_votes")
+        # margin uses the same base so the two are comparable. A write-in below
+        # the threshold is not an admitted candidate and leaves the denominator
+        # with it, so one threshold governs eligibility and the margin together
+        # (design.md, D3).
+        precinct_candidate_votes = _precinct_votes_over(race, admitted_names).rename(
+            "candidate_votes"
         )
 
         if dem is None:
@@ -215,6 +288,52 @@ def build_rows(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
             frame["dem_votes"] = frame["dem"]
             frame["opponent_votes"] = frame["opp"]
 
+        # The two-party response: measured on the same denominator PVI_N is,
+        # so response and predictor are definitionally parallel. Missing where
+        # either major party is absent rather than falling back to dem_margin,
+        # because there is no two-party contest to describe.
+        gop = _strongest(totals, REPUBLICAN)
+        dem_party = _strongest(totals, DEMOCRATIC)
+        major_party_race = dem_party is not None and gop is not None
+        gop_precinct = (
+            _precinct_votes(race, gop["candidate"])
+            if gop is not None
+            else pd.Series(dtype="float64")
+        )
+        frame["gop_votes"] = gop_precinct.reindex(frame.index).fillna(0)
+        if dem_party is not None and gop is not None:
+            dem_precinct = _precinct_votes(race, dem_party["candidate"])
+            dem_party_votes = dem_precinct.reindex(frame.index).fillna(0)
+            two_party = dem_party_votes + frame["gop_votes"]
+            frame["dem_margin_two_party"] = (
+                (dem_party_votes - frame["gop_votes"]) / two_party * 100.0
+            ).where(two_party > 0)
+        else:
+            frame["dem_margin_two_party"] = pd.NA
+
+        write_in_names = set(write_ins["candidate"])
+        frame["write_in_votes"] = (
+            _precinct_votes_over(race, write_in_names).reindex(frame.index).fillna(0)
+            if write_in_names
+            else 0
+        )
+        if len(write_ins):
+            top_write_in = write_ins.sort_values("votes", ascending=False).iloc[0]
+            frame["top_write_in_votes"] = (
+                _precinct_votes(race, top_write_in["candidate"])
+                .reindex(frame.index)
+                .fillna(0)
+            )
+        else:
+            frame["top_write_in_votes"] = 0
+
+        frame["major_party_race"] = major_party_race
+        frame["contested_on_ballot_lines"] = contested_on_ballot_lines
+        frame["admitted_by_write_in"] = not contested_on_ballot_lines
+        frame["num_candidates_admitted"] = len(totals)
+        frame["write_in_share"] = write_in_share
+        frame["top_write_in_share"] = top_write_in_share
+
         frame = frame.reset_index()
         frame["total_votes"] = frame["total"]
         frame["election_id"] = election_id
@@ -241,7 +360,16 @@ def build_rows(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     rows = pd.concat(frames, ignore_index=True)
     return rows, pd.DataFrame(
         excluded,
-        columns=["election_id", "election_date", "office", "district_display", "reason"],
+        columns=[
+            "election_id",
+            "election_date",
+            "office",
+            "district_display",
+            "reason",
+            "num_candidates_admitted",
+            "write_in_share",
+            "top_write_in_share",
+        ],
     )
 
 

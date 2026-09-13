@@ -69,7 +69,11 @@ def reference_races(races: pd.DataFrame) -> pd.DataFrame:
     reference["incumbent_status"] = pd.Categorical(
         reference["incumbent_status"], categories=variants.CATEGORICAL_LEVELS["incumbent_status"]
     )
-    return reference.dropna(subset=["dem_margin", "PVI_N", "incumbent_status"])
+    reference = reference.dropna(subset=["dem_margin", "PVI_N", "incumbent_status"])
+    # The parity check fits outside any definition -- it compares this project's
+    # race table against mapoli's -- so it sets the canonical response column
+    # directly from `dem_margin`, which is the response the reference carries.
+    return reference.assign(response=reference["dem_margin"])
 
 
 def _compare(variant, ours, reference, scope: str) -> pd.DataFrame:
@@ -107,7 +111,9 @@ def run(variant_name: str = "baseline") -> pd.DataFrame:
         return pd.DataFrame()
 
     reference = reference_races(races)
-    ours = races[races["election_id"].isin(reference["election_id"])]
+    ours = races[races["election_id"].isin(reference["election_id"])].assign(
+        response=lambda frame: frame["dem_margin"]
+    )
     print(
         f"parity check on {len(ours)} races present in both tables "
         f"({len(races) - len(ours)} excluded: no-Democrat races, whose reference "

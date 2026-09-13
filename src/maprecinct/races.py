@@ -10,13 +10,19 @@ from __future__ import annotations
 
 import pandas as pd
 
-from . import build, config, crosswalk, pvi, training
+from . import build, candidates, config, crosswalk, pvi, training
 
 KEY = crosswalk.KEY
 
 RACE_DIR = config.DATA_DIR / "race"
 RACE_FILE = RACE_DIR / "ma_race_training_set.csv.gz"
+ROSTER_FILE = RACE_DIR / "ma_race_candidates.csv.gz"
 COVERAGE_REPORT = RACE_DIR / "race_pvi_coverage.csv"
+RESPONSE_SHIFT_REPORT = "race_response_shift.csv"
+
+# A response difference larger than this is reported as a race the choice of
+# definition actually moves, rather than one it leaves alone.
+SHIFT_REPORTING_THRESHOLD = 1.0
 
 # Race attributes that must be identical across a race's precinct rows. They
 # describe the contest, not the precinct, so a disagreement means the precinct
@@ -37,6 +43,12 @@ CARRIED = [
     "opponent_candidate",
     "opponent_party",
     "dem_candidate_count",
+    "major_party_race",
+    "contested_on_ballot_lines",
+    "admitted_by_write_in",
+    "num_candidates_admitted",
+    "write_in_share",
+    "top_write_in_share",
     "pvi_year",
 ]
 
@@ -49,6 +61,8 @@ RACE_COLUMNS = [
     "district",
     "district_display",
     "dem_margin",
+    "dem_margin_two_party",
+    "response_shift",
     "PVI_N",
     "incumbent_status",
     "pres_elec",
@@ -59,8 +73,16 @@ RACE_COLUMNS = [
     "opponent_candidate",
     "opponent_party",
     "dem_candidate_count",
+    "major_party_race",
+    "contested_on_ballot_lines",
+    "admitted_by_write_in",
+    "num_candidates_admitted",
+    "write_in_share",
+    "top_write_in_share",
     "dem_votes",
     "opponent_votes",
+    "gop_votes",
+    "write_in_votes",
     "candidate_votes",
     "total_votes",
     "n_precincts",
@@ -113,15 +135,33 @@ def district_margin(rows: pd.DataFrame) -> pd.DataFrame:
     totals = rows.groupby("election_id", sort=False).agg(
         dem_votes=("dem_votes", "sum"),
         opponent_votes=("opponent_votes", "sum"),
+        gop_votes=("gop_votes", "sum"),
+        write_in_votes=("write_in_votes", "sum"),
         candidate_votes=("candidate_votes", "sum"),
         total_votes=("total_votes", "sum"),
         n_precincts=("precinct", "size"),
         precincts_split_across_districts=("precinct_split_across_districts", "sum"),
+        major_party_race=("major_party_race", "first"),
     )
     share_dem = totals["dem_votes"] / totals["candidate_votes"]
     share_opponent = totals["opponent_votes"] / totals["candidate_votes"]
     totals["dem_margin"] = (share_dem - share_opponent) * 100.0
-    return totals.reset_index()
+
+    # The two-party response on the district's own summed votes. Where a
+    # Democrat ran, `dem_votes` holds that Democrat, so the two columns are the
+    # two major-party candidates and no separate rollup is needed. Averaging the
+    # precinct two-party margins instead would weight a 300-vote precinct like a
+    # 3,000-vote one, the same error `dem_margin` avoids.
+    two_party_votes = totals["dem_votes"] + totals["gop_votes"]
+    totals["dem_margin_two_party"] = (
+        (totals["dem_votes"] - totals["gop_votes"]) / two_party_votes * 100.0
+    ).where(totals["major_party_race"] & (two_party_votes > 0))
+
+    # How far the choice of response moves this race, published so that a later
+    # comparison between definitions can separate a change in accuracy from a
+    # change in the target being measured.
+    totals["response_shift"] = totals["dem_margin_two_party"] - totals["dem_margin"]
+    return totals.drop(columns=["major_party_race"]).reset_index()
 
 
 def district_pvi(rows: pd.DataFrame) -> pd.DataFrame:
@@ -233,11 +273,67 @@ def build_rows(rows: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     return published, coverage
 
 
+def build_roster(election_ids) -> pd.DataFrame:
+    """One row per race candidate, with the write-in flag and vote share.
+
+    The roster is the underlying fact a write-in threshold is a query on: it
+    carries every named candidate's district votes and share, so the admitted
+    set at any threshold is exact rather than approximated from the aggregate
+    write-in columns (design.md, D4).
+    """
+    results = pd.read_csv(build.LEGISLATIVE_RESULTS)
+    roster = candidates.race_candidate_totals(results)
+    roster = roster[roster["election_id"].isin(set(election_ids))]
+    return roster[
+        [
+            "election_id",
+            "candidate",
+            "party",
+            "party_role",
+            "is_write_in",
+            "votes",
+            "named_votes",
+            "share",
+        ]
+    ].sort_values(
+        ["election_id", "votes"], ascending=[True, False], ignore_index=True
+    )
+
+
+def response_shift_summary(races: pd.DataFrame) -> pd.DataFrame:
+    """How far the two responses differ, per race and in aggregate."""
+    shifted = races[races["dem_margin_two_party"].notna()].copy()
+    magnitude = shifted["response_shift"].abs()
+    print(
+        f"response shift over {len(shifted)} major-party races: "
+        f"median {magnitude.median():.3f}, "
+        f"{int((magnitude > SHIFT_REPORTING_THRESHOLD).sum())} beyond "
+        f"{SHIFT_REPORTING_THRESHOLD:.0f} point, max {magnitude.max():.1f}"
+    )
+    return shifted[
+        [
+            "election_id",
+            "election_year",
+            "office",
+            "district_display",
+            "dem_margin",
+            "dem_margin_two_party",
+            "response_shift",
+        ]
+    ].sort_values("response_shift", key=abs, ascending=False, ignore_index=True)
+
+
 def build_and_write() -> pd.DataFrame:
     rows = pd.read_csv(training.TRAINING_FILE)
     races, coverage = build_rows(rows)
 
     build.write_csv(races, RACE_FILE)
+    build.write_csv(build_roster(races["election_id"]), ROSTER_FILE)
+
+    shift = response_shift_summary(races)
+    shift_path = config.REPORT_DIR / RESPONSE_SHIFT_REPORT
+    shift_path.parent.mkdir(parents=True, exist_ok=True)
+    shift.to_csv(shift_path, index=False)
 
     COVERAGE_REPORT.parent.mkdir(parents=True, exist_ok=True)
     coverage.to_csv(COVERAGE_REPORT, index=False)
@@ -274,6 +370,15 @@ REMAPPED_SPREAD_TOLERANCE = 5.0
 
 def _margin_category(row) -> str:
     """Why a race's margin differs from the reference, or that it agrees."""
+    if pd.isna(row["dem_margin_reference"]):
+        # The write-in threshold made this race contested, so the reference does
+        # not carry it at all. That is the intended effect of design.md D2, and
+        # it is named rather than hidden by an inner join.
+        return (
+            "admitted_by_write_in_absent_from_reference"
+            if row["admitted_by_write_in"]
+            else "absent_from_reference"
+        )
     if abs(row["dem_margin_difference"]) <= MARGIN_TOLERANCE:
         return "agrees"
     if row["no_dem_candidate"]:
@@ -315,7 +420,7 @@ def validate_rollup() -> pd.DataFrame:
             "pvi_year": "pvi_year_reference",
         }
     )
-    joined = ours.merge(reference, on="election_id", how="inner")
+    joined = ours.merge(reference, on="election_id", how="left")
 
     # The denominator the reference's percentages actually rest on, recovered
     # from its own published share.
@@ -335,7 +440,16 @@ def validate_rollup() -> pd.DataFrame:
     joined["pvi_offset"] = pd.NA
     joined["pvi_spread"] = pd.NA
 
-    for (pvi_year, cycle), group in joined.groupby(["pvi_year", "redistricting_cycle"]):
+    # A race the reference does not carry has nothing to compare and no cycle to
+    # test, so it is set aside before grouping. Leaving it in would make its null
+    # cycle look like a mismatch and condemn every race sharing its vintage.
+    absent = joined["PVI_N_reference"].isna()
+    joined.loc[absent, "pvi_category"] = joined.loc[absent, "margin_category"]
+    comparable = joined[~absent]
+
+    for (pvi_year, cycle), group in comparable.groupby(
+        ["pvi_year", "redistricting_cycle"]
+    ):
         index = group.index
         if (group["reference_pvi_cycle"] != cycle).any():
             joined.loc[index, "pvi_category"] = "reference_pvi_on_different_map"

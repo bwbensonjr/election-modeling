@@ -19,6 +19,27 @@ uv run legmodel variants                           # list registered variants
 Everything reads committed CSVs. A scoring run needs no network and no fetch
 cache.
 
+## Scoring runs under a definition
+
+Every scoring run is performed under exactly one **data definition**, which
+supplies the races eligible for training and holdout and the response scored
+against. The definition is recorded in every output, so a metric is never
+reported without the rule that produced it. A run naming no definition uses
+the adopted default and still records its name.
+
+A definition changes *which* races are scored, not *how*. The fold schedule,
+the metric set and the pooling rule below are unaffected by it. What does
+change is the holdout size, reported per definition:
+
+| Definition | Races | Pooled holdout | Holdout specials | Smallest training fold |
+|---|---|---|---|---|
+| `current` | 623 | 424 | 24 | 199 |
+| `two_party` | 517 | 346 | 22 | 171 |
+| `two_party_or_strongest` | 610 | 413 | 24 | 197 |
+| `write_in_5pct` | 625 | 426 | 24 | 199 |
+
+See [`definitions.md`](definitions.md). The fold table below is `current`'s.
+
 ## What is scored
 
 The race-grain table in [`race_schema.md`](race_schema.md): one row per
@@ -102,6 +123,52 @@ level of `office`, `is_special`, `pres_elec`, `redistricting_cycle` and
 `small_sample`; it is still reported, because suppressing it would hide the
 odd-year folds, which are the special-election evidence.
 
+## Comparing two definitions
+
+This is a different operation from comparing two variants, with different
+hazards, and it has its own command. Two variants share a holdout; two
+definitions do not, and may not even share a response. A single difference
+would conflate three changes at once: which races are scored, which races the
+models trained on, and what the response measures.
+
+```bash
+uv run legmodel compare-definitions current two_party two_party_or_strongest
+```
+
+Three sections are reported:
+
+1. **Paired difference on shared races.** Only races both definitions hold out,
+   with a paired bootstrap interval and a decided/undecided label.
+2. **Exclusive races.** What each definition admits that the other does not,
+   with counts, the reason each race was dropped, and each definition's score
+   over its own exclusive races.
+3. **Response shift.** Over the shared races, the median, 95th percentile and
+   maximum of the difference between the two responses, plus how many races
+   move more than a point. Zero by construction when both definitions name the
+   same response column, and the row says so.
+
+Every row carries `training_sets_differ`, because they always do: the paired
+difference isolates neither the response nor the eligibility rule on its own.
+
+**Why the third section exists.** Scored on its own holdout, `two_party` posts
+12.73 RMSE against `current`'s 15.61. On the 346 races the two share, the
+difference is -0.31 [-0.83, +0.38] — undecided. The gap is almost entirely the
+78 races `two_party` drops, which `current` scores at 25.3. A pooled
+comparison would have read a refusal to predict hard races as accuracy.
+
+## Segments
+
+Metrics are broken out per fold and by `office`, `is_special`, `pres_elec`,
+`redistricting_cycle`, `no_dem_candidate` and `admitted_by_write_in`. A segment
+a definition empties is reported with a count of zero rather than dropped —
+"`two_party` admits no no-Democrat races" and "nobody broke that segment out"
+must not look the same.
+
+The pooled row additionally carries `bias_presidential_years`,
+`bias_non_presidential_years` and `pres_bias_gap`. The gap is the quantity the
+presidential-year variants set out to close, and a variant can narrow it
+without moving pooled RMSE at all.
+
 ## Comparing two variants
 
 Both variants are scored on the same folds and the same holdout races; a race
@@ -138,10 +205,14 @@ the run, because a fold whose fit struggled is information about that fold.
 
 | File | Contents |
 |---|---|
-| `data/models/holdout_predictions.csv.gz` | One row per variant per holdout race: point prediction, 90% interval, win probability, observed margin, and the per-race error terms every metric is built from |
-| `data/models/scorecard.csv` | One row per variant per segment, with `n_races` and each metric |
-| `data/models/variant_comparison.csv` | Paired differences, bootstrap intervals and verdicts |
-| `data/models/coefficients.csv` | Posterior summaries per variant per fold |
+| `data/models/holdout_predictions.csv.gz` | One row per definition per variant per holdout race: point prediction, 90% interval, win probability, observed response, and the per-race error terms every metric is built from |
+| `data/models/scorecard.csv` | One row per definition per variant per segment, with `n_races` and each metric |
+| `data/models/variant_comparison.csv` | Paired differences between variants, within one definition |
+| `data/models/definition_comparison.csv` | The three sections above, per definition pair |
+| `data/models/definition_summary.csv` | Holdout counts per definition |
+| `data/models/definition_dropped_races.csv` | Every race each definition drops, with the reason |
+| `data/models/threshold_sweep.csv` | Races admitted and scores at each write-in threshold |
+| `data/models/coefficients.csv` | Posterior summaries per definition per variant per fold |
 | `data/models/fit_diagnostics.csv` | R-hat, ESS, divergences and seed per fit |
 | `data/models/coefficient_parity.csv` | Baseline coefficients against the same fit on mapoli's district table |
 

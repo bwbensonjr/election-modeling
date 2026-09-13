@@ -62,13 +62,15 @@ RHAT_MAX = 1.01
 ESS_MIN = 400.0
 
 
-def seed_for(variant_name: str, fold: object) -> int:
+def seed_for(variant_name: str, fold: object, definition: str = "current") -> int:
     """A stable seed per fit, so a single fit can be reproduced in isolation.
 
-    Derived from the variant name and fold rather than drawn from a counter,
-    so it does not depend on how many fits ran before it.
+    Derived from the variant name, the definition and the fold rather than
+    drawn from a counter, so it does not depend on how many fits ran before it.
+    The definition is part of the key because the same variant under two
+    definitions is two different fits, and naming a seed has to identify one.
     """
-    digest = hashlib.sha256(f"{variant_name}|{fold}".encode()).digest()
+    digest = hashlib.sha256(f"{variant_name}|{definition}|{fold}".encode()).digest()
     return int.from_bytes(digest[:4], "big") % (2**31 - 1)
 
 
@@ -141,6 +143,15 @@ class Fit:
         win probabilities have to account for residual scatter, not only for
         uncertainty about the regression line.
         """
+        extra = {}
+        if self.variant.group_effects:
+            # The fold year is by construction absent from training, so it has
+            # no fitted group effect. Drawing it from the group-level
+            # hyperprior is what makes the year term predictive rather than
+            # undefined: the point estimate stays near the pooled one and the
+            # interval widens to admit that the year is unobserved
+            # (design.md, D9).
+            extra["sample_new_groups"] = True
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             predicted = self.model.predict(
@@ -149,6 +160,7 @@ class Fit:
                 data=variants.prepare(races),
                 inplace=False,
                 random_seed=self.diagnostics.seed,
+                **extra,
             )
         response = predicted.posterior_predictive[_response_name(self.model)]
         stacked = response.stack(sample=("chain", "draw"))
@@ -170,10 +182,15 @@ class Fit:
         return summary
 
 
-def fit(variant: variants.Variant, train: pd.DataFrame, fold: object = "full") -> Fit:
-    """Fit one variant to one set of races."""
+def fit(
+    variant: variants.Variant,
+    train: pd.DataFrame,
+    fold: object = "full",
+    definition: str = "current",
+) -> Fit:
+    """Fit one variant to one set of races, under one definition."""
     variant.validate(train.columns)
-    seed = seed_for(variant.name, fold)
+    seed = seed_for(variant.name, fold, definition)
     prepared = variants.prepare(train)
 
     # A predictor with one value in training carries no information about its

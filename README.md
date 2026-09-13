@@ -151,13 +151,20 @@ by the collection pipeline in [`docs/pipeline.md`](docs/pipeline.md), with the
 column-by-column schema in [`docs/schema.md`](docs/schema.md).
 
 - [`data/precinct/ma_precinct_training_set.csv.gz`](data/precinct/ma_precinct_training_set.csv.gz)
-  - 14,188 rows, one per legislative race per precinct
-  - 623 contested State Representative and State Senate races, general and
+  - 14,409 rows, one per legislative race per precinct
+  - 633 contested State Representative and State Senate races, general and
     special, spanning 2010 through 2024
-  - `dem_margin` and `PVI_N` computed at precinct grain, with
-    `incumbent_status`, `pres_elec`, `is_special` and `num_candidates` carried
-    from the race
+  - `dem_margin`, `dem_margin_two_party` and `PVI_N` computed at precinct
+    grain, with `incumbent_status`, `pres_elec`, `is_special`,
+    `num_candidates` and the eligibility flags carried from the race
   - Against 679 rows in the district-level table the current model uses
+
+  The table is built at the most permissive eligibility rule -- any candidate
+  named in the returns counts, write-in or ballot line -- and carries the flags
+  by which a stricter rule excludes a race, so who counts as a candidate is a
+  downstream selection rather than a property baked in. That is 10 races more
+  than the 623 the ballot-line rule admits. See
+  [`docs/definitions.md`](docs/definitions.md).
 
 Coverage matches the cutoff derived above. Of the 1,651 legislative elections
 in the window, 1,650 have precinct-level returns; the 2011 3rd Berkshire
@@ -184,15 +191,22 @@ against an unmoved yardstick.
   [`docs/scoring.md`](docs/scoring.md).
 - **Race-grain training table.**
   [`data/race/ma_race_training_set.csv.gz`](data/race/ma_race_training_set.csv.gz),
-  623 races rolled up from the precinct table, described in
-  [`docs/race_schema.md`](docs/race_schema.md).
+  633 races rolled up from the precinct table, described in
+  [`docs/race_schema.md`](docs/race_schema.md), with the candidate roster in
+  [`data/race/ma_race_candidates.csv.gz`](data/race/ma_race_candidates.csv.gz).
 
 ```bash
-uv run legmodel score                              # score every variant
-uv run legmodel compare baseline baseline_special  # paired comparison
+uv run legmodel definitions                        # list the data definitions
+uv run legmodel score                              # score under the adopted definition
+uv run legmodel compare baseline baseline_special  # paired comparison of variants
+uv run legmodel compare-definitions current two_party_or_strongest
 ```
 
 ### Baseline accuracy
+
+Under the pre-change `current` definition. Superseded by the table in
+[Answered Questions](#answered-questions) below, which uses the adopted
+definition; both remain reproducible.
 
 | Segment | Races | RMSE | Coverage (90%) | Win accuracy |
 |---|---|---|---|---|
@@ -218,7 +232,8 @@ special election. Full writeup in
 
 The comparison also surfaced larger failures than the one under test: races
 with no Democratic candidate (36% interval coverage) and an unabsorbed
-presidential-year bias swinging from -6.4 to +2.7 points.
+presidential-year bias swinging from -6.4 to +2.7 points. Both are settled in
+[Answered Questions](#answered-questions) below.
 
 ## Model Enhancements
 
@@ -237,138 +252,164 @@ presidential-year bias swinging from -6.4 to +2.7 points.
   - Granularity - Our preference is to use precinct-level data, but we may use district-level results for years where we do not have precinct-level data.
 - [x] Define model accuracy measurement and scoring - [`docs/scoring.md`](docs/scoring.md)
 - [x] Gather the data and rebuild the baseline model and evaluate its accuracy - [`docs/is_special_result.md`](docs/is_special_result.md)
+- [x] Settle the data definition -- who counts as a candidate and what the margin is measured against - [`docs/definition_result.md`](docs/definition_result.md)
+- [x] Test the deferred variables: presidential-year bias and `num_candidates` - [`docs/variant_results.md`](docs/variant_results.md)
 - Put together expanded variable data set and evaluate the variables via principle component analysis (PCA) or something similar.
 - Evaluate different machine learning algorithm alternatives to Bayesian regression and decide on how to matrix testing of algorithms vs. variables.
+- Resolve the [open issues](#open-issues) carried forward, starting with the `baseline_year` convergence failure.
 - Iteratively test model alternatives
+## Answered Questions
 
-## Open Questions
+The five questions deferred from the baseline work are settled. Questions 1
+through 3 were decided together, because each rebuilds the training table and
+invalidates the scorecard; 4 and 5 are variant declarations scored by the
+existing harness.
 
-Decisions deferred from the baseline modelling work, recorded here to seed a
-later OpenSpec proposal. The first three are all the same underlying question
--- *who counts as a candidate, and what is the margin measured against* -- and
-should be settled together, because each one rebuilds the training table and
-invalidates the published scorecard. Deciding them one at a time means
-rebuilding and republishing three times.
+Full writeups: [`docs/definition_result.md`](docs/definition_result.md) for the
+data definitions, [`docs/variant_results.md`](docs/variant_results.md) for the
+variants, and [`docs/definitions.md`](docs/definitions.md) for the mechanism.
 
-All figures below are from the committed scorecard and the 623-race table.
+### The data definition
 
-### 1. A two-party response, restricted to Democrat-versus-Republican races
+Who counts as a candidate, and what the margin is measured against, is now a
+named **definition** applied over the published tables rather than a property
+baked into them. Testing an alternative is a filter and a column choice, not a
+rebuild.
 
-Restrict training and test to races with both a Democrat and a Republican, and
-define the response as the two-party margin, `(dem - gop) / (dem + gop)`,
-the way `PVI_N` is already computed.
+```bash
+uv run legmodel definitions
+uv run legmodel compare-definitions current two_party_or_strongest
+```
 
-**The case for it.** The response and the predictor are currently measured
-against different denominators: `dem_margin` divides by every named candidate,
-while `PVI_N` divides by two-party presidential votes. A race with a strong
-third candidate therefore has a compressed margin relative to what PVI
-predicts, and the model has no way to know it. Making the two definitionally
-parallel removes that mismatch. On the same 517 races, PVI's correlation with
-the response rises from **0.705 to 0.724** when the response is switched to
-two-party -- a clean comparison, since only the definition changes.
+**Adopted: `two_party_or_strongest`** — the two-party margin where both major
+parties stood, the margin against the strongest non-Democrat on that pair's own
+two-candidate denominator where no Republican ran, races with no Democrat
+excluded, and the write-in threshold left at the ballot-line rule. 610 races,
+413 in the pooled holdout, all 24 holdout specials retained.
 
-It also subsumes questions 2 and 3: non-major-party write-ins leave the
-denominator automatically, and races with no Democrat are excluded by
-construction.
+Four of the five definition comparisons came back undecided, so the choice
+rests on a principle fixed before the numbers were seen: **the response and the
+predictor should be measured against the same denominator.** `PVI_N` is a
+two-party quantity, so the response should be too.
 
-**The cost.** 517 of 623 races have both a Democrat and a Republican (83.0%).
-The pooled holdout falls from **424 races to 346** (-18%).
+**1. A two-party response — undecided, and the pooled figure is a trap.** On
+its own holdout the strict `two_party` definition posts 12.73 RMSE against
+`current`'s 15.61, which looks decisive. On the 346 races the two share, the
+difference is -0.31 [-0.83, +0.38]. The gap is not accuracy: it is the 78 races
+`two_party` drops, which `current` scores at an RMSE of 25.3. Restricting to
+Democrat-versus-Republican races removes the hard ones, and comparing pooled
+figures would have credited the model for declining to predict them.
 
-| | Now | D-vs-R only |
-|---|---|---|
-| Total races | 623 | 517 |
-| Pooled holdout | 424 | 346 |
-| Holdout specials | 24 | 22 |
-| Smallest training fold (2014) | 199 | 171 |
+The README's own sub-question answers itself. `two_party_or_strongest` recovers
+93 of the 106 dropped races, keeps 24 holdout specials instead of 22, and costs
+nothing measurable (+0.111, undecided). There is no case for paying 67 holdout
+races and two specials for a restriction the data does not reward.
 
-The 106 races dropped are 93 where a Democrat faced a non-Republican
-(74 unenrolled, 8 Green-Rainbow, 4 Libertarian, 3 Pirate, 2 United
-Independent, 2 Workers Party) and 13 with no Democrat. Specials barely suffer,
-24 down to 22, which matters because specials are the scarce resource.
+**2. The write-in threshold — undecided, left at the ballot-line rule.**
+`write_in_5pct` against `current` is -0.020 [-0.050, +0.007]; because both
+share a response, that comparison isolates the eligibility rule cleanly. What
+settles it is the other direction: the two races a 5% threshold admits score at
+an RMSE of 63.2. Admissions also stop changing between 8% and 10%, so any
+threshold in that range is the same rule under a different name.
 
-**What changes for races that stay.** The median race does not move at all.
-35 races (6.8%) shift by more than 1 point, 5 by more than 10, and the largest
-shift is 54.4 points (16th Essex 2014). So this is a no-op for most of the
-data and decisive for a handful.
+The asymmetry the question identified is nonetheless fixed. A definition's
+threshold now governs both decisions a write-in affects — whether a race is
+contested and whether the write-in enters the denominator — so a write-in can
+no longer count for one and not the other.
 
-**Open sub-question.** Dropping 106 races is a real loss of training data, and
-those races still happen and may still need rating. An alternative is to keep
-them but model them separately, or to keep the two-party response and admit
-the strongest non-Republican as the comparison where no Republican ran. Worth
-testing both ways rather than assuming the restriction is free.
+**3. Races with no Democratic candidate — decided: exclude them, from training
+as well as scoring.** This is the only definition comparison the data settles:
++0.094 [+0.049, +0.143]. The control makes it informative — keeping them in
+training while withholding them from scoring is undecided (+0.006), so the gain
+comes specifically from *not training on them*. Those 13 races were distorting
+the fit for the other 610, not merely resisting prediction. Most of the
+apparent improvement is still removal rather than accuracy, and the writeup
+says so.
 
-### 2. Whether a write-in counts as a candidate, and above what threshold
+### The variants
 
-Races are currently filtered on `num_candidates >= 2` from `ma-election-db`,
-which counts ballot lines, matching `ma_leg_model.R`. Write-ins are therefore
-excluded from the contested/uncontested decision but *are* counted in the
-`dem_margin` denominator when they appear in the precinct returns.
+**4. Presidential-year bias — a real fix.** The baseline runs +2.7 points too
+Democratic in presidential years and -6.4 too Republican in non-presidential
+ones, a gap of 9.1 that one binary term cannot correct.
 
-**Races a threshold would admit**, out of 1,027 currently excluded as
-uncontested. All are one ballot line plus a write-in:
+`baseline_national_env` adds a term signed by the party holding the presidency:
+-1 in a non-presidential year under a Democratic president, +1 under a
+Republican one, 0 in a presidential year. It lowers RMSE by 0.775
+[+0.201, +1.363] and cuts pooled bias from -2.91 to **-0.41**. Unlike a year
+effect it is known before the election, so it can shift a holdout year's mean
+and carries forward to 2026, where it takes the value +1.
 
-| Threshold (share of named-candidate votes) | Races added |
-|---|---|
-| 0% (any write-in) | +16 |
-| 2% | +10 |
-| 5% | +3 |
-| 8% or 10% | +1 |
-| 15% | 0 |
+`baseline_year`, a hierarchical year intercept, improves calibration as
+designed — coverage 0.898 to 0.927 — but **every fold fails sampling
+diagnostics**, so its fits are not publishable as they stand.
+`baseline_pres_incumbent` is undecided.
 
-**Races already included whose denominator carries a write-in:** 8, of which
-exactly one is material -- 28th Middlesex 2013, where John F. Hanlon's write-in
-took 37.5%. The other seven run 0.2% to 4.8%.
+**5. `num_candidates` — undecided; it does not belong in the baseline.** A wash
+under `current` (+0.026) and under the adopted definition (-0.033), and
+decidedly *worse* under the strict two-party definition (-0.064
+[-0.107, -0.023]). Once the response is measured on a two-party denominator the
+term adds variance without adding signal, exactly as anticipated.
 
-That one race gives three different answers depending on the rule, which is
-the clearest illustration of what is at stake:
+### Accuracy under the adopted definition
 
-| Rule | `dem_margin` |
-|---|---|
-| Write-ins excluded from the denominator | +21.2 |
-| Current: in the denominator, not the comparison | +14.13 |
-| mapoli: write-in *is* the comparison candidate | +1.68 |
+| Segment | Races | RMSE | Coverage (90%) | Win accuracy |
+|---|---|---|---|---|
+| Pooled, `baseline` | 413 | 15.01 | 0.898 | 0.910 |
+| Pooled, `baseline_national_env` | 413 | 14.24 | 0.923 | 0.915 |
+| General elections | 389 | 14.19 | 0.910 | 0.915 |
+| Special elections | 24 | 24.76 | 0.708 | 0.833 |
 
-Note that excluding write-ins moves further from the reference, not closer.
+These supersede the baseline table above but are not the same measurement:
+different races and a different response. `current` stays registered and
+scorable, so the earlier figures remain reproducible.
 
-A single threshold applied consistently in both places -- admitting a race and
-counting toward the denominator -- is the tidiest rule. Around 5% would admit
-genuine write-in campaigns such as 2nd Plymouth 2024 (11.0%) and keep Hanlon
-in the denominator, while dropping sub-1% protest write-ins. Question 1 would
-settle this by side effect if adopted.
+## Open Issues
 
-### 3. Races with no Democratic candidate
+Known defects and limitations carried forward, as distinct from the planned
+work in [Model Enhancements](#model-enhancements) and [Plan](#plan).
 
-The baseline's worst segment by a wide margin: 11 holdout races, **28.35
-RMSE** against a pooled 15.61, and **36% coverage** of the 90% predictive
-interval. The model is confidently wrong about them nine times in ten.
+### `baseline_year` fits do not converge
 
-They are currently kept, with `dem_margin` defined as the negation of the
-leader's margin over the strongest remaining candidate. Options are to keep
-and add a `no_dem_candidate` term, to model them separately, or to exclude
-them -- which is what question 1 would do.
+The hierarchical year intercept is the best-calibrated variant tested --
+coverage rises from 0.898 to 0.927, and RMSE falls 0.510 [+0.349, +0.672] --
+but **every fold fails sampling diagnostics** on divergent transitions: 9 of 10
+folds under `current` and 10 of 10 under each other definition. With ten to
+fourteen years of effects, several of them single-race odd years, the
+year-level hyperprior is poorly identified.
 
-### 4. Presidential-year bias that `pres_elec` cannot absorb
+The improvement is real and the mechanism is the intended one, so this is worth
+fixing rather than abandoning. A non-centred parameterisation of the year
+offsets is the first thing to try, then raising `target_accept`. Until then
+`baseline_national_env` is the variant to use: it closes more of the
+presidential-year bias, and its fits are clean on every fold.
 
-Not a data question, but surfaced by the same scorecard and worth testing in
-the same pass. The baseline runs **6.4 points too Republican** in
-non-presidential years and **2.7 points too Democratic** in presidential ones.
-A single binary term applied identically to every race cannot correct a swing
-of that shape. A year effect, or an interaction between `pres_elec` and
-incumbency, is worth registering as a variant.
+The scorecard marks the affected folds in `folds_failing_diagnostics`, so this
+is visible in the data as well as here.
 
-### 5. Whether `num_candidates` belongs in the baseline
+### Special elections remain the worst segment
 
-Deferred from the baseline change. It is the third term in the fullest R
-variant. Adding it is a one-line variant declaration scored by the existing
-harness, so it costs almost nothing to answer -- it simply was not the question
-that change set out to settle. If question 1 is adopted, a two-party response
-makes it largely redundant.
+24 holdout races at 24.76 RMSE against a pooled 15.01, with 0.708 interval
+coverage against a nominal 0.90. The model is overconfident about them, and
+`is_special` does not fix it -- that term is undecided under every definition
+tested.
 
-### Sequencing note
+`baseline_national_env` improves the segment more than `is_special` does
+(22.68 RMSE, 0.792 coverage), which suggests part of what `is_special` was
+reaching for is national environment rather than anything intrinsic to special
+elections. Whatever is left is a thin-data problem: 24 holdout races is not
+much to diagnose from.
 
-Questions 1 through 3 change the training table; 4 and 5 only add variants.
-The harness handles the second kind already (`legmodel score`, then
-`legmodel compare`). The first kind needs a comparison mode the harness does
-not yet have: `legmodel compare` pairs on identical holdout races, and two
-filter settings produce different race sets, so comparing them means scoring
-on the intersection and reporting separately what each side admits.
+### The adopted definition rests on a principle, not on a measurement
+
+Four of the five definition comparisons came back undecided, so
+`two_party_or_strongest` was adopted on the pre-registered tie-break rather
+than because the data preferred it. That is the honest outcome at this holdout
+size, but it means the decision is provisional: more cycles, or a variable that
+interacts with the response definition, could settle it empirically. Every
+superseded definition stays registered and scorable so the question can be
+reopened without re-running collection.
+
+The write-in threshold is provisional for the same reason. It sits at the
+ballot-line rule because the two races a 5% threshold admits score at 63.18
+RMSE, not because a threshold is wrong in principle. If genuine write-in
+campaigns become more common, this is worth revisiting.

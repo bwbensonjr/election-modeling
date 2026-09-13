@@ -1,10 +1,126 @@
-left_variant,right_variant,segment_type,segment_value,n_races,left_rmse,right_rmse,rmse_difference,ci_low,ci_high,interval_spans_zero,verdict,races_favouring_left,races_favouring_right,bootstrap_resamples,bootstrap_seed
-baseline,baseline_special,pooled,all,424,15.608206,15.641319,-0.033113,-0.143361,0.078359,True,undecided,232,192,10000,20260912
-baseline,baseline_special,is_special,False,400,14.956354,15.098085,-0.141732,-0.215378,-0.070286,False,baseline lower,222,178,10000,20260912
-baseline,baseline_special,is_special,True,24,23.993244,22.868359,1.124885,0.265566,1.791583,False,baseline_special lower,10,14,10000,20260912
-baseline,baseline_special,office,State Representative,323,16.021763,16.063734,-0.041971,-0.146491,0.062357,True,undecided,175,148,10000,20260912
-baseline,baseline_special,office,State Senate,101,14.205049,14.206362,-0.001313,-0.338063,0.336075,True,undecided,57,44,10000,20260912
-baseline,baseline_special,pres_elec,False,261,16.841793,16.927069,-0.085277,-0.249367,0.079572,True,undecided,150,111,10000,20260912
-baseline,baseline_special,pres_elec,True,163,13.398476,13.326655,0.071821,0.001559,0.141027,False,baseline_special lower,82,81,10000,20260912
-baseline,baseline_special,no_dem_candidate,False,413,15.122989,15.158774,-0.035784,-0.150398,0.082394,True,undecided,225,188,10000,20260912
-baseline,baseline_special,no_dem_candidate,True,11,28.345493,28.331381,0.014112,-0.208539,0.2465,True,undecided,7,4,10000,20260912
+definition,left_variant,right_variant,segment_type,segment_value,n_races,left_rmse,right_rmse,rmse_difference,ci_low,ci_high,interval_spans_zero,verdict,races_favouring_left,races_favouring_right,bootstrap_resamples,bootstrap_seed
+current,baseline,baseline_special,pooled,all,424,15.611261,15.63837,-0.02711,-0.134339,0.082231,True,undecided,240,184,10000,20260912
+current,baseline,baseline_special,is_special,False,400,14.957476,15.097195,-0.139719,-0.212713,-0.069116,False,baseline lower,230,170,10000,20260912
+current,baseline,baseline_special,is_special,True,24,24.016681,22.842521,1.17416,0.364009,1.793771,False,baseline_special lower,10,14,10000,20260912
+current,baseline,baseline_special,office,State Representative,323,16.028504,16.061418,-0.032914,-0.139825,0.074201,True,undecided,182,141,10000,20260912
+current,baseline,baseline_special,office,State Senate,101,14.194819,14.201112,-0.006293,-0.317872,0.305671,True,undecided,58,43,10000,20260912
+current,baseline,baseline_special,pres_elec,False,261,16.842673,16.922035,-0.079362,-0.239329,0.081758,True,undecided,157,104,10000,20260912
+current,baseline,baseline_special,pres_elec,True,163,13.405961,13.327893,0.078068,0.006418,0.150714,False,baseline_special lower,83,80,10000,20260912
+current,baseline,baseline_special,no_dem_candidate,False,413,15.123194,15.153321,-0.030126,-0.143735,0.084435,True,undecided,234,179,10000,20260912
+current,baseline,baseline_special,no_dem_candidate,True,11,28.406169,28.378142,0.028027,-0.205481,0.276501,True,undecided,6,5,10000,20260912
+current,baseline,baseline_num_candidates,pooled,all,424,15.611261,15.584996,0.026265,-0.087192,0.130144,True,undecided,207,217,10000,20260912
+current,baseline,baseline_num_candidates,is_special,False,400,14.957476,14.960334,-0.002857,-0.118133,0.102862,True,undecided,197,203,10000,20260912
+current,baseline,baseline_num_candidates,is_special,True,24,24.016681,23.68334,0.333341,-0.206024,0.734803,True,undecided,10,14,10000,20260912
+current,baseline,baseline_num_candidates,office,State Representative,323,16.028504,16.044378,-0.015874,-0.153171,0.106378,True,undecided,162,161,10000,20260912
+current,baseline,baseline_num_candidates,office,State Senate,101,14.194819,14.015167,0.179652,-0.013731,0.360505,True,undecided,45,56,10000,20260912
+current,baseline,baseline_num_candidates,pres_elec,False,261,16.842673,16.685102,0.15757,0.014873,0.27948,False,baseline_num_candidates lower,106,155,10000,20260912
+current,baseline,baseline_num_candidates,pres_elec,True,163,13.405961,13.639929,-0.233968,-0.418694,-0.059522,False,baseline lower,101,62,10000,20260912
+current,baseline,baseline_num_candidates,no_dem_candidate,False,413,15.123194,15.084665,0.038529,-0.081712,0.145412,True,undecided,200,213,10000,20260912
+current,baseline,baseline_num_candidates,no_dem_candidate,True,11,28.406169,28.618628,-0.212458,-0.432394,-0.005745,False,baseline lower,7,4,10000,20260912
+current,baseline,baseline_pres_incumbent,pooled,all,424,15.611261,15.566947,0.044314,-0.042147,0.133689,True,undecided,218,206,10000,20260912
+current,baseline,baseline_pres_incumbent,is_special,False,400,14.957476,14.913954,0.043523,-0.053009,0.1404,True,undecided,206,194,10000,20260912
+current,baseline,baseline_pres_incumbent,is_special,True,24,24.016681,23.959557,0.057124,-0.029834,0.155914,True,undecided,12,12,10000,20260912
+current,baseline,baseline_pres_incumbent,office,State Representative,323,16.028504,15.967755,0.060749,-0.041736,0.160522,True,undecided,168,155,10000,20260912
+current,baseline,baseline_pres_incumbent,office,State Senate,101,14.194819,14.209465,-0.014646,-0.170835,0.14651,True,undecided,50,51,10000,20260912
+current,baseline,baseline_pres_incumbent,pres_elec,False,261,16.842673,16.741674,0.100999,0.008109,0.197229,False,baseline_pres_incumbent lower,135,126,10000,20260912
+current,baseline,baseline_pres_incumbent,pres_elec,True,163,13.405961,13.474316,-0.068356,-0.247722,0.112608,True,undecided,83,80,10000,20260912
+current,baseline,baseline_pres_incumbent,no_dem_candidate,False,413,15.123194,15.064121,0.059073,-0.023707,0.143068,True,undecided,213,200,10000,20260912
+current,baseline,baseline_pres_incumbent,no_dem_candidate,True,11,28.406169,28.646266,-0.240096,-0.9949,0.57667,True,undecided,5,6,10000,20260912
+current,baseline,baseline_year,pooled,all,424,15.611261,15.133709,0.477552,0.309073,0.646813,False,baseline_year lower,171,253,10000,20260912
+current,baseline,baseline_year,is_special,False,400,14.957476,14.49934,0.458136,0.276122,0.636966,False,baseline_year lower,163,237,10000,20260912
+current,baseline,baseline_year,is_special,True,24,24.016681,23.288069,0.728612,0.32128,1.143133,False,baseline_year lower,8,16,10000,20260912
+current,baseline,baseline_year,office,State Representative,323,16.028504,15.538021,0.490483,0.297669,0.678907,False,baseline_year lower,135,188,10000,20260912
+current,baseline,baseline_year,office,State Senate,101,14.194819,13.761203,0.433616,0.067682,0.804545,False,baseline_year lower,36,65,10000,20260912
+current,baseline,baseline_year,pres_elec,False,261,16.842673,16.305349,0.537323,0.319618,0.745892,False,baseline_year lower,105,156,10000,20260912
+current,baseline,baseline_year,pres_elec,True,163,13.405961,13.040228,0.365733,0.102443,0.622238,False,baseline_year lower,66,97,10000,20260912
+current,baseline,baseline_year,no_dem_candidate,False,413,15.123194,14.602052,0.521142,0.361122,0.678282,False,baseline_year lower,166,247,10000,20260912
+current,baseline,baseline_year,no_dem_candidate,True,11,28.406169,28.680899,-0.274729,-1.682078,1.266356,True,undecided,5,6,10000,20260912
+current,baseline,baseline_national_env,pooled,all,424,15.611261,14.891649,0.719612,0.128637,1.302509,False,baseline_national_env lower,228,196,10000,20260912
+current,baseline,baseline_national_env,is_special,False,400,14.957476,14.371881,0.585596,-0.024809,1.196836,True,undecided,217,183,10000,20260912
+current,baseline,baseline_national_env,is_special,True,24,24.016681,21.800586,2.216096,0.291387,3.922919,False,baseline_national_env lower,11,13,10000,20260912
+current,baseline,baseline_national_env,office,State Representative,323,16.028504,15.463999,0.564505,-0.132603,1.270966,True,undecided,174,149,10000,20260912
+current,baseline,baseline_national_env,office,State Senate,101,14.194819,12.891806,1.303013,0.401814,2.165224,False,baseline_national_env lower,54,47,10000,20260912
+current,baseline,baseline_national_env,pres_elec,False,261,16.842673,15.693127,1.149546,0.263592,2.018734,False,baseline_national_env lower,133,128,10000,20260912
+current,baseline,baseline_national_env,pres_elec,True,163,13.405961,13.509638,-0.103677,-0.221468,0.013261,True,undecided,95,68,10000,20260912
+current,baseline,baseline_national_env,no_dem_candidate,False,413,15.123194,14.304309,0.818886,0.231123,1.404291,False,baseline_national_env lower,224,189,10000,20260912
+current,baseline,baseline_national_env,no_dem_candidate,True,11,28.406169,29.4209,-1.01473,-4.536149,2.490429,True,undecided,4,7,10000,20260912
+two_party_or_strongest,baseline,baseline_special,pooled,all,413,15.012283,15.029246,-0.016963,-0.115915,0.086166,True,undecided,217,196,10000,20260912
+two_party_or_strongest,baseline,baseline_special,is_special,False,389,14.192825,14.307217,-0.114392,-0.179744,-0.050659,False,baseline lower,208,181,10000,20260912
+two_party_or_strongest,baseline,baseline_special,is_special,True,24,24.764329,23.857902,0.906427,0.152042,1.548699,False,baseline_special lower,9,15,10000,20260912
+two_party_or_strongest,baseline,baseline_special,office,State Representative,313,15.407631,15.429893,-0.022263,-0.115274,0.070653,True,undecided,162,151,10000,20260912
+two_party_or_strongest,baseline,baseline_special,office,State Senate,100,13.701308,13.699695,0.001613,-0.316499,0.310048,True,undecided,55,45,10000,20260912
+two_party_or_strongest,baseline,baseline_special,pres_elec,False,256,15.955229,16.014955,-0.059726,-0.204402,0.095028,True,undecided,134,122,10000,20260912
+two_party_or_strongest,baseline,baseline_special,pres_elec,True,157,13.33247,13.265813,0.066657,0.004101,0.129838,False,baseline_special lower,83,74,10000,20260912
+two_party_or_strongest,baseline,baseline_special,no_dem_candidate,False,413,15.012283,15.029246,-0.016963,-0.116658,0.086083,True,undecided,217,196,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,pooled,all,413,15.012283,15.045692,-0.033409,-0.1074,0.034981,True,undecided,208,205,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,is_special,False,389,14.192825,14.231951,-0.039125,-0.112012,0.029739,True,undecided,196,193,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,is_special,True,24,24.764329,24.749285,0.015044,-0.354455,0.315815,True,undecided,12,12,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,office,State Representative,313,15.407631,15.483316,-0.075685,-0.162995,0.004981,True,undecided,164,149,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,office,State Senate,100,13.701308,13.585115,0.116193,-0.000528,0.223152,True,undecided,44,56,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,pres_elec,False,256,15.955229,15.928568,0.026661,-0.068015,0.109549,True,undecided,119,137,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,pres_elec,True,157,13.33247,13.482674,-0.150204,-0.270722,-0.039246,False,baseline lower,89,68,10000,20260912
+two_party_or_strongest,baseline,baseline_num_candidates,no_dem_candidate,False,413,15.012283,15.045692,-0.033409,-0.107333,0.034814,True,undecided,208,205,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,pooled,all,413,15.012283,14.971668,0.040615,-0.072758,0.151534,True,undecided,215,198,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,is_special,False,389,14.192825,14.146107,0.046718,-0.076774,0.175886,True,undecided,204,185,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,is_special,True,24,24.764329,24.77448,-0.010151,-0.100899,0.072234,True,undecided,11,13,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,office,State Representative,313,15.407631,15.372112,0.035519,-0.103044,0.178009,True,undecided,162,151,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,office,State Senate,100,13.701308,13.642516,0.058792,-0.095582,0.216821,True,undecided,53,47,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,pres_elec,False,256,15.955229,15.838852,0.116377,-0.026645,0.261053,True,undecided,135,121,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,pres_elec,True,157,13.33247,13.438175,-0.105705,-0.293218,0.083998,True,undecided,80,77,10000,20260912
+two_party_or_strongest,baseline,baseline_pres_incumbent,no_dem_candidate,False,413,15.012283,14.971668,0.040615,-0.073683,0.1536,True,undecided,215,198,10000,20260912
+two_party_or_strongest,baseline,baseline_year,pooled,all,413,15.012283,14.502706,0.509577,0.348782,0.671605,False,baseline_year lower,172,241,10000,20260912
+two_party_or_strongest,baseline,baseline_year,is_special,False,389,14.192825,13.695791,0.497034,0.319993,0.671575,False,baseline_year lower,163,226,10000,20260912
+two_party_or_strongest,baseline,baseline_year,is_special,True,24,24.764329,24.065107,0.699222,0.246856,1.136487,False,baseline_year lower,9,15,10000,20260912
+two_party_or_strongest,baseline,baseline_year,office,State Representative,313,15.407631,14.895497,0.512134,0.326828,0.688921,False,baseline_year lower,137,176,10000,20260912
+two_party_or_strongest,baseline,baseline_year,office,State Senate,100,13.701308,13.197926,0.503382,0.1399,0.854606,False,baseline_year lower,35,65,10000,20260912
+two_party_or_strongest,baseline,baseline_year,pres_elec,False,256,15.955229,15.357286,0.597943,0.371395,0.812234,False,baseline_year lower,103,153,10000,20260912
+two_party_or_strongest,baseline,baseline_year,pres_elec,True,157,13.33247,12.989222,0.343248,0.136136,0.54776,False,baseline_year lower,69,88,10000,20260912
+two_party_or_strongest,baseline,baseline_year,no_dem_candidate,False,413,15.012283,14.502706,0.509577,0.350164,0.668194,False,baseline_year lower,172,241,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,pooled,all,413,15.012283,14.237315,0.774968,0.201274,1.36343,False,baseline_national_env lower,220,193,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,is_special,False,389,14.192825,13.545036,0.647789,0.039778,1.26701,False,baseline_national_env lower,207,182,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,is_special,True,24,24.764329,22.68123,2.0831,-0.051019,4.129904,True,undecided,13,11,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,office,State Representative,313,15.407631,14.748269,0.659362,-0.021808,1.352894,True,undecided,167,146,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,office,State Senate,100,13.701308,12.503794,1.197514,0.217437,2.110783,False,baseline_national_env lower,53,47,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,pres_elec,False,256,15.955229,14.678928,1.276301,0.383185,2.144603,False,baseline_national_env lower,132,124,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,pres_elec,True,157,13.33247,13.486255,-0.153785,-0.269002,-0.03963,False,baseline lower,88,69,10000,20260912
+two_party_or_strongest,baseline,baseline_national_env,no_dem_candidate,False,413,15.012283,14.237315,0.774968,0.183002,1.361527,False,baseline_national_env lower,220,193,10000,20260912
+two_party,baseline,baseline_special,pooled,all,346,12.733888,12.8303,-0.096412,-0.163626,-0.027505,False,baseline lower,196,150,10000,20260912
+two_party,baseline,baseline_special,is_special,False,324,12.026748,12.118657,-0.091909,-0.137049,-0.046149,False,baseline lower,183,141,10000,20260912
+two_party,baseline,baseline_special,is_special,True,22,20.494276,20.642089,-0.147813,-0.681959,0.37775,True,undecided,13,9,10000,20260912
+two_party,baseline,baseline_special,office,State Representative,256,13.108911,13.184068,-0.075157,-0.151449,0.006909,True,undecided,147,109,10000,20260912
+two_party,baseline,baseline_special,office,State Senate,90,11.60106,11.766011,-0.164951,-0.287566,-0.038084,False,baseline lower,49,41,10000,20260912
+two_party,baseline,baseline_special,pres_elec,False,219,13.645003,13.790908,-0.145905,-0.23963,-0.043935,False,baseline lower,128,91,10000,20260912
+two_party,baseline,baseline_special,pres_elec,True,127,10.98668,10.978119,0.008561,-0.023744,0.04164,True,undecided,68,59,10000,20260912
+two_party,baseline,baseline_special,no_dem_candidate,False,346,12.733888,12.8303,-0.096412,-0.162351,-0.029295,False,baseline lower,196,150,10000,20260912
+two_party,baseline,baseline_num_candidates,pooled,all,346,12.733888,12.798123,-0.064235,-0.107093,-0.022966,False,baseline lower,195,151,10000,20260912
+two_party,baseline,baseline_num_candidates,is_special,False,324,12.026748,12.087914,-0.061166,-0.098576,-0.026177,False,baseline lower,182,142,10000,20260912
+two_party,baseline,baseline_num_candidates,is_special,True,22,20.494276,20.593352,-0.099076,-0.394637,0.139223,True,undecided,13,9,10000,20260912
+two_party,baseline,baseline_num_candidates,office,State Representative,256,13.108911,13.182791,-0.07388,-0.127346,-0.024514,False,baseline lower,145,111,10000,20260912
+two_party,baseline,baseline_num_candidates,office,State Senate,90,11.60106,11.634626,-0.033565,-0.097811,0.022845,True,undecided,50,40,10000,20260912
+two_party,baseline,baseline_num_candidates,pres_elec,False,219,13.645003,13.727877,-0.082874,-0.14402,-0.027378,False,baseline lower,135,84,10000,20260912
+two_party,baseline,baseline_num_candidates,pres_elec,True,127,10.98668,11.01197,-0.02529,-0.070145,0.019425,True,undecided,60,67,10000,20260912
+two_party,baseline,baseline_num_candidates,no_dem_candidate,False,346,12.733888,12.798123,-0.064235,-0.10731,-0.023772,False,baseline lower,195,151,10000,20260912
+two_party,baseline,baseline_pres_incumbent,pooled,all,346,12.733888,12.744128,-0.01024,-0.196396,0.17354,True,undecided,202,144,10000,20260912
+two_party,baseline,baseline_pres_incumbent,is_special,False,324,12.026748,12.013164,0.013584,-0.194768,0.223888,True,undecided,187,137,10000,20260912
+two_party,baseline,baseline_pres_incumbent,is_special,True,22,20.494276,20.71057,-0.216294,-0.405503,-0.075014,False,baseline lower,15,7,10000,20260912
+two_party,baseline,baseline_pres_incumbent,office,State Representative,256,13.108911,13.110629,-0.001718,-0.234708,0.233257,True,undecided,145,111,10000,20260912
+two_party,baseline,baseline_pres_incumbent,office,State Senate,90,11.60106,11.638706,-0.037646,-0.296999,0.219923,True,undecided,57,33,10000,20260912
+two_party,baseline,baseline_pres_incumbent,pres_elec,False,219,13.645003,13.434936,0.210066,-0.023989,0.447946,True,undecided,124,95,10000,20260912
+two_party,baseline,baseline_pres_incumbent,pres_elec,True,127,10.98668,11.455452,-0.468771,-0.76366,-0.184782,False,baseline lower,78,49,10000,20260912
+two_party,baseline,baseline_pres_incumbent,no_dem_candidate,False,346,12.733888,12.744128,-0.01024,-0.194811,0.177263,True,undecided,202,144,10000,20260912
+two_party,baseline,baseline_year,pooled,all,346,12.733888,12.226734,0.507154,0.325254,0.685901,False,baseline_year lower,125,221,10000,20260912
+two_party,baseline,baseline_year,is_special,False,324,12.026748,11.544177,0.482571,0.288261,0.672752,False,baseline_year lower,119,205,10000,20260912
+two_party,baseline,baseline_year,is_special,True,22,20.494276,19.708958,0.785319,0.254516,1.241145,False,baseline_year lower,6,16,10000,20260912
+two_party,baseline,baseline_year,office,State Representative,256,13.108911,12.615095,0.493816,0.296607,0.682343,False,baseline_year lower,99,157,10000,20260912
+two_party,baseline,baseline_year,office,State Senate,90,11.60106,11.047667,0.553393,0.11023,0.996524,False,baseline_year lower,26,64,10000,20260912
+two_party,baseline,baseline_year,pres_elec,False,219,13.645003,13.315795,0.329207,0.124938,0.51468,False,baseline_year lower,78,141,10000,20260912
+two_party,baseline,baseline_year,pres_elec,True,127,10.98668,10.075935,0.910745,0.519297,1.315188,False,baseline_year lower,47,80,10000,20260912
+two_party,baseline,baseline_year,no_dem_candidate,False,346,12.733888,12.226734,0.507154,0.325095,0.687097,False,baseline_year lower,125,221,10000,20260912
+two_party,baseline,baseline_national_env,pooled,all,346,12.733888,11.941624,0.792264,0.416969,1.173935,False,baseline_national_env lower,180,166,10000,20260912
+two_party,baseline,baseline_national_env,is_special,False,324,12.026748,11.354277,0.672471,0.323701,1.028109,False,baseline_national_env lower,171,153,10000,20260912
+two_party,baseline,baseline_national_env,is_special,True,22,20.494276,18.550268,1.944008,-0.163854,4.034362,True,undecided,9,13,10000,20260912
+two_party,baseline,baseline_national_env,office,State Representative,256,13.108911,12.35721,0.751701,0.301342,1.204038,False,baseline_national_env lower,137,119,10000,20260912
+two_party,baseline,baseline_national_env,office,State Senate,90,11.60106,10.671384,0.929676,0.234363,1.603807,False,baseline_national_env lower,43,47,10000,20260912
+two_party,baseline,baseline_national_env,pres_elec,False,219,13.645003,12.346232,1.298771,0.745067,1.846284,False,baseline_national_env lower,107,112,10000,20260912
+two_party,baseline,baseline_national_env,pres_elec,True,127,10.98668,11.209663,-0.222982,-0.341413,-0.110043,False,baseline lower,73,54,10000,20260912
+two_party,baseline,baseline_national_env,no_dem_candidate,False,346,12.733888,11.941624,0.792264,0.413819,1.180416,False,baseline_national_env lower,180,166,10000,20260912

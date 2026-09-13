@@ -12,12 +12,17 @@ MODEL_DIR = DATA_DIR / "models"
 REPORT_DIR = DATA_DIR / "reports"
 
 RACE_TRAINING_SET = RACE_DIR / "ma_race_training_set.csv.gz"
+RACE_CANDIDATE_ROSTER = RACE_DIR / "ma_race_candidates.csv.gz"
 
 HOLDOUT_PREDICTIONS = MODEL_DIR / "holdout_predictions.csv.gz"
 SCORECARD = MODEL_DIR / "scorecard.csv"
 VARIANT_COMPARISON = MODEL_DIR / "variant_comparison.csv"
 COEFFICIENTS = MODEL_DIR / "coefficients.csv"
 FIT_DIAGNOSTICS = MODEL_DIR / "fit_diagnostics.csv"
+DEFINITION_SUMMARY = MODEL_DIR / "definition_summary.csv"
+DEFINITION_DROPPED = MODEL_DIR / "definition_dropped_races.csv"
+DEFINITION_COMPARISON = MODEL_DIR / "definition_comparison.csv"
+THRESHOLD_SWEEP = MODEL_DIR / "threshold_sweep.csv"
 
 RESPONSE = "dem_margin"
 
@@ -37,6 +42,23 @@ def load_races() -> "pd.DataFrame":  # noqa: F821
             "run `uv run maprecinct races` first"
         )
     return pd.read_csv(RACE_TRAINING_SET)
+
+
+def load_roster() -> "pd.DataFrame":  # noqa: F821
+    """The committed race candidate roster.
+
+    A write-in threshold is a query on this: it carries every named candidate's
+    district votes and share, so an admitted set is exact rather than inferred
+    from the race table's aggregate write-in columns.
+    """
+    import pandas as pd
+
+    if not RACE_CANDIDATE_ROSTER.exists():
+        raise FileNotFoundError(
+            f"{RACE_CANDIDATE_ROSTER.relative_to(ROOT)} is missing; "
+            "run `uv run maprecinct races` first"
+        )
+    return pd.read_csv(RACE_CANDIDATE_ROSTER)
 
 
 def write_csv(frame, path, compress: bool | None = None) -> None:

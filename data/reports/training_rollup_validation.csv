@@ -1,624 +1,634 @@
-election_id,election_year,office,district_display,rollup_margin,dem_margin,difference,category,opponent_candidate,candidate_count,dem_candidate_count,no_dem_candidate
-131694,2018,State Representative,1st Worcester,-55.78091318832059,21.330638839898103,-77.1115520282187,reference_no_democrat_precedence_bug,Kimberly N. Ferguson,2,0,True
-154340,2022,State Representative,7th Plymouth,-50.77364611929125,23.85930870975793,-74.63295482904918,reference_no_democrat_precedence_bug,Alyson M. Sullivan,2,0,True
-154414,2022,State Representative,7th Worcester,-50.70004242681374,23.89647857445906,-74.5965210012728,reference_no_democrat_precedence_bug,Paul K. Frost,2,0,True
-105658,2010,State Senate,Plymouth and Norfolk,-49.26596785861193,24.62068623140097,-73.8866540900129,reference_no_democrat_precedence_bug,"Robert L. Hedlund, Jr.",2,0,True
-154471,2022,State Senate,1st Essex and Middlesex,-43.078082824696644,27.7455681735282,-70.82365099822485,reference_no_democrat_precedence_bug,Bruce E. Tarr,2,0,True
-130303,2016,State Representative,14th Bristol,-40.976105744789024,28.807066598881548,-69.78317234367057,reference_no_democrat_precedence_bug,Elizabeth A. Poirier,2,0,True
-165499,2024,State Representative,1st Worcester,-39.61848305213558,29.49266605867153,-69.1111491108071,reference_no_democrat_precedence_bug,Kimberly N. Ferguson,2,0,True
-165377,2024,State Representative,7th Worcester,-38.43761818716644,30.089002815480946,-68.52662100264739,reference_no_democrat_precedence_bug,Paul K. Frost,2,0,True
-140818,2020,State Representative,7th Worcester,-29.42786508917535,34.638928129966445,-64.0667932191418,reference_no_democrat_precedence_bug,Paul K. Frost,2,0,True
-165404,2024,State Representative,22nd Middlesex,-22.24774857562948,38.26488696930711,-60.51263554493659,reference_no_democrat_precedence_bug,Marc T. Lombardo,2,0,True
-112809,2012,State Representative,22nd Middlesex,-21.60890029952931,38.5875053487377,-60.19640564826701,reference_no_democrat_precedence_bug,Marc T. Lombardo,2,0,True
-165371,2024,State Representative,2nd Franklin,31.495081058611607,65.40501593459886,-33.90993487598726,reference_no_democrat_precedence_bug,Jeffrey L. Raymond,2,0,True
-154409,2022,State Representative,2nd Franklin,31.799027552674225,63.19662884927066,-31.397601296596434,reference_no_democrat_precedence_bug,Jeffrey L. Raymond,3,0,True
-124792,2013,State Representative,28th Middlesex,14.131038312048863,1.6848673946957882,12.446170917353076,reference_denominator_omits_candidates,Rosa Diflorio,4,2,False
-165375,2024,State Representative,2nd Bristol,49.35822013049525,56.58838678030536,-7.230166649810116,reference_denominator_omits_candidates,Andrew Nelson,3,1,False
-105682,2010,State Representative,6th Middlesex,49.47856315179605,54.65483403020737,-5.176270878411316,reference_denominator_omits_candidates,James M. Pillsbury,3,1,False
-124831,2013,State Representative,12th Suffolk,55.80357142857143,58.96226415094339,-3.15869272237196,reference_denominator_omits_candidates,Edmond Romulus,3,1,False
-130283,2016,State Representative,"Barnstable, Dukes and Nantucket",13.608762947969993,15.151782952587162,-1.5430200046171691,reference_denominator_omits_candidates,Tobias B. Glidden,3,1,False
-140904,2020,State Representative,13th Essex,9.117466174661748,9.938825106846554,-0.8213589321848058,reference_denominator_omits_candidates,"Robert E. May, Jr",5,1,False
-112737,2012,State Senate,1st Essex,12.298359125707869,12.842260532866227,-0.5439014071583586,reference_denominator_omits_candidates,Shaun P. Toohey,4,1,False
-131716,2018,State Representative,4th Plymouth,23.16008316008316,23.577274009970843,-0.41719084988768174,reference_denominator_omits_candidates,Edward J. O'Connell,4,1,False
-105735,2010,State Representative,13th Worcester,20.3551912568306,20.688395206080095,-0.33320394924949426,reference_denominator_omits_candidates,Paul J. Franco,4,1,False
-105553,2010,State Representative,2nd Worcester,-3.081168084617153,-3.3408127648965333,0.25964468027938015,reference_denominator_omits_candidates,Richard M. Bastien,4,1,False
-165317,2024,State Representative,8th Bristol,1.1790215476351784,1.376219351436858,-0.1971978038016795,reference_denominator_omits_candidates,Christopher Thrasher,5,1,False
-105723,2010,State Representative,15th Essex,14.282539447366476,14.460361509037728,-0.17782206167125203,reference_denominator_omits_candidates,Al DiNuccio,4,1,False
-104719,2010,State Senate,"Middlesex, Suffolk and Essex",75.69060773480663,75.79529737206086,-0.10468963725422498,reference_denominator_omits_candidates,John T. Cesan,4,3,False
-130509,2017,State Senate,Worcester and Middlesex,-4.317006194520722,-4.373140121619878,0.056133927099155656,reference_denominator_omits_candidates,Dean Tran,4,1,False
-105765,2011,State Representative,6th Worcester,-0.7052896725440794,-0.6990340620233848,-0.006255610520694566,agrees,Peter J. Durant,4,1,False
-126122,2014,State Representative,1st Essex,-0.06025548324897767,-0.0642095800693409,0.003954096820363226,agrees,James M. Kelcourse,5,1,False
-105621,2010,State Senate,1st Suffolk and Middlesex,50.20198683909651,50.20198683909653,-1.4210854715202004e-14,agrees,"Frank John Addivinola, Jr.",2,1,False
-105533,2010,State Representative,3rd Hampshire,58.854515850972135,58.85451585097212,1.4210854715202004e-14,agrees,Daniel M. Sandell,3,1,False
-154540,2022,State Representative,14th Norfolk,84.66894377299002,84.66894377299,1.4210854715202004e-14,agrees,David Rolde,2,1,False
-154376,2022,State Representative,1st Essex,19.27076047932112,19.27076047932113,-1.0658141036401503e-14,agrees,Cj Fitzwater,2,1,False
-131581,2018,State Representative,1st Barnstable,-17.040745856353595,-17.04074585635359,-7.105427357601002e-15,agrees,Timothy R. Whelan,2,1,False
-105745,2010,State Representative,11th Worcester,-21.590482154038824,-21.59048215403883,7.105427357601002e-15,agrees,Matthew A. Beaton,2,1,False
-126316,2014,State Representative,12th Norfolk,16.246242321265193,16.246242321265186,7.105427357601002e-15,agrees,Tim Hempton,2,1,False
-112728,2012,State Representative,3rd Hampden,-22.388216176547672,-22.388216176547665,-7.105427357601002e-15,agrees,Nicholas A. Boldyga,2,1,False
-126281,2014,State Representative,4th Norfolk,16.985677954758398,16.985677954758405,-7.105427357601002e-15,agrees,Andrea E. Farretta,2,1,False
-131673,2018,State Representative,5th Essex,42.998162247309004,42.99816224730901,-7.105427357601002e-15,agrees,James K. Gardner,2,1,False
-126261,2014,State Representative,3rd Bristol,-22.689679971233367,-22.689679971233375,7.105427357601002e-15,agrees,Shaunna L. O'Connell,2,1,False
-112900,2012,State Representative,5th Plymouth,15.743427219568806,15.7434272195688,7.105427357601002e-15,agrees,Korey M. Welch,2,1,False
-131715,2018,State Representative,4th Middlesex,27.119062307217767,27.11906230721776,7.105427357601002e-15,agrees,Paul R. Ferro,2,1,False
-140938,2020,State Representative,3rd Norfolk,36.903094973685484,36.90309497368549,-7.105427357601002e-15,agrees,Stephen F. Tougas,2,1,False
-112940,2012,State Representative,4th Bristol,-22.82809611829944,-22.828096118299435,-7.105427357601002e-15,agrees,Steven S. Howitt,2,1,False
-131740,2018,State Representative,31st Middlesex,21.953671128980673,21.95367112898068,-7.105427357601002e-15,agrees,Caroline Colarusso,3,1,False
-140788,2020,State Representative,18th Essex,24.734764818771044,24.734764818771037,7.105427357601002e-15,agrees,Jeffrey Peter Dufour,2,1,False
-130311,2016,State Senate,"Norfolk, Bristol and Plymouth",47.766466909167036,47.76646690916704,-7.105427357601002e-15,agrees,Jonathan D. Lott,2,1,False
-126157,2014,State Representative,2nd Bristol,22.248892171344163,22.24889217134417,-7.105427357601002e-15,agrees,Bert J. Buckley,2,1,False
-165454,2024,State Representative,6th Worcester,-23.861203763628215,-23.861203763628207,-7.105427357601002e-15,agrees,"John J. Marsi, Jr",2,1,False
-124838,2013,State Senate,2nd Hampden and Hampshire,-5.266825387608148,-5.266825387608154,6.217248937900877e-15,agrees,"Donald F. Humason, Jr",2,1,False
-131591,2018,State Representative,12th Bristol,-4.210788588513764,-4.21078858851377,6.217248937900877e-15,agrees,Norman J. Orrall,2,1,False
-126228,2014,State Representative,10th Plymouth,4.023552502453382,4.023552502453375,6.217248937900877e-15,agrees,John F. Cruz,3,1,False
-105495,2010,State Representative,7th Plymouth,-2.5232244531015855,-2.5232244531015913,5.773159728050814e-15,agrees,Geoff Diehl,2,1,False
-105522,2010,State Representative,3rd Hampden,-0.6403554626241481,-0.6403554626241426,-5.551115123125783e-15,agrees,Nicholas A. Boldyga,3,1,False
-131741,2018,State Representative,19th Middlesex,4.776213822552583,4.776213822552588,-5.329070518200751e-15,agrees,Pina Prinzivalli,3,1,False
-126329,2014,State Representative,31st Middlesex,2.8343224804481704,2.8343224804481757,-5.329070518200751e-15,agrees,Caroline Colarusso,2,1,False
-165536,2024,State Representative,1st Plymouth,4.533169112867358,4.5331691128673635,-5.329070518200751e-15,agrees,Jesse G. Brown,2,1,False
-126279,2014,State Representative,14th Essex,9.8026423095743,9.802642309574294,5.329070518200751e-15,agrees,Rosemary Connelly Smedile,2,1,False
-165474,2024,State Representative,6th Plymouth,-5.948404519934614,-5.948404519934608,-5.329070518200751e-15,agrees,Kenneth Peter Sweezey,2,1,False
-131580,2018,State Representative,5th Barnstable,-14.399403133548866,-14.39940313354886,-5.329070518200751e-15,agrees,Randy Hunt,2,1,False
-105664,2010,State Representative,13th Norfolk,10.717623844635993,10.717623844635998,-5.329070518200751e-15,agrees,John P. O'Leary,2,1,False
-154503,2022,State Representative,5th Bristol,8.727604008502881,8.727604008502876,5.329070518200751e-15,agrees,Justin Thurber,2,1,False
-131582,2018,State Representative,2nd Barnstable,-4.081959340483432,-4.081959340483427,-5.329070518200751e-15,agrees,"William L. Crocker, Jr.",2,1,False
-105537,2010,State Representative,17th Essex,-8.58786467607177,-8.587864676071765,-5.329070518200751e-15,agrees,Paul Adams,2,1,False
-126238,2014,State Representative,2nd Middlesex,8.421652421652425,8.42165242165242,5.329070518200751e-15,agrees,Dennis J. Galvin,3,1,False
-154512,2022,State Representative,3rd Bristol,14.059941624546163,14.059941624546168,-5.329070518200751e-15,agrees,Christopher P. Coute,2,1,False
-154517,2022,State Senate,1st Bristol and Plymouth,15.327322618580947,15.327322618580952,-5.329070518200751e-15,agrees,Russell T. Protentis,2,1,False
-140913,2020,State Representative,12th Plymouth,9.500534595998172,9.500534595998166,5.329070518200751e-15,agrees,Summer K. Schmaling,2,1,False
-154431,2022,State Senate,"Hampden, Hampshire & Worcester",12.617968902870391,12.617968902870397,-5.329070518200751e-15,agrees,William E. Johnson,2,1,False
-131700,2018,State Representative,4th Worcester,12.541473125414731,12.541473125414726,5.329070518200751e-15,agrees,Richard E. Palmieri,2,1,False
-126304,2014,State Representative,4th Middlesex,7.26051994691233,7.260519946912325,5.329070518200751e-15,agrees,Matthew H. Elder,3,1,False
-154441,2022,State Representative,22nd Middlesex,-8.703081727653055,-8.70308172765306,5.329070518200751e-15,agrees,Marc T. Lombardo,2,1,False
-154469,2022,State Representative,3rd Barnstable,-10.844738906808477,-10.844738906808471,-5.329070518200751e-15,agrees,David T. Vieira,2,1,False
-105504,2010,State Representative,37th Middlesex,9.591412742382266,9.591412742382271,-5.329070518200751e-15,agrees,Kurt Hayes,2,1,False
-131658,2018,State Senate,Plymouth and Norfolk,-6.656959603374202,-6.656959603374207,5.329070518200751e-15,agrees,Patrick M. O'Connor,3,1,False
-126183,2014,State Representative,12th Worcester,10.934134081859126,10.93413408185912,5.329070518200751e-15,agrees,Brad P. Wyatt,2,1,False
-105632,2010,State Representative,1st Barnstable,13.665102998164391,13.665102998164386,5.329070518200751e-15,agrees,Patrick J. Foran,2,1,False
-131657,2018,State Representative,3rd Plymouth,14.065492595879853,14.065492595879848,5.329070518200751e-15,agrees,Kristen G. Arute,2,1,False
-126177,2014,State Senate,1st Hampden and Hampshire,5.7128014044641855,5.712801404464191,-5.329070518200751e-15,agrees,Debra A. Boronski,3,1,False
-154370,2022,State Senate,Hampden and Hampshire,31.391768993948826,31.391768993948823,3.552713678800501e-15,agrees,Cecilia P. Calabrese,2,1,False
-154342,2022,State Senate,Norfolk and Plymouth,27.320870624371125,27.32087062437113,-3.552713678800501e-15,agrees,Gary M. Innes,2,1,False
-126252,2014,State Representative,18th Worcester,-20.175438596491226,-20.175438596491222,-3.552713678800501e-15,agrees,Joseph D. Mckenna,2,1,False
-105727,2010,State Representative,14th Norfolk,22.437338891021774,22.437338891021778,-3.552713678800501e-15,agrees,Royall H. Switzler,2,1,False
-131672,2018,State Representative,3rd Bristol,-23.020149088493614,-23.020149088493618,3.552713678800501e-15,agrees,Shaunna L. O'Connell,2,1,False
-130422,2016,State Representative,15th Essex,26.976629766297666,26.976629766297663,3.552713678800501e-15,agrees,Nicholas S. Torresi,2,1,False
-105562,2010,State Representative,7th Middlesex,27.561661976493962,27.56166197649396,3.552713678800501e-15,agrees,David S. Mercer,2,1,False
-105742,2010,State Representative,30th Middlesex,26.916871273237458,26.916871273237454,3.552713678800501e-15,agrees,Kara Marie Fratto,2,1,False
-112841,2012,State Senate,Plymouth and Barnstable,16.31247149089463,16.312471490894627,3.552713678800501e-15,agrees,Thomas F. Keyes,2,1,False
-154419,2022,State Senate,Second Plymouth & Norfolk,27.405957816916725,27.40595781691672,3.552713678800501e-15,agrees,Jim Gordon,2,1,False
-131649,2018,State Representative,2nd Middlesex,28.837837837837842,28.83783783783784,3.552713678800501e-15,agrees,Kathleen Lynch,2,1,False
-105575,2010,State Senate,"Norfolk, Bristol and Plymouth",25.848675458621422,25.848675458621425,-3.552713678800501e-15,agrees,"Robert E. Burr, Jr.",2,1,False
-112710,2012,State Senate,Middlesex and Worcester,29.521898212166086,29.52189821216609,-3.552713678800501e-15,agrees,Dean J. Cavaretta,2,1,False
-130401,2016,State Representative,12th Plymouth,19.870717517776338,19.870717517776335,3.552713678800501e-15,agrees,Peter J. Boncek,2,1,False
-105741,2010,State Representative,2nd Norfolk,20.016963528413918,20.01696352841392,-3.552713678800501e-15,agrees,John M. Iredale,3,1,False
-130448,2016,State Representative,4th Middlesex,19.294434098903366,19.294434098903363,3.552713678800501e-15,agrees,Paul R. Ferro,2,1,False
-140926,2020,State Representative,1st Bristol,-12.089041095890412,-12.089041095890408,-3.552713678800501e-15,agrees,Fred Jay Barrows,2,1,False
-140954,2020,State Representative,20th Middlesex,-27.892884357197286,-27.89288435719729,3.552713678800501e-15,agrees,"Bradley H. Jones, Jr",2,1,False
-130327,2016,State Senate,1st Plymouth and Bristol,30.696272877713838,30.69627287771384,-3.552713678800501e-15,agrees,Sandra M. Wright,2,1,False
-140831,2020,State Representative,5th Worcester,-24.687406648743227,-24.68740664874323,3.552713678800501e-15,agrees,"Donald R. Berthiaume, Jr",2,1,False
-130299,2016,State Representative,7th Middlesex,28.678038379530918,28.67803837953092,-3.552713678800501e-15,agrees,Yolanda Greaves,3,1,False
-105505,2010,State Senate,Middlesex and Worcester,14.248266402499432,14.248266402499429,3.552713678800501e-15,agrees,George M. Thompson,2,1,False
-124782,2011,State Representative,12th Bristol,-9.589743589743588,-9.589743589743591,3.552713678800501e-15,agrees,Keiko M. Orrall,2,1,False
-105669,2010,State Representative,12th Plymouth,9.099740932642492,9.099740932642488,3.552713678800501e-15,agrees,Joseph M. Truschelli,2,1,False
-154523,2022,State Representative,10th Norfolk,27.48055246864582,27.480552468645815,3.552713678800501e-15,agrees,"Charles F. Bailey, III",2,1,False
-130266,2016,State Representative,3rd Hampden,-20.00988875154512,-20.009888751545123,3.552713678800501e-15,agrees,Nicholas A. Boldyga,2,1,False
-131573,2018,State Representative,7th Worcester,-30.899335121894318,-30.89933512189432,3.552713678800501e-15,agrees,Paul K. Frost,2,1,False
-112903,2012,State Representative,14th Essex,25.840548746204878,25.84054874620488,-3.552713678800501e-15,agrees,Karin K. Rhoton,2,1,False
-131665,2018,State Representative,36th Middlesex,26.418851642880846,26.41885164288085,-3.552713678800501e-15,agrees,Raymond G. Leczynski,2,1,False
-165524,2024,State Representative,7th Norfolk,29.716889664533646,29.71688966453365,-3.552713678800501e-15,agrees,Clinton Graham,2,1,False
-130435,2016,State Representative,9th Middlesex,27.702089009990914,27.70208900999091,3.552713678800501e-15,agrees,Stacey Gallagher M. Tully,2,1,False
-105529,2010,State Representative,1st Essex,30.237655745269954,30.23765574526995,3.552713678800501e-15,agrees,Valentino James Troyli,2,1,False
-165550,2024,State Representative,19th Middlesex,13.741673300096357,13.741673300096355,1.7763568394002505e-15,agrees,Paul Sarnowski,3,1,False
-112794,2012,State Representative,21st Middlesex,10.552198960236053,10.552198960236051,1.7763568394002505e-15,agrees,Walter Zenkin,2,1,False
-154470,2022,State Senate,Plymouth and Barnstable,12.693498452012381,12.69349845201238,1.7763568394002505e-15,agrees,Kari Macrae,2,1,False
-130433,2016,State Representative,4th Worcester,10.399829859634197,10.399829859634195,1.7763568394002505e-15,agrees,Thomas F. Ardinger,2,1,False
-105638,2010,State Representative,11th Plymouth,14.955839057899901,14.9558390578999,1.7763568394002505e-15,agrees,Kristine Abrams,2,1,False
-131503,2018,State Representative,7th Plymouth,-11.596803131626165,-11.596803131626164,-1.7763568394002505e-15,agrees,Alyson M. Sullivan,2,1,False
-154526,2022,State Representative,12th Plymouth,9.077425096410563,9.077425096410565,-1.7763568394002505e-15,agrees,Eric J. Meschino,3,1,False
-105737,2010,State Representative,3rd Berkshire,9.953563496870583,9.953563496870585,-1.7763568394002505e-15,agrees,Mark C. Miller,2,1,False
-140986,2020,State Representative,19th Middlesex,12.850187564849547,12.850187564849548,-1.7763568394002505e-15,agrees,Alec M. Difruscia,2,1,False
-165440,2024,State Representative,1st Barnstable,13.081911386443501,13.0819113864435,1.7763568394002505e-15,agrees,Gerald Joseph O'Connell,2,1,False
-130284,2016,State Senate,Cape and Islands,13.885855890926013,13.885855890926011,1.7763568394002505e-15,agrees,Anthony E. Schiavi,2,1,False
-140925,2020,State Representative,3rd Worcester,11.199635784202139,11.19963578420214,-1.7763568394002505e-15,agrees,Glenn C. Fossa,2,1,False
-112913,2012,State Representative,4th Worcester,14.389960749626841,14.38996074962684,1.7763568394002505e-15,agrees,Justin A. Brooks,2,1,False
-165505,2024,State Representative,4th Worcester,15.004038772213251,15.004038772213253,-1.7763568394002505e-15,agrees,Salvatore Perla,2,1,False
-105543,2010,State Senate,Cape and Islands,14.896394609192015,14.896394609192017,-1.7763568394002505e-15,agrees,"James H. Crocker, Jr.",2,1,False
-131686,2018,State Representative,4th Essex,-12.684466433506781,-12.68446643350678,-1.7763568394002505e-15,agrees,Bradford R. Hill,2,1,False
-112884,2012,State Representative,3rd Bristol,-12.927938711994253,-12.927938711994251,-1.7763568394002505e-15,agrees,Shaunna L. O'Connell,2,1,False
-124793,2013,State Representative,12th Essex,-1.3675533907830661,-1.367553390783066,-2.220446049250313e-16,agrees,Leah Cole,3,1,False
-126172,2014,State Representative,2nd Barnstable,1.3445924001299125,1.3445924001299123,2.220446049250313e-16,agrees,"Adam G. Chaprales, Sr",2,1,False
-165398,2024,State Senate,Third Bristol & Plymouth,-1.7326811127193587,-1.7326811127193589,2.220446049250313e-16,agrees,Kelly A. Dooner,3,1,False
-131630,2018,State Representative,2nd Essex,-1.4178190092770881,-1.417819009277088,-2.220446049250313e-16,agrees,Leonard Mirra,2,1,False
-154524,2022,State Representative,2nd Essex,0.004250797024440978,0.0042507970244409,7.719519468096792e-17,agrees,Leonard Mirra,2,1,False
-154401,2022,State Representative,1st Middlesex,0.03520064366890896,0.0352006436689089,6.245004513516506e-17,agrees,Andrew James Shepherd,3,1,False
-105750,2010,State Representative,3rd Bristol,-0.27147736229091723,-0.2714773622909172,-5.551115123125783e-17,agrees,Shaunna L. O'Connell,2,1,False
-126145,2014,State Representative,2nd Worcester,0.29099623416637965,0.2909962341663796,5.551115123125783e-17,agrees,Garret Shetrawski,2,1,False
-126276,2014,State Representative,5th Plymouth,-0.29491423412579265,-0.2949142341257926,-5.551115123125783e-17,agrees,David F. Decoste,2,1,False
-105648,2010,State Representative,6th Worcester,-0.007591285204583409,-0.0075912852045834,-8.673617379884035e-18,agrees,Peter J. Durant,2,1,False
-130459,2016,State Representative,4th Bristol,-24.540713245313157,-24.540713245313157,0.0,agrees,Steven S. Howitt,2,1,False
-131545,2018,State Senate,2nd Essex and Middlesex,25.68003365114975,25.68003365114975,0.0,agrees,"Joseph M. Espinola, III",2,1,False
-139531,2020,State Representative,32nd Middlesex,62.93622141997592,62.93622141997592,0.0,agrees,Brandon Reid,2,1,False
-131506,2018,State Senate,Norfolk and Plymouth,51.67549726396248,51.67549726396248,0.0,agrees,Alexander N. Mendez,2,1,False
-130517,2018,State Representative,2nd Bristol,4.0146943059564455,4.0146943059564455,0.0,agrees,Julie A. Hall,2,1,False
-131550,2018,State Senate,Cape and Islands,24.22301912568306,24.22301912568306,0.0,agrees,John G. Flores,2,1,False
-130505,2017,State Representative,3rd Essex,6.69043049081437,6.69043049081437,0.0,agrees,Shaun P. Toohey,2,1,False
-131666,2018,State Senate,1st Middlesex,27.76856794126756,27.76856794126756,0.0,agrees,John A. Macdonald,2,1,False
-140741,2020,State Senate,Plymouth and Barnstable,12.511530805457106,12.511530805457106,0.0,agrees,"James R. McMahon, III",2,1,False
-131559,2018,State Senate,"Worcester, Hampden, Hampshire and Middlesex",9.799169486766468,9.799169486766468,0.0,agrees,Steven R. Hall,2,1,False
-131567,2018,State Representative,2nd Franklin,-40.55707820766142,-40.55707820766142,0.0,agrees,Susannah M. Whipps,2,1,False
-131570,2018,State Representative,2nd Bristol,16.69018058690745,16.69018058690745,0.0,agrees,Julie A. Hall,2,1,False
-131733,2018,State Representative,30th Middlesex,39.80716253443526,39.80716253443526,0.0,agrees,Claire M. Malaguti,2,1,False
-131732,2018,State Representative,2nd Norfolk,41.42469740062174,41.42469740062174,0.0,agrees,William Burke,2,1,False
-131571,2018,State Senate,Bristol and Norfolk,21.12773902220164,21.12773902220164,0.0,agrees,Jacob J. Ventura,2,1,False
-131730,2018,State Representative,1st Plymouth,-4.602187846368855,-4.602187846368855,0.0,agrees,Mathew J. Muratore,2,1,False
-130460,2016,State Representative,12th Norfolk,32.00726612170754,32.00726612170754,0.0,agrees,Tim Hempton,2,1,False
-131572,2018,State Senate,"Norfolk, Bristol and Middlesex",2.678934940151456,2.678934940151456,0.0,agrees,Richard J. Ross,2,1,False
-131558,2018,State Representative,2nd Worcester,10.493950939108348,10.493950939108348,0.0,agrees,Edward A. Gravel,3,1,False
-140742,2020,State Senate,2nd Hampden and Hampshire,28.44866000381947,28.44866000381947,0.0,agrees,John Francis Cain,2,1,False
-130504,2017,State Representative,1st Berkshire,54.175058094500386,54.175058094500386,0.0,agrees,Christine M. Canning,2,1,False
-140782,2020,State Representative,1st Essex,-3.278746758552092,-3.278746758552092,0.0,agrees,James M. Kelcourse,2,1,False
-140805,2020,State Representative,1st Middlesex,-3.108160874658333,-3.108160874658333,0.0,agrees,Sheila C. Harrington,2,1,False
-140804,2020,State Senate,"Worcester, Hampden, Hampshire and Middlesex",5.668591931390571,5.668591931390571,0.0,agrees,Steven R. Hall,2,1,False
-131536,2018,State Representative,1st Essex,-5.392769522751473,-5.392769522751473,0.0,agrees,James M. Kelcourse,2,1,False
-140803,2020,State Representative,2nd Worcester,14.260485651214132,14.260485651214132,0.0,agrees,Bruce K. Chester,2,1,False
-131537,2018,State Senate,1st Essex,32.6273308814059,32.6273308814059,0.0,agrees,Alexander Leighton Williams,2,1,False
-131541,2018,State Representative,3rd Hampshire,50.32470135492664,50.32470135492664,0.0,agrees,Solomon Israel Goldstein-Rose,2,1,False
-131514,2018,State Senate,Middlesex and Worcester,32.41572961676048,32.41572961676048,0.0,agrees,Margaret W. Busse,3,1,False
-140777,2020,State Senate,2nd Hampden and Hampshire,28.169050116401028,28.169050116401028,0.0,agrees,John Francis Cain,2,1,False
-140743,2020,State Representative,3rd Bristol,14.29315282478521,14.29315282478521,0.0,agrees,Kelly A. Dooner,2,1,False
-130450,2016,State Representative,9th Norfolk,-21.77766523170423,-21.77766523170423,0.0,agrees,Shawn C. Dooley,2,1,False
-131543,2018,State Representative,18th Essex,9.769411764705888,9.769411764705888,0.0,agrees,"James J. Lyons, Jr.",2,1,False
-140776,2020,State Representative,3rd Hampden,-24.87901949256026,-24.87901949256026,0.0,agrees,Nicholas A. Boldyga,2,1,False
-140761,2020,State Representative,37th Middlesex,29.104953017996493,29.104953017996493,0.0,agrees,Catherine J. Clark,2,1,False
-140756,2020,State Senate,Norfolk and Plymouth,38.925755328284794,38.925755328284794,0.0,agrees,Alexander N. Mendez,2,1,False
-131512,2018,State Representative,14th Middlesex,80.03510078179015,80.03510078179015,0.0,agrees,Daniel L. Factor,2,1,False
-140744,2020,State Representative,37th Middlesex,48.46153846153847,48.46153846153847,0.0,agrees,Catherine J. Clark,2,1,False
-131722,2018,State Representative,13th Bristol,57.541000100613736,57.541000100613736,0.0,agrees,Michael Janson,2,1,False
-131583,2018,State Representative,5th Worcester,-18.97676548014193,-18.97676548014193,0.0,agrees,"Donald R. Berthiaume, Jr",2,1,False
-131717,2018,State Representative,9th Norfolk,-17.551060295123616,-17.551060295123616,0.0,agrees,Shawn C. Dooley,2,1,False
-131687,2018,State Representative,5th Plymouth,-3.474828208002334,-3.474828208002334,0.0,agrees,David F. Decoste,2,1,False
-140812,2020,State Representative,2nd Franklin,-34.172027638789615,-34.172027638789615,0.0,agrees,Susannah M. Whipps,2,1,False
-131684,2018,State Representative,10th Norfolk,17.052156520847223,17.052156520847223,0.0,agrees,Patrick R. Casey,2,1,False
-131680,2018,State Representative,3rd Worcester,37.26437892701788,37.26437892701788,0.0,agrees,Elmer Eubanks-Archbold,2,1,False
-131678,2018,State Representative,6th Bristol,24.445636623748214,24.445636623748214,0.0,agrees,David L. Steinhof,2,1,False
-131636,2018,State Representative,1st Hampden,-34.58804335159072,-34.58804335159072,0.0,agrees,Todd M. Smola,2,1,False
-130463,2016,State Representative,1st Plymouth,-1.722069910897872,-1.722069910897872,0.0,agrees,Mathew J. Muratore,2,1,False
-131639,2018,State Representative,10th Plymouth,12.881787330316746,12.881787330316746,0.0,agrees,John F. Cruz,2,1,False
-131640,2018,State Senate,2nd Plymouth and Bristol,33.021127135330744,33.021127135330744,0.0,agrees,Scott Hall,2,1,False
-131647,2018,State Representative,2nd Plymouth,-13.45820326049254,-13.45820326049254,0.0,agrees,Susan Williams Gifford,2,1,False
-130470,2016,State Representative,27th Middlesex,74.58390630186354,74.58390630186354,0.0,agrees,Aaron James,2,1,False
-130479,2016,State Representative,15th Worcester,57.272816198767494,57.272816198767494,0.0,agrees,Ralph Perez,2,1,False
-130473,2016,State Representative,31st Middlesex,17.678506338341908,17.678506338341908,0.0,agrees,Caroline Colarusso,2,1,False
-131671,2018,State Representative,2nd Hampshire,48.58880162148467,48.58880162148467,0.0,agrees,Donald Peltier,2,1,False
-131659,2018,State Representative,13th Essex,2.8851003732472513,2.8851003732472513,0.0,agrees,Mark B. Mezzina,2,1,False
-131670,2018,State Representative,12th Hampden,55.09421909932928,55.09421909932928,0.0,agrees,Donald J. Flannery,2,1,False
-131661,2018,State Representative,11th Norfolk,34.09069212410501,34.09069212410501,0.0,agrees,John G. Mcdonald,2,1,False
-131529,2018,State Representative,3rd Hampden,-31.993462073975422,-31.993462073975422,0.0,agrees,Nicholas A. Boldyga,2,1,False
-130480,2016,State Representative,16th Worcester,34.34020885475101,34.34020885475101,0.0,agrees,John P. Fresolo,2,1,False
-131689,2018,State Representative,15th Essex,59.05522114629677,59.05522114629677,0.0,agrees,Anand Gonsalves,2,1,False
-130503,2017,State Senate,Bristol and Norfolk,3.9264885392648887,3.9264885392648887,0.0,agrees,Jacob J. Ventura,3,1,False
-130462,2016,State Representative,3rd Berkshire,32.79065850783136,32.79065850783136,0.0,agrees,Christopher J. Connell,2,1,False
-131668,2018,State Representative,12th Plymouth,5.069261704979894,5.069261704979894,0.0,agrees,Joseph M. Truschelli,2,1,False
-130491,2017,State Senate,4th Middlesex,80.8911345888838,80.8911345888838,0.0,agrees,Ian T. Jackson,2,1,False
-131713,2018,State Senate,5th Middlesex,34.06150463680695,34.06150463680695,0.0,agrees,Erin K. Calvo-Bacci,2,1,False
-131588,2018,State Representative,8th Worcester,-3.0306444344299246,-3.0306444344299246,0.0,agrees,Michael J. Soter,2,1,False
-131706,2018,State Representative,9th Essex,-28.128000000000004,-28.128000000000004,0.0,agrees,Donald H. Wong,3,1,False
-131589,2018,State Senate,Worcester and Norfolk,-15.94547814798788,-15.94547814798788,0.0,agrees,Ryan C. Fattman,2,1,False
-131593,2018,State Representative,12th Worcester,50.831313757538176,50.831313757538176,0.0,agrees,"Stanley P. Marcinczyk, Jr",2,1,False
-131594,2018,State Senate,Worcester and Middlesex,-8.610593123302907,-8.610593123302907,0.0,agrees,Dean Tran,2,1,False
-131596,2018,State Representative,6th Essex,70.7858603564125,70.7858603564125,0.0,agrees,Donato H. Paglia,2,1,False
-131699,2018,State Representative,17th Worcester,18.709677419354836,18.709677419354836,0.0,agrees,Paul J. Fullen,2,1,False
-131697,2018,State Representative,10th Worcester,12.222286675561222,12.222286675561222,0.0,agrees,Sandra Slattery E. Biagetti,2,1,False
-131598,2018,State Representative,22nd Middlesex,-23.009708737864077,-23.009708737864077,0.0,agrees,Marc T. Lombardo,3,1,False
-131610,2018,State Representative,5th Suffolk,78.01670146137786,78.01670146137786,0.0,agrees,Althea Garrison,2,1,False
-130483,2016,State Senate,Plymouth and Norfolk,-5.473622850480914,-5.473622850480914,0.0,agrees,Patrick M. O'Connor,2,1,False
-131629,2018,State Senate,Plymouth and Barnstable,-17.64002341145634,-17.64002341145634,0.0,agrees,Vinny M. deMacedo,2,1,False
-131693,2018,State Representative,3rd Norfolk,37.66283770775845,37.66283770775845,0.0,agrees,Stephen F. Tougas,2,1,False
-131690,2018,State Representative,14th Essex,28.919722497522304,28.919722497522304,0.0,agrees,Ryan R. Losco,2,1,False
-131669,2018,State Representative,2nd Hampden,12.14380553569605,12.14380553569605,0.0,agrees,Allison P. Werder,2,1,False
-104718,2010,State Senate,"Norfolk, Bristol and Middlesex",-23.630709426627796,-23.630709426627796,0.0,agrees,Richard J. Ross,2,1,False
-140814,2020,State Representative,14th Bristol,8.891424558939697,8.891424558939697,0.0,agrees,John D. Simmons,2,1,False
-140817,2020,State Senate,"Norfolk, Bristol and Middlesex",19.49595328347506,19.49595328347506,0.0,agrees,Matthew T. Kelly,2,1,False
-165362,2024,State Senate,Worcester and Middlesex,18.208344118408355,18.208344118408355,0.0,agrees,"Nicholas A. Pirro, III",2,1,False
-165361,2024,State Representative,1st Middlesex,2.6992190461748446,2.6992190461748446,0.0,agrees,Lynne E. Archambault,2,1,False
-165359,2024,State Representative,2nd Worcester,4.494056248187883,4.494056248187883,0.0,agrees,Bruce K. Chester,2,1,False
-165352,2024,State Senate,Cape and Islands,24.280809643281582,24.280809643281582,0.0,agrees,Christopher Robert Lauzon,3,1,False
-165332,2024,State Representative,3rd Berkshire,14.96194001913398,14.96194001913398,0.0,agrees,Marybeth F. Mitts,2,1,False
-165325,2024,State Senate,"Berkshire, Hampden, Franklin & Hampshire",41.88938148912164,41.88938148912164,0.0,agrees,David A. Rosa,2,1,False
-165318,2024,State Representative,10th Bristol,5.27005162185068,5.27005162185068,0.0,agrees,Joseph M. Pires,2,1,False
-160410,2023,State Senate,Worcester & Hampshire,-9.05484649879269,-9.05484649879269,0.0,agrees,Peter J. Durant,2,1,False
-154586,2022,State Representative,4th Norfolk,27.92365745649598,27.92365745649598,0.0,agrees,Paul J. Rotondo,2,1,False
-154583,2022,State Representative,19th Middlesex,12.596824699225406,12.596824699225406,0.0,agrees,Paul Sarnowski,2,1,False
-154582,2022,State Representative,31st Middlesex,42.3037600817903,42.3037600817903,0.0,agrees,Theodore Christos Menounos,2,1,False
-154576,2022,State Representative,11th Worcester,-17.195666029318033,-17.195666029318033,0.0,agrees,Hannah E. Kane,2,1,False
-154571,2022,State Representative,2nd Norfolk,41.18654958235168,41.18654958235168,0.0,agrees,Sharon Marie Cintolo,2,1,False
-154569,2022,State Representative,1st Plymouth,-15.511092584873332,-15.511092584873332,0.0,agrees,Mathew J. Muratore,2,1,False
-154556,2022,State Representative,9th Norfolk,-1.7384585667374886,-1.7384585667374886,0.0,agrees,Marcus S. Vaughn,2,1,False
-154554,2022,State Representative,8th Norfolk,38.83445658945461,38.83445658945461,0.0,agrees,Howard L. Terban,2,1,False
-154553,2022,State Senate,5th Middlesex,27.215629435033367,27.215629435033367,0.0,agrees,"Edward F. Dombroski, Jr",2,1,False
-154548,2022,State Senate,3rd Essex,42.674634246857615,42.674634246857615,0.0,agrees,Annalisa Salustri,2,1,False
-154538,2022,State Representative,4th Worcester,4.984310005108372,4.984310005108372,0.0,agrees,John M. Dombrowski,2,1,False
-154537,2022,State Representative,17th Worcester,18.402994385527133,18.402994385527133,0.0,agrees,Paul J. Fullen,2,1,False
-154533,2022,State Representative,8th Middlesex,30.050848310929872,30.050848310929872,0.0,agrees,Loring Barnes,2,1,False
-154527,2022,State Representative,5th Plymouth,-3.4841768889805227,-3.4841768889805227,0.0,agrees,David F. Decoste,2,1,False
-154521,2022,State Representative,19th Worcester,35.046728971962615,35.046728971962615,0.0,agrees,Jonathan I. Hostage,2,1,False
-154519,2022,State Representative,1st Bristol,-15.135295866785608,-15.135295866785608,0.0,agrees,Fred Jay Barrows,2,1,False
-154518,2022,State Representative,3rd Worcester,25.418121668810876,25.418121668810876,0.0,agrees,Aaron L. Packard,2,1,False
-154514,2022,State Representative,28th Middlesex,41.61658653846154,41.61658653846154,0.0,agrees,Michael K. Marchese,2,1,False
-154513,2022,State Representative,5th Essex,38.27468366121733,38.27468366121733,0.0,agrees,Ashley Sullivan,2,1,False
-154508,2022,State Representative,6th Plymouth,12.277300840025852,12.277300840025852,0.0,agrees,Kenneth Sweezey,2,1,False
-154506,2022,State Representative,36th Middlesex,21.287278446554957,21.287278446554957,0.0,agrees,George Derek Boag,2,1,False
-165374,2024,State Representative,14th Bristol,11.90529572664903,11.90529572664903,0.0,agrees,"David Cannata, Jr",2,1,False
-165376,2024,State Senate,Bristol and Norfolk,45.989298440051,45.989298440051,0.0,agrees,Laura L. Saylor,2,1,False
-165385,2024,State Representative,5th Barnstable,-22.77717411667728,-22.77717411667728,0.0,agrees,Steven G. Xiarhos,2,1,False
-165471,2024,State Representative,13th Norfolk,22.914979757085025,22.914979757085025,0.0,agrees,William R. Dermody,2,1,False
-165545,2024,State Representative,4th Hampden,-17.662088789524113,-17.662088789524113,0.0,agrees,Kelly W. Pease,2,1,False
-165538,2024,State Representative,2nd Norfolk,39.14588830847111,39.14588830847111,0.0,agrees,Sharon Marie Cintolo,2,1,False
-165530,2024,State Representative,11th Middlesex,62.54131829671399,62.54131829671399,0.0,agrees,Vladislav S. Yanovsky,2,1,False
-165522,2024,State Representative,9th Norfolk,-14.819417768237114,-14.819417768237114,0.0,agrees,Marcus S. Vaughn,2,1,False
-165509,2024,State Representative,17th Middlesex,55.7241052382081,55.7241052382081,0.0,agrees,Joseph Paul Onoroski,2,1,False
-165508,2024,State Representative,18th Middlesex,56.66529096161783,56.66529096161783,0.0,agrees,David Michael Ouellette,2,1,False
-165493,2024,State Representative,12th Plymouth,6.27572016460905,6.27572016460905,0.0,agrees,Eric J. Meschino,2,1,False
-165491,2024,State Representative,2nd Essex,8.442194092827005,8.442194092827005,0.0,agrees,Mark T. Tashjian,2,1,False
-165490,2024,State Representative,10th Norfolk,23.54059405940594,23.54059405940594,0.0,agrees,"Charles F. Bailey, III",2,1,False
-165488,2024,State Representative,19th Worcester,55.4194733619106,55.4194733619106,0.0,agrees,Boyd Stewart Conklin,2,1,False
-165486,2024,State Representative,1st Bristol,-0.3873239436619713,-0.3873239436619713,0.0,agrees,Michael Chaisson,2,1,False
-165479,2024,State Representative,5th Essex,33.39551542737753,33.39551542737753,0.0,agrees,"Steven G. Leblanc, Jr",2,1,False
-165473,2024,State Senate,1st Middlesex,27.157940568194185,27.157940568194185,0.0,agrees,Karla J. Miller,2,1,False
-165469,2024,State Representative,5th Bristol,-3.88194852016433,-3.88194852016433,0.0,agrees,Justin Thurber,2,1,False
-165386,2024,State Representative,2nd Barnstable,18.717744304116145,18.717744304116145,0.0,agrees,Susanne H. Conley,2,1,False
-165468,2024,State Representative,11th Norfolk,36.1986074270557,36.1986074270557,0.0,agrees,Andrew M. Pepoli,2,1,False
-165465,2024,State Representative,13th Middlesex,47.11668120885222,47.11668120885222,0.0,agrees,Virginia A Gardner,2,1,False
-165444,2024,State Representative,9th Plymouth,24.23434194794445,24.23434194794445,0.0,agrees,Lawrence Peter Novak,3,1,False
-165441,2024,State Representative,8th Plymouth,1.0220994475138134,1.0220994475138134,0.0,agrees,Sandra M. Wright,2,1,False
-165436,2024,State Senate,Plymouth and Barnstable,2.4265622834972964,2.4265622834972964,0.0,agrees,Mathew J. Muratore,2,1,False
-165435,2024,State Representative,3rd Barnstable,-12.069506961164029,-12.069506961164029,0.0,agrees,David T. Vieira,2,1,False
-165434,2024,State Senate,3rd Suffolk,40.438934833504575,40.438934833504575,0.0,agrees,Jeannamarie Tamas,2,1,False
-165421,2024,State Representative,9th Suffolk,64.91723341460285,64.91723341460285,0.0,agrees,Roy A. Owens,2,1,False
-165405,2024,State Senate,Worcester & Hampden,-31.733585642532887,-31.733585642532887,0.0,agrees,Ryan C. Fattman,2,1,False
-165402,2024,State Senate,2nd Essex,33.70378040081912,33.70378040081912,0.0,agrees,Damian Mitchell Anketell,2,1,False
-165401,2024,State Representative,6th Essex,47.29903261707046,47.29903261707046,0.0,agrees,Ty Vitale,3,1,False
-165395,2024,State Senate,"Norfolk, Worcester & Middlesex",17.808247337910622,17.808247337910622,0.0,agrees,Dashe M. Videira,2,1,False
-165388,2024,State Senate,Worcester & Hampshire,-16.834240794557466,-16.834240794557466,0.0,agrees,Peter J. Durant,2,1,False
-154498,2022,State Senate,First Plymouth & Norfolk,-21.250171281936293,-21.250171281936293,0.0,agrees,Patrick Michael O'Connor,2,1,False
-154494,2022,State Representative,8th Hampden,29.55613993146864,29.55613993146864,0.0,agrees,Sean Goonan,2,1,False
-154492,2022,State Representative,11th Suffolk,45.34248987497799,45.34248987497799,0.0,agrees,Todd B. Taylor,2,1,False
-140912,2020,State Representative,6th Plymouth,18.37973933649289,18.37973933649289,0.0,agrees,Tatyana Medvedev Semyrog,2,1,False
-140985,2020,State Representative,31st Middlesex,43.27049180327869,43.27049180327869,0.0,agrees,Elizabeth R. Harrah,2,1,False
-140983,2020,State Representative,11th Hampden,67.42196165425447,67.42196165425447,0.0,agrees,"Prince Golphin, Jr",2,1,False
-140975,2020,State Representative,1st Plymouth,-11.27620448694373,-11.27620448694373,0.0,agrees,Mathew J. Muratore,2,1,False
-130449,2016,State Representative,4th Plymouth,39.165232702389055,39.165232702389055,0.0,agrees,Michael White,2,1,False
-140961,2020,State Representative,4th Plymouth,31.98345308077509,31.98345308077509,0.0,agrees,Craig S. Valdez,2,1,False
-140960,2020,State Representative,4th Middlesex,42.16463414634146,42.16463414634146,0.0,agrees,Syed H. Hashmi,2,1,False
-140947,2020,State Representative,9th Middlesex,47.29084982757806,47.29084982757806,0.0,agrees,"George A. Darcy, III",2,1,False
-140945,2020,State Representative,4th Worcester,17.067364913115927,17.067364913115927,0.0,agrees,Thomas F. Ardinger,2,1,False
-140937,2020,State Representative,4th Norfolk,34.3667913714877,34.3667913714877,0.0,agrees,Paul J. Rotondo,3,1,False
-140932,2020,State Representative,5th Plymouth,-1.3936084914665303,-1.3936084914665303,0.0,agrees,David F. Decoste,2,1,False
-140928,2020,State Representative,13th Middlesex,37.98139206218349,37.98139206218349,0.0,agrees,Ingrid I. Centurion,2,1,False
-140921,2020,State Representative,8th Bristol,14.065230052417006,14.065230052417006,0.0,agrees,Evan Gendreau,2,1,False
-140917,2020,State Representative,3rd Bristol,16.065573770491802,16.065573770491802,0.0,agrees,Kelly A. Dooner,2,1,False
-140903,2020,State Senate,Plymouth and Norfolk,-10.008302161360438,-10.008302161360438,0.0,agrees,Patrick Michael O'Connor,2,1,False
-145846,2021,State Representative,19th Suffolk,49.607982893799,49.607982893799,0.0,agrees,Richard A. Fucillo,3,1,False
-140899,2020,State Representative,9th Hampden,60.22645929589381,60.22645929589381,0.0,agrees,Robert J. Underwood,2,1,False
-140878,2020,State Representative,5th Norfolk,29.124659253169487,29.124659253169487,0.0,agrees,Frank Herbert Collins,2,1,False
-140875,2020,State Representative,2nd Essex,-2.573554508840198,-2.573554508840198,0.0,agrees,Leonard Mirra,2,1,False
-140874,2020,State Senate,Plymouth and Barnstable,12.614295740537546,12.614295740537546,0.0,agrees,"James R. McMahon, III",2,1,False
-140846,2020,State Representative,22nd Middlesex,-10.630826470465276,-10.630826470465276,0.0,agrees,Marc T. Lombardo,2,1,False
-140844,2020,State Representative,6th Essex,59.65412729541808,59.65412729541808,0.0,agrees,Euplio R. Marciano,2,1,False
-140842,2020,State Senate,Worcester and Middlesex,1.9698837406037784,1.9698837406037784,0.0,agrees,Dean Tran,2,1,False
-140841,2020,State Representative,12th Worcester,16.670054062842972,16.670054062842972,0.0,agrees,Susan E. Smiley,3,1,False
-140837,2020,State Senate,Worcester and Norfolk,-20.968743072489467,-20.968743072489467,0.0,agrees,Ryan C. Fattman,2,1,False
-140834,2020,State Representative,7th Hampden,0.7559830015656466,0.7559830015656466,0.0,agrees,James Chip Harrington,2,1,False
-140830,2020,State Representative,2nd Barnstable,8.26148823972545,8.26148823972545,0.0,agrees,"William L. Crocker, Jr.",3,1,False
-140829,2020,State Representative,1st Barnstable,-9.951439228657888,-9.951439228657888,0.0,agrees,Timothy R. Whelan,2,1,False
-140828,2020,State Representative,5th Barnstable,-4.288506495995098,-4.288506495995098,0.0,agrees,Steven George Xiarhos,2,1,False
-140989,2020,State Representative,4th Hampden,-8.073852295409184,-8.073852295409184,0.0,agrees,Kelly W. Pease,4,1,False
-145905,2021,State Representative,4th Essex,10.77195310771953,10.77195310771953,0.0,agrees,Robert L. Snow,2,1,False
-154491,2022,State Representative,16th Middlesex,30.896651062297444,30.896651062297444,0.0,agrees,Karla Jean Miller,2,1,False
-154424,2022,State Representative,2nd Barnstable,24.33642468819955,24.33642468819955,0.0,agrees,William Buffington Peters,2,1,False
-154490,2022,State Representative,2nd Middlesex,29.716574557623083,29.716574557623083,0.0,agrees,Raymond Yinggang Xie,2,1,False
-154478,2022,State Representative,9th Plymouth,21.291075247909784,21.291075247909784,0.0,agrees,Lawrence P. Novak,2,1,False
-154475,2022,State Representative,8th Plymouth,-20.00254000508001,-20.00254000508001,0.0,agrees,Angelo L. D'Emilia,2,1,False
-154474,2022,State Representative,1st Barnstable,8.86646629454702,8.86646629454702,0.0,agrees,Tracy A. Post,3,1,False
-154473,2022,State Senate,"Norfolk, Plymouth & Bristol",32.25610656342788,32.25610656342788,0.0,agrees,Brian R. Muello,2,1,False
-154450,2022,State Representative,5th Suffolk,77.40155131264916,77.40155131264916,0.0,agrees,Roy A. Owens,3,2,False
-154440,2022,State Senate,2nd Essex,35.43473273686626,35.43473273686626,0.0,agrees,Damian M. Anketell,2,1,False
-154438,2022,State Senate,1st Worcester,47.21930488728232,47.21930488728232,0.0,agrees,Lisa K. Mair,2,1,False
-154437,2022,State Representative,12th Worcester,20.758843146902844,20.758843146902844,0.0,agrees,Michael A. Vulcano,2,1,False
-154436,2022,State Senate,Third Bristol & Plymouth,8.579542851907835,8.579542851907835,0.0,agrees,Maria S. Collins,2,1,False
-154433,2022,State Senate,"Norfolk, Worcester & Middlesex",9.7465452878381,9.7465452878381,0.0,agrees,Shawn C. Dooley,2,1,False
-154430,2022,State Representative,7th Hampden,5.531680440771347,5.531680440771347,0.0,agrees,James Chip Harrington,2,1,False
-154427,2022,State Senate,Worcester & Hampshire,8.711603702623455,8.711603702623455,0.0,agrees,James Anthony Amorello,2,1,False
-154413,2022,State Senate,Bristol and Norfolk,20.558028570597305,20.558028570597305,0.0,agrees,Michael Chaisson,3,1,False
-154348,2022,State Representative,14th Middlesex,45.842944539163575,45.842944539163575,0.0,agrees,Rodney E. Cleaves,2,1,False
-154412,2022,State Representative,2nd Bristol,21.10983981693364,21.10983981693364,0.0,agrees,Steven Joseph Escobar,2,1,False
-154402,2022,State Senate,Worcester and Middlesex,20.559798105601264,20.559798105601264,0.0,agrees,Kenneth B. Hoyt,2,1,False
-154398,2022,State Representative,2nd Worcester,6.998813760379602,6.998813760379602,0.0,agrees,Bruce K. Chester,2,1,False
-154391,2022,State Senate,Cape and Islands,27.40482011875655,27.40482011875655,0.0,agrees,Christopher Robert Lauzon,2,1,False
-154385,2022,State Representative,18th Essex,20.8388746803069,20.8388746803069,0.0,agrees,Jeffrey Peter Dufour,2,1,False
-154378,2022,State Senate,2nd Essex and Middlesex,14.70250340644954,14.70250340644954,0.0,agrees,SalvatorE Paul Defranco,2,1,False
-154377,2022,State Representative,14th Essex,8.572854291417165,8.572854291417165,0.0,agrees,Joseph G. Finn,2,1,False
-154372,2022,State Representative,3rd Berkshire,81.17307905532765,81.17307905532765,0.0,agrees,Michael Silvio Lavery,2,1,False
-154369,2022,State Representative,3rd Hampden,-19.98918334234721,-19.98918334234721,0.0,agrees,Nicholas A. Boldyga,2,1,False
-154365,2022,State Senate,"Berkshire, Hampden, Franklin & Hampshire",52.84337924994029,52.84337924994029,0.0,agrees,Brendan M. Phair,2,1,False
-154358,2022,State Representative,10th Bristol,12.510566356720204,12.510566356720204,0.0,agrees,Jeffrey Gerald Swift,2,1,False
-154357,2022,State Representative,8th Bristol,7.048150732728536,7.048150732728536,0.0,agrees,Evan Gendreau,2,1,False
-154350,2022,State Senate,Middlesex and Worcester,40.542013543525954,40.542013543525954,0.0,agrees,Anthony Christakis,2,1,False
-140962,2020,State Representative,9th Norfolk,-17.041136321711864,-17.041136321711864,0.0,agrees,Shawn C. Dooley,2,1,False
-130292,2016,State Senate,"Worcester, Hampden, Hampshire and Middlesex",8.822802333629982,8.822802333629982,0.0,agrees,James P. Ehrhard,2,1,False
-130446,2016,State Senate,5th Middlesex,38.293593794886526,38.293593794886526,0.0,agrees,Vincent Lawrence Dixon,2,1,False
-112755,2012,State Representative,24th Middlesex,35.19268392556532,35.19268392556532,0.0,agrees,James F. Gammill,3,1,False
-112701,2012,State Representative,7th Plymouth,-8.476256567859618,-8.476256567859618,0.0,agrees,Geoff Diehl,2,1,False
-112708,2012,State Representative,14th Middlesex,30.802727072795257,30.802727072795257,0.0,agrees,Michael J. Benn,2,1,False
-112731,2012,State Representative,4th Berkshire,64.28501034788607,64.28501034788607,0.0,agrees,Lee Scott Laugenour,2,1,False
-112745,2012,State Representative,18th Essex,-2.202414434684785,-2.202414434684785,0.0,agrees,"James J. Lyons, Jr.",2,1,False
-112746,2012,State Representative,17th Essex,27.012144527419473,27.012144527419473,0.0,agrees,Kevin M. Cuff,2,1,False
-112747,2012,State Senate,2nd Essex and Middlesex,30.35971223021583,30.35971223021583,0.0,agrees,Paul Adams,2,1,False
-112756,2012,State Representative,23rd Middlesex,62.69668670845594,62.69668670845594,0.0,agrees,Joseph J. Monju,2,1,False
-105699,2010,State Representative,14th Essex,5.298182748912206,5.298182748912206,0.0,agrees,Kevin J. Begley,2,1,False
-112757,2012,State Senate,4th Middlesex,36.313935123314295,36.313935123314295,0.0,agrees,Gerry Dembrowski,2,1,False
-112761,2012,State Representative,2nd Worcester,1.9973687357971504,1.9973687357971504,0.0,agrees,Richard M. Bastien,2,1,False
-112769,2012,State Representative,7th Middlesex,42.236683879182294,42.236683879182294,0.0,agrees,Jon Andrew Fetherston,2,1,False
-112772,2012,State Representative,2nd Franklin,1.0758560428157926,1.0758560428157926,0.0,agrees,Susannah M. Whipps Lee,3,1,False
-112776,2012,State Representative,2nd Bristol,16.413628212791398,16.413628212791398,0.0,agrees,George T. Ross,2,1,False
-112777,2012,State Senate,Bristol and Norfolk,25.07564046665874,25.07564046665874,0.0,agrees,Jeffrey Robert Bailey,2,1,False
-105766,2011,State Representative,10th Middlesex,35.29631010063362,35.29631010063362,0.0,agrees,James E. Dixon,2,1,False
-105754,2010,State Representative,4th Norfolk,30.583783026140583,30.583783026140583,0.0,agrees,Douglas R. Ness,3,1,False
-105751,2010,State Representative,19th Middlesex,27.260990252404625,27.260990252404625,0.0,agrees,Mario S. Marchese,2,1,False
-105749,2010,State Representative,31st Middlesex,17.004780226186313,17.004780226186313,0.0,agrees,George Georgountzos,3,1,False
-105736,2010,State Representative,12th Essex,19.24847579942765,19.24847579942765,0.0,agrees,Martin J. Scafidi,2,1,False
-105734,2010,State Representative,12th Norfolk,7.462686567164178,7.462686567164178,0.0,agrees,James M. Stanton,2,1,False
-105732,2010,State Representative,4th Bristol,-8.958306441203051,-8.958306441203051,0.0,agrees,Steven S. Howitt,2,1,False
-105730,2010,State Representative,10th Middlesex,47.53201055615286,47.53201055615286,0.0,agrees,James E. Dixon,2,1,False
-105722,2010,State Representative,32nd Middlesex,2.977349880349495,2.977349880349495,0.0,agrees,David R. Lucas,2,1,False
-105721,2010,State Senate,2nd Middlesex,34.17148911891759,34.17148911891759,0.0,agrees,David M. Carnevale,2,1,False
-105720,2010,State Representative,34th Middlesex,47.08216394077229,47.08216394077229,0.0,agrees,Richard Cannava,2,1,False
-105719,2010,State Representative,9th Norfolk,-35.10119483052914,-35.10119483052914,0.0,agrees,Daniel B. Winslow,2,1,False
-105713,2010,State Representative,35th Middlesex,52.644960223078805,52.644960223078805,0.0,agrees,Karla Romero,2,1,False
-105712,2010,State Senate,Middlesex and Essex,4.636079750180161,4.636079750180161,0.0,agrees,Craig Spadafora,2,1,False
-105710,2010,State Senate,3rd Essex and Middlesex,35.065095329178746,35.065095329178746,0.0,agrees,Christopher Jordan Dent,2,1,False
-105708,2010,State Representative,9th Essex,-2.188196309204132,-2.188196309204132,0.0,agrees,Donald H. Wong,2,1,False
-105706,2010,State Representative,8th Essex,23.88623486279302,23.88623486279302,0.0,agrees,Katherine Kozitza,2,1,False
-112780,2012,State Senate,2nd Worcester,35.859023449509486,35.859023449509486,0.0,agrees,Stephen R. Simonian,2,1,False
-112789,2012,State Representative,5th Barnstable,-12.307692307692308,-12.307692307692308,0.0,agrees,Randy Hunt,2,1,False
-112792,2012,State Representative,5th Worcester,39.40325138778747,39.40325138778747,0.0,agrees,Jason M. Petraitis,2,1,False
-112866,2012,State Representative,9th Hampden,69.54031018583204,69.54031018583204,0.0,agrees,Robert J. Underwood,2,1,False
-112909,2012,State Representative,5th Hampden,40.35680152914941,40.35680152914941,0.0,agrees,Linda L. Vacon,3,1,False
-112908,2012,State Representative,8th Middlesex,22.730428745009547,22.730428745009547,0.0,agrees,Martin A. Lamb,2,1,False
-112905,2012,State Representative,4th Norfolk,61.8618925831202,61.8618925831202,0.0,agrees,Robert Montgomery Thomas,2,1,False
-112897,2012,State Representative,10th Norfolk,8.581115132633894,8.581115132633894,0.0,agrees,Richard A. Eustis,2,1,False
-112882,2012,State Representative,12th Hampden,40.53796462988457,40.53796462988457,0.0,agrees,Dennis John McCarthy,2,1,False
-112881,2012,State Representative,2nd Hampden,14.217129398976407,14.217129398976407,0.0,agrees,Marie Angelides,2,1,False
-112880,2012,State Representative,12th Plymouth,25.050025594490204,25.050025594490204,0.0,agrees,Debra A. Betz,2,1,False
-112879,2012,State Representative,6th Plymouth,10.138636665633172,10.138636665633172,0.0,agrees,Karen E. Barry,2,1,False
-112878,2012,State Senate,1st Middlesex,42.36638146339891,42.36638146339891,0.0,agrees,James J. Buba,2,1,False
-112877,2012,State Representative,36th Middlesex,17.134681604345502,17.134681604345502,0.0,agrees,Cathy Richardson,2,1,False
-112875,2012,State Representative,18th Worcester,-40.11387974716607,-40.11387974716607,0.0,agrees,Ryan C. Fattman,2,1,False
-112871,2012,State Representative,13th Essex,25.601397661604626,25.601397661604626,0.0,agrees,Daniel C. Bennett,2,1,False
-112870,2012,State Senate,Plymouth and Norfolk,-36.677560516257685,-36.677560516257685,0.0,agrees,"Robert L. Hedlund, Jr.",2,1,False
-112867,2012,State Representative,6th Hampden,27.387593252234694,27.387593252234694,0.0,agrees,Lincoln A. Blackie,2,1,False
-112862,2012,State Representative,17th Middlesex,53.59016639184531,53.59016639184531,0.0,agrees,Martin D. Burke,2,1,False
-112795,2012,State Senate,3rd Middlesex,21.190405831363275,21.190405831363275,0.0,agrees,Sandi Martinez,2,1,False
-112861,2012,State Representative,2nd Middlesex,30.197334256534532,30.197334256534532,0.0,agrees,Valerie A. Wormell,2,1,False
-112860,2012,State Representative,6th Worcester,-10.98239376039456,-10.98239376039456,0.0,agrees,Peter J. Durant,2,1,False
-112857,2012,State Representative,26th Middlesex,43.24188586854165,43.24188586854165,0.0,agrees,Mike Connolly,3,1,False
-112849,2012,State Representative,11th Plymouth,26.54553512076224,26.54553512076224,0.0,agrees,Daniel J. Murphy,2,1,False
-112847,2012,State Representative,8th Plymouth,-4.642253521126766,-4.642253521126766,0.0,agrees,Angelo L. D'Emilia,2,1,False
-112842,2012,State Representative,2nd Essex,-4.454342984409804,-4.454342984409804,0.0,agrees,Leonard Mirra,2,1,False
-112835,2012,State Senate,1st Suffolk and Middlesex,63.19976907395046,63.19976907395046,0.0,agrees,"Thomas J. Dooley, III",2,1,False
-112827,2012,State Representative,2nd Suffolk,64.05265257279618,64.05265257279618,0.0,agrees,Charles F. Klauder,2,1,False
-112822,2012,State Representative,5th Suffolk,56.33143149110109,56.33143149110109,0.0,agrees,Althea Garrison,2,1,False
-112810,2012,State Representative,3rd Middlesex,28.301198778431107,28.301198778431107,0.0,agrees,"Chuck S. Kuniewich, Jr.",2,1,False
-112807,2012,State Senate,2nd Essex,41.5059351860028,41.5059351860028,0.0,agrees,Richard A. Jolitz,2,1,False
-112801,2012,State Representative,12th Bristol,-15.289883596693477,-15.289883596693477,0.0,agrees,Keiko M. Orrall,2,1,False
-112800,2012,State Senate,2nd Suffolk and Middlesex,52.73308683921256,52.73308683921256,0.0,agrees,Steven W. Aylward,2,1,False
-112798,2012,State Representative,8th Worcester,-2.497190050334752,-2.497190050334752,0.0,agrees,Kevin J. Kuros,2,1,False
-105700,2010,State Representative,16th Essex,67.59275237273512,67.59275237273512,0.0,agrees,Enrique Matos,3,1,False
-105694,2010,State Representative,8th Middlesex,42.558278541542144,42.558278541542144,0.0,agrees,Jonathan A. Loya,2,1,False
-130439,2016,State Representative,9th Essex,-9.87183334047752,-9.87183334047752,0.0,agrees,Donald H. Wong,2,1,False
-105589,2010,State Senate,1st Hampden and Hampshire,16.375297003882782,16.375297003882782,0.0,agrees,Thomas A. McCarthy,2,1,False
-105579,2010,State Representative,5th Barnstable,-6.07770090473656,-6.07770090473656,0.0,agrees,Randy Hunt,2,1,False
-105580,2010,State Representative,2nd Barnstable,17.993652545881055,17.993652545881055,0.0,agrees,"James F. Munafo, Jr.",2,1,False
-105581,2010,State Representative,3rd Barnstable,-7.896575821104124,-7.896575821104124,0.0,agrees,David T. Vieira,2,1,False
-105582,2010,State Senate,Plymouth and Barnstable,4.872189381056491,4.872189381056491,0.0,agrees,Thomas Francis Keyes,2,1,False
-105584,2010,State Representative,5th Worcester,30.782562325023328,30.782562325023328,0.0,agrees,Rodney Arvid Josephson,2,1,False
-105586,2010,State Senate,3rd Middlesex,14.020465292824497,14.020465292824497,0.0,agrees,Sandra B. Martinez,2,1,False
-105590,2010,State Representative,18th Worcester,-5.13096113593936,-5.13096113593936,0.0,agrees,Ryan C. Fattman,2,1,False
-105693,2010,State Representative,1st Worcester,-26.6206313416009,-26.6206313416009,0.0,agrees,Kimberly N. Ferguson,3,1,False
-105591,2010,State Senate,Worcester and Norfolk,7.094565972516392,7.094565972516392,0.0,agrees,Kimberly B. Roy,2,1,False
-105593,2010,State Representative,6th Bristol,27.24810400866739,27.24810400866739,0.0,agrees,David K. Rose,2,1,False
-105594,2010,State Senate,1st Plymouth and Bristol,16.113445735576843,16.113445735576843,0.0,agrees,David W. Pottier,2,1,False
-105595,2010,State Representative,4th Middlesex,-0.6763154335181876,-0.6763154335181876,0.0,agrees,Steven L. Levy,2,1,False
-105596,2010,State Senate,1st Worcester,24.457548078775964,24.457548078775964,0.0,agrees,"William J. Higgins, Sr",2,1,False
-105597,2010,State Representative,6th Essex,20.61958032700073,20.61958032700073,0.0,agrees,Brett R. Schetzsle,2,1,False
-105577,2010,State Representative,1st Middlesex,-25.03614457831325,-25.03614457831325,0.0,agrees,Sheila C. Harrington,2,1,False
-105566,2010,State Representative,2nd Bristol,-4.351204351204352,-4.351204351204352,0.0,agrees,George T. Ross,3,1,False
-105564,2010,State Representative,2nd Franklin,10.188362693510255,10.188362693510255,0.0,agrees,Steven E. Adam,3,1,False
-105563,2010,State Senate,2nd Middlesex and Norfolk,18.541043878637936,18.541043878637936,0.0,agrees,Edward Bergin McGrath,2,1,False
-105558,2010,State Representative,2nd Berkshire,19.993351063829788,19.993351063829788,0.0,agrees,Michael F. Case,3,1,False
-105556,2010,State Senate,Worcester and Middlesex,17.848731709200422,17.848731709200422,0.0,agrees,Neal Andrew Heeren,2,1,False
-105554,2010,State Senate,"Worcester, Hampden, Hampshire and Franklin",32.48864776611847,32.48864776611847,0.0,agrees,Daniel D. Dubrule,2,1,False
-105548,2010,State Representative,24th Middlesex,55.38198681962412,55.38198681962412,0.0,agrees,Lalig Musserian,2,1,False
-105538,2010,State Senate,2nd Essex and Middlesex,11.379259909316952,11.379259909316952,0.0,agrees,Jamison Tomasek,3,1,False
-105536,2010,State Representative,18th Essex,-6.535471331389697,-6.535471331389697,0.0,agrees,"James J. Lyons, Jr.",2,1,False
-105530,2010,State Senate,1st Essex,17.95056026002908,17.95056026002908,0.0,agrees,Stephen R. Cole,2,1,False
-105525,2010,State Representative,4th Berkshire,63.91512861502689,63.91512861502689,0.0,agrees,Lee Scott Laugenour,2,1,False
-105523,2010,State Senate,Hampden,21.878443672120035,21.878443672120035,0.0,agrees,Robert A. Magovern,2,1,False
-105511,2010,State Representative,11th Bristol,33.276547416240774,33.276547416240774,0.0,agrees,Ivo M. Almeida,2,1,False
-105503,2010,State Representative,14th Middlesex,17.66628534074195,17.66628534074195,0.0,agrees,K.c. Winslow,2,1,False
-105497,2010,State Senate,Norfolk and Plymouth,21.222726934246776,21.222726934246776,0.0,agrees,Daniel M. Dewey,3,1,False
-104723,2010,State Representative,16th Essex,77.86407766990291,77.86407766990291,0.0,agrees,Rafael Gadea,2,1,False
-105598,2010,State Senate,2nd Essex,30.03600404838147,30.03600404838147,0.0,agrees,Richard A. Jolitz,3,1,False
-105599,2010,State Representative,22nd Middlesex,-16.519275943070333,-16.519275943070333,0.0,agrees,Marc T. Lombardo,4,2,False
-105601,2010,State Representative,3rd Middlesex,20.16871621220222,20.16871621220222,0.0,agrees,"Chuck S. Kuniewich, Jr.",2,1,False
-105665,2010,State Representative,36th Middlesex,17.885965487828887,17.885965487828887,0.0,agrees,George Derek Boag,3,1,False
-105692,2010,State Representative,3rd Norfolk,27.426766226306725,27.426766226306725,0.0,agrees,Gary M. Lowell,2,1,False
-105688,2010,State Representative,5th Plymouth,5.662084959556535,5.662084959556535,0.0,agrees,Korey M. Welch,2,1,False
-105686,2010,State Representative,9th Worcester,-34.83576539523354,-34.83576539523354,0.0,agrees,"George N. Peterson, Jr.",2,1,False
-105685,2010,State Representative,2nd Essex,3.67627611742925,3.67627611742925,0.0,agrees,Robert V. Finneran,2,1,False
-105679,2010,State Senate,1st Bristol and Plymouth,24.317155054503253,24.317155054503253,0.0,agrees,Derek A. Maksy,2,1,False
-105678,2010,State Representative,7th Bristol,50.49449784092492,50.49449784092492,0.0,agrees,C.J. Ferry,2,1,False
-105677,2010,State Representative,8th Bristol,35.367674505412474,35.367674505412474,0.0,agrees,F. George Jacome,2,1,False
-105676,2010,State Representative,10th Bristol,14.49232056415466,14.49232056415466,0.0,agrees,Peter F. Winters,2,1,False
-105675,2010,State Representative,28th Middlesex,28.048113723346084,28.048113723346084,0.0,agrees,Dennis John Giantassio,2,1,False
-105674,2010,State Representative,5th Essex,30.30973451327434,30.30973451327434,0.0,agrees,Janet Anne Holmes,2,1,False
-105672,2010,State Representative,12th Hampden,29.561051404894467,29.561051404894467,0.0,agrees,Joshua Carpenter,2,1,False
-105671,2010,State Representative,2nd Hampden,2.7582540901305297,2.7582540901305297,0.0,agrees,Marie Angelides,2,1,False
-105668,2010,State Representative,6th Plymouth,-2.761210514689644,-2.761210514689644,0.0,agrees,Daniel K. Webster,2,1,False
-105666,2010,State Senate,1st Middlesex,18.23631277474358,18.23631277474358,0.0,agrees,James J. Buba,3,1,False
-105663,2010,State Representative,8th Worcester,-14.448155781394355,-14.448155781394355,0.0,agrees,Kevin J. Kuros,2,1,False
-105605,2010,State Representative,8th Suffolk,54.49850049983338,54.49850049983338,0.0,agrees,Brad Marston,2,1,False
-105660,2010,State Representative,9th Bristol,12.881554917818944,12.881554917818944,0.0,agrees,Joe Michaud,3,1,False
-105659,2010,State Representative,13th Essex,2.8998294217987164,2.8998294217987164,0.0,agrees,Daniel C. Bennett,2,1,False
-105657,2010,State Representative,3rd Plymouth,23.578611487139824,23.578611487139824,0.0,agrees,Timothy F. Finnerty,3,1,False
-105656,2010,State Representative,6th Hampden,9.207033842070334,9.207033842070334,0.0,agrees,Gregory C. Neffinger,2,1,False
-105655,2010,State Representative,9th Hampden,60.81974438078448,60.81974438078448,0.0,agrees,Robert J. Underwood,2,1,False
-105649,2010,State Representative,4th Barnstable,28.815494952263492,28.815494952263492,0.0,agrees,David M. Dunford,3,1,False
-105640,2010,State Representative,10th Plymouth,12.292748283369615,12.292748283369615,0.0,agrees,John F. Cruz,2,1,False
-105634,2010,State Representative,8th Plymouth,-5.719640664383125,-5.719640664383125,0.0,agrees,Angelo L. D'Emilia,2,1,False
-105631,2010,State Representative,5th Norfolk,17.37071880956773,17.37071880956773,0.0,agrees,Paul Dan Clifford,2,1,False
-105630,2010,State Representative,12th Worcester,21.738098064822513,21.738098064822513,0.0,agrees,James F. Gettens,2,1,False
-105627,2010,State Representative,2nd Plymouth,-32.21438107953462,-32.21438107953462,0.0,agrees,Susan Williams Gifford,2,1,False
-105625,2010,State Senate,Suffolk and Norfolk,35.43024533138045,35.43024533138045,0.0,agrees,Brad Williams,2,1,False
-105623,2010,State Senate,"Middlesex, Suffolk and Essex",55.25470157509351,55.25470157509351,0.0,agrees,Barbara T. Bush,2,1,False
-105611,2010,State Representative,4th Suffolk,46.687427014402495,46.687427014402495,0.0,agrees,Patrick James Brennan,2,1,False
-112911,2012,State Representative,16th Essex,68.85245901639345,68.85245901639345,0.0,agrees,Jose L. Santiago,2,1,False
-112912,2012,State Representative,17th Worcester,53.273056057866185,53.273056057866185,0.0,agrees,William G. Lebeau,2,1,False
-112920,2012,State Representative,10th Essex,65.98145285935084,65.98145285935084,0.0,agrees,Dwight J. Caufield,2,1,False
-126330,2014,State Representative,19th Middlesex,40.615625407590976,40.615625407590976,0.0,agrees,Douglas W. Sears,2,1,False
-126308,2014,State Representative,5th Middlesex,25.13450292397661,25.13450292397661,0.0,agrees,Douglas A. Grindle,2,1,False
-126317,2014,State Representative,12th Essex,-3.086200780418591,-3.086200780418591,0.0,agrees,Leah Cole,2,1,False
-126319,2014,State Representative,1st Plymouth,-20.42547637692509,-20.42547637692509,0.0,agrees,Mathew J. Muratore,2,1,False
-126323,2014,State Representative,19th Suffolk,43.52849030742119,43.52849030742119,0.0,agrees,Paul A. Caruccio,2,1,False
-126324,2014,State Representative,7th Essex,68.06071104512084,68.06071104512084,0.0,agrees,Daniel J. Morris,2,1,False
-126326,2014,State Representative,27th Middlesex,76.21267893660533,76.21267893660533,0.0,agrees,Noelani Kamelamela,2,1,False
-126333,2014,State Representative,4th Hampden,17.816369191188297,17.816369191188297,0.0,agrees,Dan Allie,2,1,False
-112928,2012,State Representative,4th Middlesex,1.1852015950376604,1.1852015950376604,0.0,agrees,Steven L. Levy,2,1,False
-126336,2014,State Representative,13th Worcester,37.15688056716961,37.15688056716961,0.0,agrees,Jacqueline Gisela Kostas,2,1,False
-126345,2015,State Representative,1st Suffolk,80.40226921093347,80.40226921093347,0.0,agrees,Joanne T. Pomodoro,2,1,False
-126346,2015,State Representative,11th Worcester,-3.6274762027270366,-3.6274762027270366,0.0,agrees,Hannah E. Kane,2,1,False
-126355,2015,State Senate,2nd Plymouth and Bristol,16.416907200189794,16.416907200189794,0.0,agrees,Geoff Diehl,3,1,False
-127017,2016,State Representative,3rd Worcester,1.3734754422590978,1.3734754422590978,0.0,agrees,Dean Tran,2,1,False
-127018,2016,State Representative,12th Essex,20.181259103414796,20.181259103414796,0.0,agrees,Stephanie R. Peach,3,1,False
-126307,2014,State Representative,34th Middlesex,28.592295052035784,28.592295052035784,0.0,agrees,Nicholas Lanzilli,2,1,False
-126305,2014,State Representative,4th Plymouth,17.307265052210624,17.307265052210624,0.0,agrees,James Anthony Pavlik,2,1,False
-126302,2014,State Senate,5th Middlesex,13.681939556844508,13.681939556844508,0.0,agrees,Monica C. Medeiros,2,1,False
-126301,2014,State Representative,33rd Middlesex,33.187923315348414,33.187923315348414,0.0,agrees,John P. Matheson,2,1,False
-126300,2014,State Representative,32nd Middlesex,31.933581999759355,31.933581999759355,0.0,agrees,John P. Lock,2,1,False
-126295,2014,State Representative,9th Essex,-21.118863692997756,-21.118863692997756,0.0,agrees,Donald H. Wong,2,1,False
-126292,2014,State Representative,18th Middlesex,23.44772545889864,23.44772545889864,0.0,agrees,Fred W. Bahou,2,1,False
-126291,2014,State Representative,9th Middlesex,43.079291762894535,43.079291762894535,0.0,agrees,Sharon K. Antia,2,1,False
-126289,2014,State Representative,4th Worcester,10.082781456953644,10.082781456953644,0.0,agrees,Jacques A. Perrault,2,1,False
-126288,2014,State Representative,17th Worcester,-0.4607307403835803,-0.4607307403835803,0.0,agrees,Kate D. Campanale,2,1,False
-126287,2014,State Representative,16th Essex,5.717215741571591,5.717215741571591,0.0,agrees,William Lantigua,3,1,False
-126286,2014,State Representative,10th Worcester,17.8459866902078,17.8459866902078,0.0,agrees,"Mark W. Reil, Jr",2,1,False
-126284,2014,State Representative,8th Middlesex,13.528821759395832,13.528821759395832,0.0,agrees,Patricia M. Vanaria,2,1,False
-126282,2014,State Representative,3rd Norfolk,32.2090549984807,32.2090549984807,0.0,agrees,Patricia Kriegel,2,1,False
-126278,2014,State Representative,15th Essex,14.736059479553898,14.736059479553898,0.0,agrees,Al DiNuccio,2,1,False
-126274,2014,State Representative,9th Worcester,-24.77421147700431,-24.77421147700431,0.0,agrees,"David K. Muradian, Jr",2,1,False
-126271,2014,State Representative,6th Middlesex,67.28923920493489,67.28923920493489,0.0,agrees,Michael John Coombes,2,1,False
-130246,2016,State Senate,Norfolk and Plymouth,42.10056530794406,42.10056530794406,0.0,agrees,Alexander N. Mendez,2,1,False
-130250,2016,State Representative,14th Middlesex,23.90164600690916,23.90164600690916,0.0,agrees,Helen Brady,3,1,False
-130252,2016,State Senate,Middlesex and Worcester,33.29599519608296,33.29599519608296,0.0,agrees,Ted Busiek,3,1,False
-130340,2016,State Representative,11th Suffolk,78.48332571950662,78.48332571950662,0.0,agrees,Stephen Charles Bedell,2,1,False
-130436,2016,State Representative,18th Middlesex,44.48404918909286,44.48404918909286,0.0,agrees,Kamara Kay,2,1,False
-130432,2016,State Representative,17th Worcester,-9.126821958861186,-9.126821958861186,0.0,agrees,Kate D. Campanale,2,1,False
-130430,2016,State Representative,10th Worcester,10.015294063122765,10.015294063122765,0.0,agrees,Sandra Slattery E. Biagetti,2,1,False
-130420,2016,State Representative,5th Plymouth,-2.0886102229788595,-2.0886102229788595,0.0,agrees,David F. Decoste,2,1,False
-130414,2016,State Representative,1st Bristol,-20.07456266131345,-20.07456266131345,0.0,agrees,Fred Jay Barrows,2,1,False
-130405,2016,State Representative,3rd Bristol,-17.299436918102252,-17.299436918102252,0.0,agrees,Shaunna L. O'Connell,2,1,False
-130400,2016,State Representative,6th Plymouth,28.09986595174263,28.09986595174263,0.0,agrees,Vince Cogliano,2,1,False
-130391,2016,State Senate,Plymouth and Norfolk,-13.220990359806978,-13.220990359806978,0.0,agrees,Patrick M. O'Connor,2,1,False
-130390,2016,State Representative,3rd Plymouth,8.035204954771412,8.035204954771412,0.0,agrees,Kristen G. Arute,2,1,False
-130387,2016,State Representative,9th Hampden,61.28815833612882,61.28815833612882,0.0,agrees,Robert J. Underwood,2,1,False
-130380,2016,State Representative,2nd Plymouth,-15.554260176819202,-15.554260176819202,0.0,agrees,Susan Williams Gifford,2,1,False
-130371,2016,State Representative,9th Plymouth,71.13555537176413,71.13555537176413,0.0,agrees,Danny J. Yoon,2,1,False
-130361,2016,State Representative,3rd Barnstable,-5.911207183239103,-5.911207183239103,0.0,agrees,David T. Vieira,2,1,False
-130342,2016,State Representative,5th Suffolk,68.69997668816536,68.69997668816536,0.0,agrees,Althea Garrison,2,1,False
-130333,2016,State Representative,22nd Middlesex,-18.405947115837023,-18.405947115837023,0.0,agrees,Marc T. Lombardo,2,1,False
-130264,2016,State Senate,"Berkshire, Hampshire and Franklin",40.33755274261603,40.33755274261603,0.0,agrees,Christine M. Canning,2,1,False
-130331,2016,State Representative,6th Essex,49.693373884429384,49.693373884429384,0.0,agrees,Daniel Fishman,2,1,False
-130328,2016,State Representative,12th Worcester,60.627387894631,60.627387894631,0.0,agrees,Charlene R. Dicalogero,2,1,False
-130322,2016,State Senate,1st Hampden and Hampshire,11.798470986339144,11.798470986339144,0.0,agrees,James Chip Harrington,2,1,False
-130319,2016,State Representative,21st Middlesex,17.17241978958351,17.17241978958351,0.0,agrees,"Paul Girouard, Jr",2,1,False
-130316,2016,State Representative,2nd Barnstable,-9.594981086816128,-9.594981086816128,0.0,agrees,"William L. Crocker, Jr.",2,1,False
-130308,2016,State Senate,2nd Worcester,48.21301265754678,48.21301265754678,0.0,agrees,Mesfin H. Beshir,2,1,False
-130307,2016,State Representative,7th Worcester,-32.651874818331564,-32.651874818331564,0.0,agrees,Paul K. Frost,2,1,False
-130306,2016,State Senate,"Norfolk, Bristol and Middlesex",-20.14627258354554,-20.14627258354554,0.0,agrees,Richard J. Ross,2,1,False
-130294,2016,State Representative,1st Middlesex,-30.369339191717053,-30.369339191717053,0.0,agrees,Sheila C. Harrington,2,1,False
-130281,2016,State Senate,2nd Essex and Middlesex,27.032911463527693,27.032911463527693,0.0,agrees,Susan M. Laplante,2,1,False
-130279,2016,State Representative,18th Essex,-19.313556832962696,-19.313556832962696,0.0,agrees,"James J. Lyons, Jr.",2,1,False
-130277,2016,State Senate,"Hampshire, Franklin and Worcester",63.49318844003464,63.49318844003464,0.0,agrees,Donald Peltier,2,1,False
-130272,2016,State Representative,1st Essex,-8.113391984359724,-8.113391984359724,0.0,agrees,James M. Kelcourse,2,1,False
-130267,2016,State Senate,2nd Hampden and Hampshire,-19.08209223287558,-19.08209223287558,0.0,agrees,"Donald F. Humason, Jr",2,1,False
-126268,2014,State Senate,1st Bristol and Plymouth,30.734256072747375,30.734256072747375,0.0,agrees,Derek A. Maksy,2,1,False
-126267,2014,State Representative,6th Bristol,18.783185840707965,18.783185840707965,0.0,agrees,David L. Steinhof,2,1,False
-126264,2014,State Representative,10th Bristol,31.08506616257089,31.08506616257089,0.0,agrees,Abilio Bill Soares,2,1,False
-124862,2014,State Representative,9th Norfolk,-43.08865586272641,-43.08865586272641,0.0,agrees,Shawn C. Dooley,3,1,False
-126147,2014,State Representative,1st Middlesex,-28.58987603305785,-28.58987603305785,0.0,agrees,Sheila C. Harrington,2,1,False
-126146,2014,State Senate,"Worcester, Hampden, Hampshire and Middlesex",0.7197627314814825,0.7197627314814825,0.0,agrees,Michael J. Valanzola,2,1,False
-126140,2014,State Representative,23rd Middlesex,55.23809523809524,55.23809523809524,0.0,agrees,Joseph J. Monju,2,1,False
-126137,2014,State Senate,Cape and Islands,25.33567307436654,25.33567307436654,0.0,agrees,"Ronald R. Beaty, Jr.",3,1,False
-126131,2014,State Senate,2nd Essex and Middlesex,6.574379448012496,6.574379448012496,0.0,agrees,Alex J. Vispoli,2,1,False
-126127,2014,State Representative,3rd Hampshire,76.30465444287728,76.30465444287728,0.0,agrees,"Kenneth J. Roberts, Jr",2,1,False
-126123,2014,State Senate,1st Essex,7.646101864597671,7.646101864597671,0.0,agrees,Shaun P. Toohey,2,1,False
-126116,2014,State Senate,2nd Hampden and Hampshire,-13.326000162959344,-13.326000162959344,0.0,agrees,"Donald F. Humason, Jr",2,1,False
-126115,2014,State Representative,3rd Hampden,-35.76431511300455,-35.76431511300455,0.0,agrees,Nicholas A. Boldyga,2,1,False
-126096,2014,State Representative,14th Middlesex,50.501463900828504,50.501463900828504,0.0,agrees,Kenneth William Van Tassell,2,1,False
-126090,2014,State Senate,Norfolk and Plymouth,32.12978873951278,32.12978873951278,0.0,agrees,Leslie C. Gosule,2,1,False
-124867,2014,State Representative,4th Hampden,6.790734508018215,6.790734508018215,0.0,agrees,Dan Allie,2,1,False
-124866,2014,State Senate,5th Middlesex,6.472004816375682,6.472004816375682,0.0,agrees,Monica C. Medeiros,2,1,False
-124865,2014,State Representative,16th Suffolk,35.845824411134906,35.845824411134906,0.0,agrees,Todd B. Taylor,2,1,False
-124833,2013,State Representative,16th Worcester,27.79097387173397,27.79097387173397,0.0,agrees,Carol E. Claros,2,1,False
-126154,2014,State Representative,2nd Franklin,-9.253065774804908,-9.253065774804908,0.0,agrees,Susannah M. Whipps Lee,2,1,False
-124832,2013,State Representative,6th Bristol,6.28654970760234,6.28654970760234,0.0,agrees,David L. Steinhof,2,1,False
-124796,2013,State Senate,1st Suffolk,67.06996317727511,67.06996317727511,0.0,agrees,Joseph Anthony Ureneck,3,2,False
-112959,2012,State Representative,15th Worcester,50.92181800256335,50.92181800256335,0.0,agrees,Brian J. O'Malley,2,1,False
-112957,2012,State Representative,14th Worcester,31.18478730629129,31.18478730629129,0.0,agrees,"William J. McCarthy, III",3,1,False
-112955,2012,State Representative,19th Middlesex,47.03000326629649,47.03000326629649,0.0,agrees,Douglas W. Sears,2,1,False
-112954,2012,State Representative,31st Middlesex,19.68173846088035,19.68173846088035,0.0,agrees,George Georgountzos,2,1,False
-112952,2012,State Representative,11th Hampden,53.907203907203915,53.907203907203915,0.0,agrees,Norman W. Oliver,2,1,False
-112948,2012,State Representative,19th Suffolk,55.25887774464624,55.25887774464624,0.0,agrees,Paul A. Caruccio,2,1,False
-112941,2012,State Representative,12th Norfolk,21.448225923244024,21.448225923244024,0.0,agrees,James M. Stanton,2,1,False
-112938,2012,State Representative,10th Middlesex,51.99071723837842,51.99071723837842,0.0,agrees,"Francis Xavier Stanton, III",2,1,False
-112937,2012,State Representative,11th Middlesex,48.76453488372093,48.76453488372093,0.0,agrees,Greer Tan Swiston,2,1,False
-112932,2012,State Representative,5th Middlesex,29.296278521879504,29.296278521879504,0.0,agrees,William J. Callahan,2,1,False
-112931,2012,State Representative,34th Middlesex,68.42489505384195,68.42489505384195,0.0,agrees,David M. Rajczewski,2,1,False
-112929,2012,State Representative,4th Plymouth,36.80549664941894,36.80549664941894,0.0,agrees,Stephen W. Coulter,2,1,False
-126150,2014,State Representative,1st Franklin,39.928792388956985,39.928792388956985,0.0,agrees,Dylan E. Korpita,2,1,False
-126159,2014,State Senate,"Norfolk, Bristol and Middlesex",-22.16920952830354,-22.16920952830354,0.0,agrees,Richard J. Ross,2,1,False
-126262,2014,State Representative,5th Essex,18.039142124679547,18.039142124679547,0.0,agrees,Michael B. Boucher,2,1,False
-126218,2014,State Senate,Plymouth and Barnstable,-25.88413903316021,-25.88413903316021,0.0,agrees,Vinny M. deMacedo,3,1,False
-126259,2014,State Representative,12th Hampden,30.475655956222813,30.475655956222813,0.0,agrees,Bob Russell,2,1,False
-126256,2014,State Representative,6th Plymouth,7.636406957350483,7.636406957350483,0.0,agrees,Joseph Sheehan,2,1,False
-126254,2014,State Representative,36th Middlesex,7.478237027897733,7.478237027897733,0.0,agrees,Cathy Richardson,2,1,False
-126249,2014,State Representative,9th Bristol,33.543879797109774,33.543879797109774,0.0,agrees,Patrick t. J. Curran,2,1,False
-126248,2014,State Representative,13th Essex,4.872303496156705,4.872303496156705,0.0,agrees,Thomas J. Lyons,2,1,False
-126244,2014,State Representative,6th Hampden,13.761980087466274,13.761980087466274,0.0,agrees,Nathan A. Bech,2,1,False
-126243,2014,State Representative,9th Hampden,57.24460508132243,57.24460508132243,0.0,agrees,Robert J. Underwood,2,1,False
-126237,2014,State Representative,6th Worcester,-25.87290502793296,-25.87290502793296,0.0,agrees,Peter J. Durant,2,1,False
-126235,2014,State Senate,2nd Middlesex,51.33143344647946,51.33143344647946,0.0,agrees,"Robert L. Cappucci, Jr.",2,1,False
-126234,2014,State Representative,26th Middlesex,74.71424311698638,74.71424311698638,0.0,agrees,Thomas Michael Vasconcelos,2,1,False
-126230,2014,State Representative,15th Norfolk,61.34163208852006,61.34163208852006,0.0,agrees,Curt Myers,2,1,False
-126229,2014,State Senate,2nd Plymouth and Bristol,32.96700821979506,32.96700821979506,0.0,agrees,Viola A. Ryerson,2,1,False
-126224,2014,State Representative,8th Plymouth,-7.296406715832421,-7.296406715832421,0.0,agrees,Angelo L. D'Emilia,2,1,False
-126221,2014,State Senate,1st Worcester,20.53764615888974,20.53764615888974,0.0,agrees,Paul J. Franco,2,1,False
-126215,2014,State Senate,2nd Suffolk,80.07738492328218,80.07738492328218,0.0,agrees,David James Wyatt,2,1,False
-126160,2014,State Representative,7th Worcester,-47.39533864250749,-47.39533864250749,0.0,agrees,Paul K. Frost,2,1,False
-126212,2014,State Senate,1st Suffolk,68.144311112268,68.144311112268,0.0,agrees,"Robert E. Powers, Jr",2,1,False
-126199,2014,State Representative,1st Suffolk,52.8162511542013,52.8162511542013,0.0,agrees,Celeste Ribeiro B. Myers,2,1,False
-126198,2014,State Representative,5th Suffolk,78.30719147676828,78.30719147676828,0.0,agrees,Claudette N. Joseph,2,1,False
-126189,2014,State Representative,3rd Middlesex,20.511565291885937,20.511565291885937,0.0,agrees,Paddy Dolan,2,1,False
-126186,2014,State Representative,6th Essex,48.27225130890052,48.27225130890052,0.0,agrees,Euplio R. Marciano,2,1,False
-126184,2014,State Senate,Worcester and Middlesex,20.86626423548448,20.86626423548448,0.0,agrees,Richard M. Bastien,2,1,False
-126182,2014,State Senate,1st Plymouth and Bristol,21.97555693069307,21.97555693069307,0.0,agrees,David A. Rosa,2,1,False
-126179,2014,State Senate,Worcester and Norfolk,-11.437981884871618,-11.437981884871618,0.0,agrees,Ryan C. Fattman,2,1,False
-126178,2014,State Representative,8th Worcester,-25.15955903684364,-25.15955903684364,0.0,agrees,Kevin J. Kuros,3,1,False
-126175,2014,State Senate,3rd Middlesex,18.47735292613491,18.47735292613491,0.0,agrees,Sandi Martinez,2,1,False
-126174,2014,State Representative,21st Middlesex,4.539609053497945,4.539609053497945,0.0,agrees,"Paul Girouard, Jr",2,1,False
-126173,2014,State Representative,5th Worcester,-12.764375971349413,-12.764375971349413,0.0,agrees,"Donald R. Berthiaume, Jr",2,1,False
-126171,2014,State Representative,1st Barnstable,-3.993046679278084,-3.993046679278084,0.0,agrees,Timothy R. Whelan,2,1,False
-126170,2014,State Representative,5th Barnstable,-25.4746835443038,-25.4746835443038,0.0,agrees,Randy Hunt,2,1,False
-165551,2024,State Representative,9th Middlesex,52.04991087344028,52.04991087344028,0.0,agrees,Carly Marie Downs,3,1,False
+election_id,election_year,office,district_display,rollup_margin,dem_margin,difference,category,opponent_candidate,candidate_count,dem_candidate_count,no_dem_candidate,admitted_by_write_in
+131694,2018,State Representative,1st Worcester,-55.78091318832059,21.330638839898103,-77.1115520282187,reference_no_democrat_precedence_bug,Kimberly N. Ferguson,2,0,True,False
+154340,2022,State Representative,7th Plymouth,-50.77364611929125,23.85930870975793,-74.63295482904918,reference_no_democrat_precedence_bug,Alyson M. Sullivan,2,0,True,False
+154414,2022,State Representative,7th Worcester,-50.70004242681374,23.89647857445906,-74.5965210012728,reference_no_democrat_precedence_bug,Paul K. Frost,2,0,True,False
+105658,2010,State Senate,Plymouth and Norfolk,-49.26596785861193,24.62068623140097,-73.8866540900129,reference_no_democrat_precedence_bug,"Robert L. Hedlund, Jr.",2,0,True,False
+154471,2022,State Senate,1st Essex and Middlesex,-43.078082824696644,27.7455681735282,-70.82365099822485,reference_no_democrat_precedence_bug,Bruce E. Tarr,2,0,True,False
+130303,2016,State Representative,14th Bristol,-40.976105744789024,28.807066598881548,-69.78317234367057,reference_no_democrat_precedence_bug,Elizabeth A. Poirier,2,0,True,False
+165499,2024,State Representative,1st Worcester,-39.61848305213558,29.49266605867153,-69.1111491108071,reference_no_democrat_precedence_bug,Kimberly N. Ferguson,2,0,True,False
+165377,2024,State Representative,7th Worcester,-38.43761818716644,30.089002815480946,-68.52662100264739,reference_no_democrat_precedence_bug,Paul K. Frost,2,0,True,False
+140818,2020,State Representative,7th Worcester,-29.42786508917535,34.638928129966445,-64.0667932191418,reference_no_democrat_precedence_bug,Paul K. Frost,2,0,True,False
+165404,2024,State Representative,22nd Middlesex,-22.24774857562948,38.26488696930711,-60.51263554493659,reference_no_democrat_precedence_bug,Marc T. Lombardo,2,0,True,False
+112809,2012,State Representative,22nd Middlesex,-21.60890029952931,38.5875053487377,-60.19640564826701,reference_no_democrat_precedence_bug,Marc T. Lombardo,2,0,True,False
+165371,2024,State Representative,2nd Franklin,31.495081058611607,65.40501593459886,-33.90993487598726,reference_no_democrat_precedence_bug,Jeffrey L. Raymond,2,0,True,False
+154409,2022,State Representative,2nd Franklin,31.799027552674225,63.19662884927066,-31.397601296596434,reference_no_democrat_precedence_bug,Jeffrey L. Raymond,3,0,True,False
+124792,2013,State Representative,28th Middlesex,14.131038312048863,1.6848673946957882,12.446170917353076,reference_denominator_omits_candidates,Rosa Diflorio,4,2,False,False
+165375,2024,State Representative,2nd Bristol,49.35822013049525,56.58838678030536,-7.230166649810116,reference_denominator_omits_candidates,Andrew Nelson,3,1,False,False
+105682,2010,State Representative,6th Middlesex,49.47856315179605,54.65483403020737,-5.176270878411316,reference_denominator_omits_candidates,James M. Pillsbury,3,1,False,False
+124831,2013,State Representative,12th Suffolk,55.80357142857143,58.96226415094339,-3.15869272237196,reference_denominator_omits_candidates,Edmond Romulus,3,1,False,False
+130283,2016,State Representative,"Barnstable, Dukes and Nantucket",13.608762947969993,15.151782952587162,-1.5430200046171691,reference_denominator_omits_candidates,Tobias B. Glidden,3,1,False,False
+140904,2020,State Representative,13th Essex,9.117466174661748,9.938825106846554,-0.8213589321848058,reference_denominator_omits_candidates,"Robert E. May, Jr",5,1,False,False
+112737,2012,State Senate,1st Essex,12.298359125707869,12.842260532866227,-0.5439014071583586,reference_denominator_omits_candidates,Shaun P. Toohey,4,1,False,False
+131716,2018,State Representative,4th Plymouth,23.16008316008316,23.577274009970843,-0.41719084988768174,reference_denominator_omits_candidates,Edward J. O'Connell,4,1,False,False
+105735,2010,State Representative,13th Worcester,20.3551912568306,20.688395206080095,-0.33320394924949426,reference_denominator_omits_candidates,Paul J. Franco,4,1,False,False
+105553,2010,State Representative,2nd Worcester,-3.081168084617153,-3.3408127648965333,0.25964468027938015,reference_denominator_omits_candidates,Richard M. Bastien,4,1,False,False
+165317,2024,State Representative,8th Bristol,1.1790215476351784,1.376219351436858,-0.1971978038016795,reference_denominator_omits_candidates,Christopher Thrasher,5,1,False,False
+105723,2010,State Representative,15th Essex,14.282539447366476,14.460361509037728,-0.17782206167125203,reference_denominator_omits_candidates,Al DiNuccio,4,1,False,False
+104719,2010,State Senate,"Middlesex, Suffolk and Essex",75.69060773480663,75.79529737206086,-0.10468963725422498,reference_denominator_omits_candidates,John T. Cesan,4,3,False,False
+130509,2017,State Senate,Worcester and Middlesex,-4.317006194520722,-4.373140121619878,0.056133927099155656,reference_denominator_omits_candidates,Dean Tran,4,1,False,False
+105765,2011,State Representative,6th Worcester,-0.7052896725440794,-0.6990340620233848,-0.006255610520694566,agrees,Peter J. Durant,4,1,False,False
+126122,2014,State Representative,1st Essex,-0.06025548324897767,-0.0642095800693409,0.003954096820363226,agrees,James M. Kelcourse,5,1,False,False
+105621,2010,State Senate,1st Suffolk and Middlesex,50.20198683909651,50.20198683909653,-1.4210854715202004e-14,agrees,"Frank John Addivinola, Jr.",2,1,False,False
+105533,2010,State Representative,3rd Hampshire,58.854515850972135,58.85451585097212,1.4210854715202004e-14,agrees,Daniel M. Sandell,3,1,False,False
+154540,2022,State Representative,14th Norfolk,84.66894377299002,84.66894377299,1.4210854715202004e-14,agrees,David Rolde,2,1,False,False
+154376,2022,State Representative,1st Essex,19.27076047932112,19.27076047932113,-1.0658141036401503e-14,agrees,Cj Fitzwater,2,1,False,False
+131581,2018,State Representative,1st Barnstable,-17.040745856353595,-17.04074585635359,-7.105427357601002e-15,agrees,Timothy R. Whelan,2,1,False,False
+105745,2010,State Representative,11th Worcester,-21.590482154038824,-21.59048215403883,7.105427357601002e-15,agrees,Matthew A. Beaton,2,1,False,False
+126316,2014,State Representative,12th Norfolk,16.246242321265193,16.246242321265186,7.105427357601002e-15,agrees,Tim Hempton,2,1,False,False
+112728,2012,State Representative,3rd Hampden,-22.388216176547672,-22.388216176547665,-7.105427357601002e-15,agrees,Nicholas A. Boldyga,2,1,False,False
+126281,2014,State Representative,4th Norfolk,16.985677954758398,16.985677954758405,-7.105427357601002e-15,agrees,Andrea E. Farretta,2,1,False,False
+131673,2018,State Representative,5th Essex,42.998162247309004,42.99816224730901,-7.105427357601002e-15,agrees,James K. Gardner,2,1,False,False
+126261,2014,State Representative,3rd Bristol,-22.689679971233367,-22.689679971233375,7.105427357601002e-15,agrees,Shaunna L. O'Connell,2,1,False,False
+112900,2012,State Representative,5th Plymouth,15.743427219568806,15.7434272195688,7.105427357601002e-15,agrees,Korey M. Welch,2,1,False,False
+131715,2018,State Representative,4th Middlesex,27.119062307217767,27.11906230721776,7.105427357601002e-15,agrees,Paul R. Ferro,2,1,False,False
+140938,2020,State Representative,3rd Norfolk,36.903094973685484,36.90309497368549,-7.105427357601002e-15,agrees,Stephen F. Tougas,2,1,False,False
+112940,2012,State Representative,4th Bristol,-22.82809611829944,-22.828096118299435,-7.105427357601002e-15,agrees,Steven S. Howitt,2,1,False,False
+131740,2018,State Representative,31st Middlesex,21.953671128980673,21.95367112898068,-7.105427357601002e-15,agrees,Caroline Colarusso,3,1,False,False
+140788,2020,State Representative,18th Essex,24.734764818771044,24.734764818771037,7.105427357601002e-15,agrees,Jeffrey Peter Dufour,2,1,False,False
+130311,2016,State Senate,"Norfolk, Bristol and Plymouth",47.766466909167036,47.76646690916704,-7.105427357601002e-15,agrees,Jonathan D. Lott,2,1,False,False
+126157,2014,State Representative,2nd Bristol,22.248892171344163,22.24889217134417,-7.105427357601002e-15,agrees,Bert J. Buckley,2,1,False,False
+165454,2024,State Representative,6th Worcester,-23.861203763628215,-23.861203763628207,-7.105427357601002e-15,agrees,"John J. Marsi, Jr",2,1,False,False
+124838,2013,State Senate,2nd Hampden and Hampshire,-5.266825387608148,-5.266825387608154,6.217248937900877e-15,agrees,"Donald F. Humason, Jr",2,1,False,False
+131591,2018,State Representative,12th Bristol,-4.210788588513764,-4.21078858851377,6.217248937900877e-15,agrees,Norman J. Orrall,2,1,False,False
+126228,2014,State Representative,10th Plymouth,4.023552502453382,4.023552502453375,6.217248937900877e-15,agrees,John F. Cruz,3,1,False,False
+105495,2010,State Representative,7th Plymouth,-2.5232244531015855,-2.5232244531015913,5.773159728050814e-15,agrees,Geoff Diehl,2,1,False,False
+105522,2010,State Representative,3rd Hampden,-0.6403554626241481,-0.6403554626241426,-5.551115123125783e-15,agrees,Nicholas A. Boldyga,3,1,False,False
+131741,2018,State Representative,19th Middlesex,4.776213822552583,4.776213822552588,-5.329070518200751e-15,agrees,Pina Prinzivalli,3,1,False,False
+126329,2014,State Representative,31st Middlesex,2.8343224804481704,2.8343224804481757,-5.329070518200751e-15,agrees,Caroline Colarusso,2,1,False,False
+165536,2024,State Representative,1st Plymouth,4.533169112867358,4.5331691128673635,-5.329070518200751e-15,agrees,Jesse G. Brown,2,1,False,False
+126279,2014,State Representative,14th Essex,9.8026423095743,9.802642309574294,5.329070518200751e-15,agrees,Rosemary Connelly Smedile,2,1,False,False
+165474,2024,State Representative,6th Plymouth,-5.948404519934614,-5.948404519934608,-5.329070518200751e-15,agrees,Kenneth Peter Sweezey,2,1,False,False
+131580,2018,State Representative,5th Barnstable,-14.399403133548866,-14.39940313354886,-5.329070518200751e-15,agrees,Randy Hunt,2,1,False,False
+105664,2010,State Representative,13th Norfolk,10.717623844635993,10.717623844635998,-5.329070518200751e-15,agrees,John P. O'Leary,2,1,False,False
+154503,2022,State Representative,5th Bristol,8.727604008502881,8.727604008502876,5.329070518200751e-15,agrees,Justin Thurber,2,1,False,False
+131582,2018,State Representative,2nd Barnstable,-4.081959340483432,-4.081959340483427,-5.329070518200751e-15,agrees,"William L. Crocker, Jr.",2,1,False,False
+105537,2010,State Representative,17th Essex,-8.58786467607177,-8.587864676071765,-5.329070518200751e-15,agrees,Paul Adams,2,1,False,False
+126238,2014,State Representative,2nd Middlesex,8.421652421652425,8.42165242165242,5.329070518200751e-15,agrees,Dennis J. Galvin,3,1,False,False
+154512,2022,State Representative,3rd Bristol,14.059941624546163,14.059941624546168,-5.329070518200751e-15,agrees,Christopher P. Coute,2,1,False,False
+154517,2022,State Senate,1st Bristol and Plymouth,15.327322618580947,15.327322618580952,-5.329070518200751e-15,agrees,Russell T. Protentis,2,1,False,False
+140913,2020,State Representative,12th Plymouth,9.500534595998172,9.500534595998166,5.329070518200751e-15,agrees,Summer K. Schmaling,2,1,False,False
+154431,2022,State Senate,"Hampden, Hampshire & Worcester",12.617968902870391,12.617968902870397,-5.329070518200751e-15,agrees,William E. Johnson,2,1,False,False
+131700,2018,State Representative,4th Worcester,12.541473125414731,12.541473125414726,5.329070518200751e-15,agrees,Richard E. Palmieri,2,1,False,False
+126304,2014,State Representative,4th Middlesex,7.26051994691233,7.260519946912325,5.329070518200751e-15,agrees,Matthew H. Elder,3,1,False,False
+154441,2022,State Representative,22nd Middlesex,-8.703081727653055,-8.70308172765306,5.329070518200751e-15,agrees,Marc T. Lombardo,2,1,False,False
+154469,2022,State Representative,3rd Barnstable,-10.844738906808477,-10.844738906808471,-5.329070518200751e-15,agrees,David T. Vieira,2,1,False,False
+105504,2010,State Representative,37th Middlesex,9.591412742382266,9.591412742382271,-5.329070518200751e-15,agrees,Kurt Hayes,2,1,False,False
+131658,2018,State Senate,Plymouth and Norfolk,-6.656959603374202,-6.656959603374207,5.329070518200751e-15,agrees,Patrick M. O'Connor,3,1,False,False
+126183,2014,State Representative,12th Worcester,10.934134081859126,10.93413408185912,5.329070518200751e-15,agrees,Brad P. Wyatt,2,1,False,False
+105632,2010,State Representative,1st Barnstable,13.665102998164391,13.665102998164386,5.329070518200751e-15,agrees,Patrick J. Foran,2,1,False,False
+131657,2018,State Representative,3rd Plymouth,14.065492595879853,14.065492595879848,5.329070518200751e-15,agrees,Kristen G. Arute,2,1,False,False
+126177,2014,State Senate,1st Hampden and Hampshire,5.7128014044641855,5.712801404464191,-5.329070518200751e-15,agrees,Debra A. Boronski,3,1,False,False
+154370,2022,State Senate,Hampden and Hampshire,31.391768993948826,31.391768993948823,3.552713678800501e-15,agrees,Cecilia P. Calabrese,2,1,False,False
+154342,2022,State Senate,Norfolk and Plymouth,27.320870624371125,27.32087062437113,-3.552713678800501e-15,agrees,Gary M. Innes,2,1,False,False
+126252,2014,State Representative,18th Worcester,-20.175438596491226,-20.175438596491222,-3.552713678800501e-15,agrees,Joseph D. Mckenna,2,1,False,False
+105727,2010,State Representative,14th Norfolk,22.437338891021774,22.437338891021778,-3.552713678800501e-15,agrees,Royall H. Switzler,2,1,False,False
+131672,2018,State Representative,3rd Bristol,-23.020149088493614,-23.020149088493618,3.552713678800501e-15,agrees,Shaunna L. O'Connell,2,1,False,False
+130422,2016,State Representative,15th Essex,26.976629766297666,26.976629766297663,3.552713678800501e-15,agrees,Nicholas S. Torresi,2,1,False,False
+105562,2010,State Representative,7th Middlesex,27.561661976493962,27.56166197649396,3.552713678800501e-15,agrees,David S. Mercer,2,1,False,False
+105742,2010,State Representative,30th Middlesex,26.916871273237458,26.916871273237454,3.552713678800501e-15,agrees,Kara Marie Fratto,2,1,False,False
+112841,2012,State Senate,Plymouth and Barnstable,16.31247149089463,16.312471490894627,3.552713678800501e-15,agrees,Thomas F. Keyes,2,1,False,False
+154419,2022,State Senate,Second Plymouth & Norfolk,27.405957816916725,27.40595781691672,3.552713678800501e-15,agrees,Jim Gordon,2,1,False,False
+131649,2018,State Representative,2nd Middlesex,28.837837837837842,28.83783783783784,3.552713678800501e-15,agrees,Kathleen Lynch,2,1,False,False
+105575,2010,State Senate,"Norfolk, Bristol and Plymouth",25.848675458621422,25.848675458621425,-3.552713678800501e-15,agrees,"Robert E. Burr, Jr.",2,1,False,False
+112710,2012,State Senate,Middlesex and Worcester,29.521898212166086,29.52189821216609,-3.552713678800501e-15,agrees,Dean J. Cavaretta,2,1,False,False
+130401,2016,State Representative,12th Plymouth,19.870717517776338,19.870717517776335,3.552713678800501e-15,agrees,Peter J. Boncek,2,1,False,False
+105741,2010,State Representative,2nd Norfolk,20.016963528413918,20.01696352841392,-3.552713678800501e-15,agrees,John M. Iredale,3,1,False,False
+130448,2016,State Representative,4th Middlesex,19.294434098903366,19.294434098903363,3.552713678800501e-15,agrees,Paul R. Ferro,2,1,False,False
+140926,2020,State Representative,1st Bristol,-12.089041095890412,-12.089041095890408,-3.552713678800501e-15,agrees,Fred Jay Barrows,2,1,False,False
+140954,2020,State Representative,20th Middlesex,-27.892884357197286,-27.89288435719729,3.552713678800501e-15,agrees,"Bradley H. Jones, Jr",2,1,False,False
+130327,2016,State Senate,1st Plymouth and Bristol,30.696272877713838,30.69627287771384,-3.552713678800501e-15,agrees,Sandra M. Wright,2,1,False,False
+140831,2020,State Representative,5th Worcester,-24.687406648743227,-24.68740664874323,3.552713678800501e-15,agrees,"Donald R. Berthiaume, Jr",2,1,False,False
+130299,2016,State Representative,7th Middlesex,28.678038379530918,28.67803837953092,-3.552713678800501e-15,agrees,Yolanda Greaves,3,1,False,False
+105505,2010,State Senate,Middlesex and Worcester,14.248266402499432,14.248266402499429,3.552713678800501e-15,agrees,George M. Thompson,2,1,False,False
+124782,2011,State Representative,12th Bristol,-9.589743589743588,-9.589743589743591,3.552713678800501e-15,agrees,Keiko M. Orrall,2,1,False,False
+105669,2010,State Representative,12th Plymouth,9.099740932642492,9.099740932642488,3.552713678800501e-15,agrees,Joseph M. Truschelli,2,1,False,False
+154523,2022,State Representative,10th Norfolk,27.48055246864582,27.480552468645815,3.552713678800501e-15,agrees,"Charles F. Bailey, III",2,1,False,False
+130266,2016,State Representative,3rd Hampden,-20.00988875154512,-20.009888751545123,3.552713678800501e-15,agrees,Nicholas A. Boldyga,2,1,False,False
+131573,2018,State Representative,7th Worcester,-30.899335121894318,-30.89933512189432,3.552713678800501e-15,agrees,Paul K. Frost,2,1,False,False
+112903,2012,State Representative,14th Essex,25.840548746204878,25.84054874620488,-3.552713678800501e-15,agrees,Karin K. Rhoton,2,1,False,False
+131665,2018,State Representative,36th Middlesex,26.418851642880846,26.41885164288085,-3.552713678800501e-15,agrees,Raymond G. Leczynski,2,1,False,False
+165524,2024,State Representative,7th Norfolk,29.716889664533646,29.71688966453365,-3.552713678800501e-15,agrees,Clinton Graham,2,1,False,False
+130435,2016,State Representative,9th Middlesex,27.702089009990914,27.70208900999091,3.552713678800501e-15,agrees,Stacey Gallagher M. Tully,2,1,False,False
+105529,2010,State Representative,1st Essex,30.237655745269954,30.23765574526995,3.552713678800501e-15,agrees,Valentino James Troyli,2,1,False,False
+165550,2024,State Representative,19th Middlesex,13.741673300096357,13.741673300096355,1.7763568394002505e-15,agrees,Paul Sarnowski,3,1,False,False
+112794,2012,State Representative,21st Middlesex,10.552198960236053,10.552198960236051,1.7763568394002505e-15,agrees,Walter Zenkin,2,1,False,False
+154470,2022,State Senate,Plymouth and Barnstable,12.693498452012381,12.69349845201238,1.7763568394002505e-15,agrees,Kari Macrae,2,1,False,False
+130433,2016,State Representative,4th Worcester,10.399829859634197,10.399829859634195,1.7763568394002505e-15,agrees,Thomas F. Ardinger,2,1,False,False
+105638,2010,State Representative,11th Plymouth,14.955839057899901,14.9558390578999,1.7763568394002505e-15,agrees,Kristine Abrams,2,1,False,False
+131503,2018,State Representative,7th Plymouth,-11.596803131626165,-11.596803131626164,-1.7763568394002505e-15,agrees,Alyson M. Sullivan,2,1,False,False
+154526,2022,State Representative,12th Plymouth,9.077425096410563,9.077425096410565,-1.7763568394002505e-15,agrees,Eric J. Meschino,3,1,False,False
+105737,2010,State Representative,3rd Berkshire,9.953563496870583,9.953563496870585,-1.7763568394002505e-15,agrees,Mark C. Miller,2,1,False,False
+140986,2020,State Representative,19th Middlesex,12.850187564849547,12.850187564849548,-1.7763568394002505e-15,agrees,Alec M. Difruscia,2,1,False,False
+165440,2024,State Representative,1st Barnstable,13.081911386443501,13.0819113864435,1.7763568394002505e-15,agrees,Gerald Joseph O'Connell,2,1,False,False
+130284,2016,State Senate,Cape and Islands,13.885855890926013,13.885855890926011,1.7763568394002505e-15,agrees,Anthony E. Schiavi,2,1,False,False
+140925,2020,State Representative,3rd Worcester,11.199635784202139,11.19963578420214,-1.7763568394002505e-15,agrees,Glenn C. Fossa,2,1,False,False
+112913,2012,State Representative,4th Worcester,14.389960749626841,14.38996074962684,1.7763568394002505e-15,agrees,Justin A. Brooks,2,1,False,False
+165505,2024,State Representative,4th Worcester,15.004038772213251,15.004038772213253,-1.7763568394002505e-15,agrees,Salvatore Perla,2,1,False,False
+105543,2010,State Senate,Cape and Islands,14.896394609192015,14.896394609192017,-1.7763568394002505e-15,agrees,"James H. Crocker, Jr.",2,1,False,False
+131686,2018,State Representative,4th Essex,-12.684466433506781,-12.68446643350678,-1.7763568394002505e-15,agrees,Bradford R. Hill,2,1,False,False
+112884,2012,State Representative,3rd Bristol,-12.927938711994253,-12.927938711994251,-1.7763568394002505e-15,agrees,Shaunna L. O'Connell,2,1,False,False
+124793,2013,State Representative,12th Essex,-1.3675533907830661,-1.367553390783066,-2.220446049250313e-16,agrees,Leah Cole,3,1,False,False
+126172,2014,State Representative,2nd Barnstable,1.3445924001299125,1.3445924001299123,2.220446049250313e-16,agrees,"Adam G. Chaprales, Sr",2,1,False,False
+165398,2024,State Senate,Third Bristol & Plymouth,-1.7326811127193587,-1.7326811127193589,2.220446049250313e-16,agrees,Kelly A. Dooner,3,1,False,False
+131630,2018,State Representative,2nd Essex,-1.4178190092770881,-1.417819009277088,-2.220446049250313e-16,agrees,Leonard Mirra,2,1,False,False
+154524,2022,State Representative,2nd Essex,0.004250797024440978,0.0042507970244409,7.719519468096792e-17,agrees,Leonard Mirra,2,1,False,False
+154401,2022,State Representative,1st Middlesex,0.03520064366890896,0.0352006436689089,6.245004513516506e-17,agrees,Andrew James Shepherd,3,1,False,False
+105750,2010,State Representative,3rd Bristol,-0.27147736229091723,-0.2714773622909172,-5.551115123125783e-17,agrees,Shaunna L. O'Connell,2,1,False,False
+126145,2014,State Representative,2nd Worcester,0.29099623416637965,0.2909962341663796,5.551115123125783e-17,agrees,Garret Shetrawski,2,1,False,False
+126276,2014,State Representative,5th Plymouth,-0.29491423412579265,-0.2949142341257926,-5.551115123125783e-17,agrees,David F. Decoste,2,1,False,False
+105648,2010,State Representative,6th Worcester,-0.007591285204583409,-0.0075912852045834,-8.673617379884035e-18,agrees,Peter J. Durant,2,1,False,False
+130459,2016,State Representative,4th Bristol,-24.540713245313157,-24.540713245313157,0.0,agrees,Steven S. Howitt,2,1,False,False
+131545,2018,State Senate,2nd Essex and Middlesex,25.68003365114975,25.68003365114975,0.0,agrees,"Joseph M. Espinola, III",2,1,False,False
+139531,2020,State Representative,32nd Middlesex,62.93622141997592,62.93622141997592,0.0,agrees,Brandon Reid,2,1,False,False
+131506,2018,State Senate,Norfolk and Plymouth,51.67549726396248,51.67549726396248,0.0,agrees,Alexander N. Mendez,2,1,False,False
+130517,2018,State Representative,2nd Bristol,4.0146943059564455,4.0146943059564455,0.0,agrees,Julie A. Hall,2,1,False,False
+131550,2018,State Senate,Cape and Islands,24.22301912568306,24.22301912568306,0.0,agrees,John G. Flores,2,1,False,False
+130505,2017,State Representative,3rd Essex,6.69043049081437,6.69043049081437,0.0,agrees,Shaun P. Toohey,2,1,False,False
+131666,2018,State Senate,1st Middlesex,27.76856794126756,27.76856794126756,0.0,agrees,John A. Macdonald,2,1,False,False
+140741,2020,State Senate,Plymouth and Barnstable,12.511530805457106,12.511530805457106,0.0,agrees,"James R. McMahon, III",2,1,False,False
+131559,2018,State Senate,"Worcester, Hampden, Hampshire and Middlesex",9.799169486766468,9.799169486766468,0.0,agrees,Steven R. Hall,2,1,False,False
+131567,2018,State Representative,2nd Franklin,-40.55707820766142,-40.55707820766142,0.0,agrees,Susannah M. Whipps,2,1,False,False
+131570,2018,State Representative,2nd Bristol,16.69018058690745,16.69018058690745,0.0,agrees,Julie A. Hall,2,1,False,False
+131733,2018,State Representative,30th Middlesex,39.80716253443526,39.80716253443526,0.0,agrees,Claire M. Malaguti,2,1,False,False
+131732,2018,State Representative,2nd Norfolk,41.42469740062174,41.42469740062174,0.0,agrees,William Burke,2,1,False,False
+131571,2018,State Senate,Bristol and Norfolk,21.12773902220164,21.12773902220164,0.0,agrees,Jacob J. Ventura,2,1,False,False
+131730,2018,State Representative,1st Plymouth,-4.602187846368855,-4.602187846368855,0.0,agrees,Mathew J. Muratore,2,1,False,False
+130460,2016,State Representative,12th Norfolk,32.00726612170754,32.00726612170754,0.0,agrees,Tim Hempton,2,1,False,False
+131572,2018,State Senate,"Norfolk, Bristol and Middlesex",2.678934940151456,2.678934940151456,0.0,agrees,Richard J. Ross,2,1,False,False
+131558,2018,State Representative,2nd Worcester,10.493950939108348,10.493950939108348,0.0,agrees,Edward A. Gravel,3,1,False,False
+140742,2020,State Senate,2nd Hampden and Hampshire,28.44866000381947,28.44866000381947,0.0,agrees,John Francis Cain,2,1,False,False
+130504,2017,State Representative,1st Berkshire,54.175058094500386,54.175058094500386,0.0,agrees,Christine M. Canning,2,1,False,False
+140782,2020,State Representative,1st Essex,-3.278746758552092,-3.278746758552092,0.0,agrees,James M. Kelcourse,2,1,False,False
+140805,2020,State Representative,1st Middlesex,-3.108160874658333,-3.108160874658333,0.0,agrees,Sheila C. Harrington,2,1,False,False
+140804,2020,State Senate,"Worcester, Hampden, Hampshire and Middlesex",5.668591931390571,5.668591931390571,0.0,agrees,Steven R. Hall,2,1,False,False
+131536,2018,State Representative,1st Essex,-5.392769522751473,-5.392769522751473,0.0,agrees,James M. Kelcourse,2,1,False,False
+140803,2020,State Representative,2nd Worcester,14.260485651214132,14.260485651214132,0.0,agrees,Bruce K. Chester,2,1,False,False
+131537,2018,State Senate,1st Essex,32.6273308814059,32.6273308814059,0.0,agrees,Alexander Leighton Williams,2,1,False,False
+131541,2018,State Representative,3rd Hampshire,50.32470135492664,50.32470135492664,0.0,agrees,Solomon Israel Goldstein-Rose,2,1,False,False
+131514,2018,State Senate,Middlesex and Worcester,32.41572961676048,32.41572961676048,0.0,agrees,Margaret W. Busse,3,1,False,False
+140777,2020,State Senate,2nd Hampden and Hampshire,28.169050116401028,28.169050116401028,0.0,agrees,John Francis Cain,2,1,False,False
+140743,2020,State Representative,3rd Bristol,14.29315282478521,14.29315282478521,0.0,agrees,Kelly A. Dooner,2,1,False,False
+130450,2016,State Representative,9th Norfolk,-21.77766523170423,-21.77766523170423,0.0,agrees,Shawn C. Dooley,2,1,False,False
+131543,2018,State Representative,18th Essex,9.769411764705888,9.769411764705888,0.0,agrees,"James J. Lyons, Jr.",2,1,False,False
+140776,2020,State Representative,3rd Hampden,-24.87901949256026,-24.87901949256026,0.0,agrees,Nicholas A. Boldyga,2,1,False,False
+140761,2020,State Representative,37th Middlesex,29.104953017996493,29.104953017996493,0.0,agrees,Catherine J. Clark,2,1,False,False
+140756,2020,State Senate,Norfolk and Plymouth,38.925755328284794,38.925755328284794,0.0,agrees,Alexander N. Mendez,2,1,False,False
+131512,2018,State Representative,14th Middlesex,80.03510078179015,80.03510078179015,0.0,agrees,Daniel L. Factor,2,1,False,False
+140744,2020,State Representative,37th Middlesex,48.46153846153847,48.46153846153847,0.0,agrees,Catherine J. Clark,2,1,False,False
+131722,2018,State Representative,13th Bristol,57.541000100613736,57.541000100613736,0.0,agrees,Michael Janson,2,1,False,False
+131583,2018,State Representative,5th Worcester,-18.97676548014193,-18.97676548014193,0.0,agrees,"Donald R. Berthiaume, Jr",2,1,False,False
+131717,2018,State Representative,9th Norfolk,-17.551060295123616,-17.551060295123616,0.0,agrees,Shawn C. Dooley,2,1,False,False
+131687,2018,State Representative,5th Plymouth,-3.474828208002334,-3.474828208002334,0.0,agrees,David F. Decoste,2,1,False,False
+140812,2020,State Representative,2nd Franklin,-34.172027638789615,-34.172027638789615,0.0,agrees,Susannah M. Whipps,2,1,False,False
+131684,2018,State Representative,10th Norfolk,17.052156520847223,17.052156520847223,0.0,agrees,Patrick R. Casey,2,1,False,False
+131680,2018,State Representative,3rd Worcester,37.26437892701788,37.26437892701788,0.0,agrees,Elmer Eubanks-Archbold,2,1,False,False
+131678,2018,State Representative,6th Bristol,24.445636623748214,24.445636623748214,0.0,agrees,David L. Steinhof,2,1,False,False
+131636,2018,State Representative,1st Hampden,-34.58804335159072,-34.58804335159072,0.0,agrees,Todd M. Smola,2,1,False,False
+130463,2016,State Representative,1st Plymouth,-1.722069910897872,-1.722069910897872,0.0,agrees,Mathew J. Muratore,2,1,False,False
+131639,2018,State Representative,10th Plymouth,12.881787330316746,12.881787330316746,0.0,agrees,John F. Cruz,2,1,False,False
+131640,2018,State Senate,2nd Plymouth and Bristol,33.021127135330744,33.021127135330744,0.0,agrees,Scott Hall,2,1,False,False
+131647,2018,State Representative,2nd Plymouth,-13.45820326049254,-13.45820326049254,0.0,agrees,Susan Williams Gifford,2,1,False,False
+130470,2016,State Representative,27th Middlesex,74.58390630186354,74.58390630186354,0.0,agrees,Aaron James,2,1,False,False
+130479,2016,State Representative,15th Worcester,57.272816198767494,57.272816198767494,0.0,agrees,Ralph Perez,2,1,False,False
+130473,2016,State Representative,31st Middlesex,17.678506338341908,17.678506338341908,0.0,agrees,Caroline Colarusso,2,1,False,False
+131671,2018,State Representative,2nd Hampshire,48.58880162148467,48.58880162148467,0.0,agrees,Donald Peltier,2,1,False,False
+131659,2018,State Representative,13th Essex,2.8851003732472513,2.8851003732472513,0.0,agrees,Mark B. Mezzina,2,1,False,False
+131670,2018,State Representative,12th Hampden,55.09421909932928,55.09421909932928,0.0,agrees,Donald J. Flannery,2,1,False,False
+131661,2018,State Representative,11th Norfolk,34.09069212410501,34.09069212410501,0.0,agrees,John G. Mcdonald,2,1,False,False
+131529,2018,State Representative,3rd Hampden,-31.993462073975422,-31.993462073975422,0.0,agrees,Nicholas A. Boldyga,2,1,False,False
+130480,2016,State Representative,16th Worcester,34.34020885475101,34.34020885475101,0.0,agrees,John P. Fresolo,2,1,False,False
+131689,2018,State Representative,15th Essex,59.05522114629677,59.05522114629677,0.0,agrees,Anand Gonsalves,2,1,False,False
+130503,2017,State Senate,Bristol and Norfolk,3.9264885392648887,3.9264885392648887,0.0,agrees,Jacob J. Ventura,3,1,False,False
+130462,2016,State Representative,3rd Berkshire,32.79065850783136,32.79065850783136,0.0,agrees,Christopher J. Connell,2,1,False,False
+131668,2018,State Representative,12th Plymouth,5.069261704979894,5.069261704979894,0.0,agrees,Joseph M. Truschelli,2,1,False,False
+130491,2017,State Senate,4th Middlesex,80.8911345888838,80.8911345888838,0.0,agrees,Ian T. Jackson,2,1,False,False
+131713,2018,State Senate,5th Middlesex,34.06150463680695,34.06150463680695,0.0,agrees,Erin K. Calvo-Bacci,2,1,False,False
+131588,2018,State Representative,8th Worcester,-3.0306444344299246,-3.0306444344299246,0.0,agrees,Michael J. Soter,2,1,False,False
+131706,2018,State Representative,9th Essex,-28.128000000000004,-28.128000000000004,0.0,agrees,Donald H. Wong,3,1,False,False
+131589,2018,State Senate,Worcester and Norfolk,-15.94547814798788,-15.94547814798788,0.0,agrees,Ryan C. Fattman,2,1,False,False
+131593,2018,State Representative,12th Worcester,50.831313757538176,50.831313757538176,0.0,agrees,"Stanley P. Marcinczyk, Jr",2,1,False,False
+131594,2018,State Senate,Worcester and Middlesex,-8.610593123302907,-8.610593123302907,0.0,agrees,Dean Tran,2,1,False,False
+131596,2018,State Representative,6th Essex,70.7858603564125,70.7858603564125,0.0,agrees,Donato H. Paglia,2,1,False,False
+131699,2018,State Representative,17th Worcester,18.709677419354836,18.709677419354836,0.0,agrees,Paul J. Fullen,2,1,False,False
+131697,2018,State Representative,10th Worcester,12.222286675561222,12.222286675561222,0.0,agrees,Sandra Slattery E. Biagetti,2,1,False,False
+131598,2018,State Representative,22nd Middlesex,-23.009708737864077,-23.009708737864077,0.0,agrees,Marc T. Lombardo,3,1,False,False
+131610,2018,State Representative,5th Suffolk,78.01670146137786,78.01670146137786,0.0,agrees,Althea Garrison,2,1,False,False
+130483,2016,State Senate,Plymouth and Norfolk,-5.473622850480914,-5.473622850480914,0.0,agrees,Patrick M. O'Connor,2,1,False,False
+131629,2018,State Senate,Plymouth and Barnstable,-17.64002341145634,-17.64002341145634,0.0,agrees,Vinny M. deMacedo,2,1,False,False
+131693,2018,State Representative,3rd Norfolk,37.66283770775845,37.66283770775845,0.0,agrees,Stephen F. Tougas,2,1,False,False
+131690,2018,State Representative,14th Essex,28.919722497522304,28.919722497522304,0.0,agrees,Ryan R. Losco,2,1,False,False
+131669,2018,State Representative,2nd Hampden,12.14380553569605,12.14380553569605,0.0,agrees,Allison P. Werder,2,1,False,False
+104718,2010,State Senate,"Norfolk, Bristol and Middlesex",-23.630709426627796,-23.630709426627796,0.0,agrees,Richard J. Ross,2,1,False,False
+140814,2020,State Representative,14th Bristol,8.891424558939697,8.891424558939697,0.0,agrees,John D. Simmons,2,1,False,False
+140817,2020,State Senate,"Norfolk, Bristol and Middlesex",19.49595328347506,19.49595328347506,0.0,agrees,Matthew T. Kelly,2,1,False,False
+165362,2024,State Senate,Worcester and Middlesex,18.208344118408355,18.208344118408355,0.0,agrees,"Nicholas A. Pirro, III",2,1,False,False
+165361,2024,State Representative,1st Middlesex,2.6992190461748446,2.6992190461748446,0.0,agrees,Lynne E. Archambault,2,1,False,False
+165359,2024,State Representative,2nd Worcester,4.494056248187883,4.494056248187883,0.0,agrees,Bruce K. Chester,2,1,False,False
+165352,2024,State Senate,Cape and Islands,24.280809643281582,24.280809643281582,0.0,agrees,Christopher Robert Lauzon,3,1,False,False
+165332,2024,State Representative,3rd Berkshire,14.96194001913398,14.96194001913398,0.0,agrees,Marybeth F. Mitts,2,1,False,False
+165325,2024,State Senate,"Berkshire, Hampden, Franklin & Hampshire",41.88938148912164,41.88938148912164,0.0,agrees,David A. Rosa,2,1,False,False
+165318,2024,State Representative,10th Bristol,5.27005162185068,5.27005162185068,0.0,agrees,Joseph M. Pires,2,1,False,False
+160410,2023,State Senate,Worcester & Hampshire,-9.05484649879269,-9.05484649879269,0.0,agrees,Peter J. Durant,2,1,False,False
+154586,2022,State Representative,4th Norfolk,27.92365745649598,27.92365745649598,0.0,agrees,Paul J. Rotondo,2,1,False,False
+154583,2022,State Representative,19th Middlesex,12.596824699225406,12.596824699225406,0.0,agrees,Paul Sarnowski,2,1,False,False
+154582,2022,State Representative,31st Middlesex,42.3037600817903,42.3037600817903,0.0,agrees,Theodore Christos Menounos,2,1,False,False
+154576,2022,State Representative,11th Worcester,-17.195666029318033,-17.195666029318033,0.0,agrees,Hannah E. Kane,2,1,False,False
+154571,2022,State Representative,2nd Norfolk,41.18654958235168,41.18654958235168,0.0,agrees,Sharon Marie Cintolo,2,1,False,False
+154569,2022,State Representative,1st Plymouth,-15.511092584873332,-15.511092584873332,0.0,agrees,Mathew J. Muratore,2,1,False,False
+154556,2022,State Representative,9th Norfolk,-1.7384585667374886,-1.7384585667374886,0.0,agrees,Marcus S. Vaughn,2,1,False,False
+154554,2022,State Representative,8th Norfolk,38.83445658945461,38.83445658945461,0.0,agrees,Howard L. Terban,2,1,False,False
+154553,2022,State Senate,5th Middlesex,27.215629435033367,27.215629435033367,0.0,agrees,"Edward F. Dombroski, Jr",2,1,False,False
+154548,2022,State Senate,3rd Essex,42.674634246857615,42.674634246857615,0.0,agrees,Annalisa Salustri,2,1,False,False
+154538,2022,State Representative,4th Worcester,4.984310005108372,4.984310005108372,0.0,agrees,John M. Dombrowski,2,1,False,False
+154537,2022,State Representative,17th Worcester,18.402994385527133,18.402994385527133,0.0,agrees,Paul J. Fullen,2,1,False,False
+154533,2022,State Representative,8th Middlesex,30.050848310929872,30.050848310929872,0.0,agrees,Loring Barnes,2,1,False,False
+154527,2022,State Representative,5th Plymouth,-3.4841768889805227,-3.4841768889805227,0.0,agrees,David F. Decoste,2,1,False,False
+154521,2022,State Representative,19th Worcester,35.046728971962615,35.046728971962615,0.0,agrees,Jonathan I. Hostage,2,1,False,False
+154519,2022,State Representative,1st Bristol,-15.135295866785608,-15.135295866785608,0.0,agrees,Fred Jay Barrows,2,1,False,False
+154518,2022,State Representative,3rd Worcester,25.418121668810876,25.418121668810876,0.0,agrees,Aaron L. Packard,2,1,False,False
+154514,2022,State Representative,28th Middlesex,41.61658653846154,41.61658653846154,0.0,agrees,Michael K. Marchese,2,1,False,False
+154513,2022,State Representative,5th Essex,38.27468366121733,38.27468366121733,0.0,agrees,Ashley Sullivan,2,1,False,False
+154508,2022,State Representative,6th Plymouth,12.277300840025852,12.277300840025852,0.0,agrees,Kenneth Sweezey,2,1,False,False
+154506,2022,State Representative,36th Middlesex,21.287278446554957,21.287278446554957,0.0,agrees,George Derek Boag,2,1,False,False
+165374,2024,State Representative,14th Bristol,11.90529572664903,11.90529572664903,0.0,agrees,"David Cannata, Jr",2,1,False,False
+165376,2024,State Senate,Bristol and Norfolk,45.989298440051,45.989298440051,0.0,agrees,Laura L. Saylor,2,1,False,False
+165385,2024,State Representative,5th Barnstable,-22.77717411667728,-22.77717411667728,0.0,agrees,Steven G. Xiarhos,2,1,False,False
+165471,2024,State Representative,13th Norfolk,22.914979757085025,22.914979757085025,0.0,agrees,William R. Dermody,2,1,False,False
+165545,2024,State Representative,4th Hampden,-17.662088789524113,-17.662088789524113,0.0,agrees,Kelly W. Pease,2,1,False,False
+165538,2024,State Representative,2nd Norfolk,39.14588830847111,39.14588830847111,0.0,agrees,Sharon Marie Cintolo,2,1,False,False
+165530,2024,State Representative,11th Middlesex,62.54131829671399,62.54131829671399,0.0,agrees,Vladislav S. Yanovsky,2,1,False,False
+165522,2024,State Representative,9th Norfolk,-14.819417768237114,-14.819417768237114,0.0,agrees,Marcus S. Vaughn,2,1,False,False
+165509,2024,State Representative,17th Middlesex,55.7241052382081,55.7241052382081,0.0,agrees,Joseph Paul Onoroski,2,1,False,False
+165508,2024,State Representative,18th Middlesex,56.66529096161783,56.66529096161783,0.0,agrees,David Michael Ouellette,2,1,False,False
+165493,2024,State Representative,12th Plymouth,6.27572016460905,6.27572016460905,0.0,agrees,Eric J. Meschino,2,1,False,False
+165491,2024,State Representative,2nd Essex,8.442194092827005,8.442194092827005,0.0,agrees,Mark T. Tashjian,2,1,False,False
+165490,2024,State Representative,10th Norfolk,23.54059405940594,23.54059405940594,0.0,agrees,"Charles F. Bailey, III",2,1,False,False
+165488,2024,State Representative,19th Worcester,55.4194733619106,55.4194733619106,0.0,agrees,Boyd Stewart Conklin,2,1,False,False
+165486,2024,State Representative,1st Bristol,-0.3873239436619713,-0.3873239436619713,0.0,agrees,Michael Chaisson,2,1,False,False
+165479,2024,State Representative,5th Essex,33.39551542737753,33.39551542737753,0.0,agrees,"Steven G. Leblanc, Jr",2,1,False,False
+165473,2024,State Senate,1st Middlesex,27.157940568194185,27.157940568194185,0.0,agrees,Karla J. Miller,2,1,False,False
+165469,2024,State Representative,5th Bristol,-3.88194852016433,-3.88194852016433,0.0,agrees,Justin Thurber,2,1,False,False
+165386,2024,State Representative,2nd Barnstable,18.717744304116145,18.717744304116145,0.0,agrees,Susanne H. Conley,2,1,False,False
+165468,2024,State Representative,11th Norfolk,36.1986074270557,36.1986074270557,0.0,agrees,Andrew M. Pepoli,2,1,False,False
+165465,2024,State Representative,13th Middlesex,47.11668120885222,47.11668120885222,0.0,agrees,Virginia A Gardner,2,1,False,False
+165444,2024,State Representative,9th Plymouth,24.23434194794445,24.23434194794445,0.0,agrees,Lawrence Peter Novak,3,1,False,False
+165441,2024,State Representative,8th Plymouth,1.0220994475138134,1.0220994475138134,0.0,agrees,Sandra M. Wright,2,1,False,False
+165436,2024,State Senate,Plymouth and Barnstable,2.4265622834972964,2.4265622834972964,0.0,agrees,Mathew J. Muratore,2,1,False,False
+165435,2024,State Representative,3rd Barnstable,-12.069506961164029,-12.069506961164029,0.0,agrees,David T. Vieira,2,1,False,False
+165434,2024,State Senate,3rd Suffolk,40.438934833504575,40.438934833504575,0.0,agrees,Jeannamarie Tamas,2,1,False,False
+165421,2024,State Representative,9th Suffolk,64.91723341460285,64.91723341460285,0.0,agrees,Roy A. Owens,2,1,False,False
+165405,2024,State Senate,Worcester & Hampden,-31.733585642532887,-31.733585642532887,0.0,agrees,Ryan C. Fattman,2,1,False,False
+165402,2024,State Senate,2nd Essex,33.70378040081912,33.70378040081912,0.0,agrees,Damian Mitchell Anketell,2,1,False,False
+165401,2024,State Representative,6th Essex,47.29903261707046,47.29903261707046,0.0,agrees,Ty Vitale,3,1,False,False
+165395,2024,State Senate,"Norfolk, Worcester & Middlesex",17.808247337910622,17.808247337910622,0.0,agrees,Dashe M. Videira,2,1,False,False
+165388,2024,State Senate,Worcester & Hampshire,-16.834240794557466,-16.834240794557466,0.0,agrees,Peter J. Durant,2,1,False,False
+154498,2022,State Senate,First Plymouth & Norfolk,-21.250171281936293,-21.250171281936293,0.0,agrees,Patrick Michael O'Connor,2,1,False,False
+154494,2022,State Representative,8th Hampden,29.55613993146864,29.55613993146864,0.0,agrees,Sean Goonan,2,1,False,False
+154492,2022,State Representative,11th Suffolk,45.34248987497799,45.34248987497799,0.0,agrees,Todd B. Taylor,2,1,False,False
+140912,2020,State Representative,6th Plymouth,18.37973933649289,18.37973933649289,0.0,agrees,Tatyana Medvedev Semyrog,2,1,False,False
+140985,2020,State Representative,31st Middlesex,43.27049180327869,43.27049180327869,0.0,agrees,Elizabeth R. Harrah,2,1,False,False
+140983,2020,State Representative,11th Hampden,67.42196165425447,67.42196165425447,0.0,agrees,"Prince Golphin, Jr",2,1,False,False
+140975,2020,State Representative,1st Plymouth,-11.27620448694373,-11.27620448694373,0.0,agrees,Mathew J. Muratore,2,1,False,False
+130449,2016,State Representative,4th Plymouth,39.165232702389055,39.165232702389055,0.0,agrees,Michael White,2,1,False,False
+140961,2020,State Representative,4th Plymouth,31.98345308077509,31.98345308077509,0.0,agrees,Craig S. Valdez,2,1,False,False
+140960,2020,State Representative,4th Middlesex,42.16463414634146,42.16463414634146,0.0,agrees,Syed H. Hashmi,2,1,False,False
+140947,2020,State Representative,9th Middlesex,47.29084982757806,47.29084982757806,0.0,agrees,"George A. Darcy, III",2,1,False,False
+140945,2020,State Representative,4th Worcester,17.067364913115927,17.067364913115927,0.0,agrees,Thomas F. Ardinger,2,1,False,False
+140937,2020,State Representative,4th Norfolk,34.3667913714877,34.3667913714877,0.0,agrees,Paul J. Rotondo,3,1,False,False
+140932,2020,State Representative,5th Plymouth,-1.3936084914665303,-1.3936084914665303,0.0,agrees,David F. Decoste,2,1,False,False
+140928,2020,State Representative,13th Middlesex,37.98139206218349,37.98139206218349,0.0,agrees,Ingrid I. Centurion,2,1,False,False
+140921,2020,State Representative,8th Bristol,14.065230052417006,14.065230052417006,0.0,agrees,Evan Gendreau,2,1,False,False
+140917,2020,State Representative,3rd Bristol,16.065573770491802,16.065573770491802,0.0,agrees,Kelly A. Dooner,2,1,False,False
+140903,2020,State Senate,Plymouth and Norfolk,-10.008302161360438,-10.008302161360438,0.0,agrees,Patrick Michael O'Connor,2,1,False,False
+145846,2021,State Representative,19th Suffolk,49.607982893799,49.607982893799,0.0,agrees,Richard A. Fucillo,3,1,False,False
+140899,2020,State Representative,9th Hampden,60.22645929589381,60.22645929589381,0.0,agrees,Robert J. Underwood,2,1,False,False
+140878,2020,State Representative,5th Norfolk,29.124659253169487,29.124659253169487,0.0,agrees,Frank Herbert Collins,2,1,False,False
+140875,2020,State Representative,2nd Essex,-2.573554508840198,-2.573554508840198,0.0,agrees,Leonard Mirra,2,1,False,False
+140874,2020,State Senate,Plymouth and Barnstable,12.614295740537546,12.614295740537546,0.0,agrees,"James R. McMahon, III",2,1,False,False
+140846,2020,State Representative,22nd Middlesex,-10.630826470465276,-10.630826470465276,0.0,agrees,Marc T. Lombardo,2,1,False,False
+140844,2020,State Representative,6th Essex,59.65412729541808,59.65412729541808,0.0,agrees,Euplio R. Marciano,2,1,False,False
+140842,2020,State Senate,Worcester and Middlesex,1.9698837406037784,1.9698837406037784,0.0,agrees,Dean Tran,2,1,False,False
+140841,2020,State Representative,12th Worcester,16.670054062842972,16.670054062842972,0.0,agrees,Susan E. Smiley,3,1,False,False
+140837,2020,State Senate,Worcester and Norfolk,-20.968743072489467,-20.968743072489467,0.0,agrees,Ryan C. Fattman,2,1,False,False
+140834,2020,State Representative,7th Hampden,0.7559830015656466,0.7559830015656466,0.0,agrees,James Chip Harrington,2,1,False,False
+140830,2020,State Representative,2nd Barnstable,8.26148823972545,8.26148823972545,0.0,agrees,"William L. Crocker, Jr.",3,1,False,False
+140829,2020,State Representative,1st Barnstable,-9.951439228657888,-9.951439228657888,0.0,agrees,Timothy R. Whelan,2,1,False,False
+140828,2020,State Representative,5th Barnstable,-4.288506495995098,-4.288506495995098,0.0,agrees,Steven George Xiarhos,2,1,False,False
+140989,2020,State Representative,4th Hampden,-8.073852295409184,-8.073852295409184,0.0,agrees,Kelly W. Pease,4,1,False,False
+145905,2021,State Representative,4th Essex,10.77195310771953,10.77195310771953,0.0,agrees,Robert L. Snow,2,1,False,False
+154491,2022,State Representative,16th Middlesex,30.896651062297444,30.896651062297444,0.0,agrees,Karla Jean Miller,2,1,False,False
+154424,2022,State Representative,2nd Barnstable,24.33642468819955,24.33642468819955,0.0,agrees,William Buffington Peters,2,1,False,False
+154490,2022,State Representative,2nd Middlesex,29.716574557623083,29.716574557623083,0.0,agrees,Raymond Yinggang Xie,2,1,False,False
+154478,2022,State Representative,9th Plymouth,21.291075247909784,21.291075247909784,0.0,agrees,Lawrence P. Novak,2,1,False,False
+154475,2022,State Representative,8th Plymouth,-20.00254000508001,-20.00254000508001,0.0,agrees,Angelo L. D'Emilia,2,1,False,False
+154474,2022,State Representative,1st Barnstable,8.86646629454702,8.86646629454702,0.0,agrees,Tracy A. Post,3,1,False,False
+154473,2022,State Senate,"Norfolk, Plymouth & Bristol",32.25610656342788,32.25610656342788,0.0,agrees,Brian R. Muello,2,1,False,False
+154450,2022,State Representative,5th Suffolk,77.40155131264916,77.40155131264916,0.0,agrees,Roy A. Owens,3,2,False,False
+154440,2022,State Senate,2nd Essex,35.43473273686626,35.43473273686626,0.0,agrees,Damian M. Anketell,2,1,False,False
+154438,2022,State Senate,1st Worcester,47.21930488728232,47.21930488728232,0.0,agrees,Lisa K. Mair,2,1,False,False
+154437,2022,State Representative,12th Worcester,20.758843146902844,20.758843146902844,0.0,agrees,Michael A. Vulcano,2,1,False,False
+154436,2022,State Senate,Third Bristol & Plymouth,8.579542851907835,8.579542851907835,0.0,agrees,Maria S. Collins,2,1,False,False
+154433,2022,State Senate,"Norfolk, Worcester & Middlesex",9.7465452878381,9.7465452878381,0.0,agrees,Shawn C. Dooley,2,1,False,False
+154430,2022,State Representative,7th Hampden,5.531680440771347,5.531680440771347,0.0,agrees,James Chip Harrington,2,1,False,False
+154427,2022,State Senate,Worcester & Hampshire,8.711603702623455,8.711603702623455,0.0,agrees,James Anthony Amorello,2,1,False,False
+154413,2022,State Senate,Bristol and Norfolk,20.558028570597305,20.558028570597305,0.0,agrees,Michael Chaisson,3,1,False,False
+154348,2022,State Representative,14th Middlesex,45.842944539163575,45.842944539163575,0.0,agrees,Rodney E. Cleaves,2,1,False,False
+154412,2022,State Representative,2nd Bristol,21.10983981693364,21.10983981693364,0.0,agrees,Steven Joseph Escobar,2,1,False,False
+154402,2022,State Senate,Worcester and Middlesex,20.559798105601264,20.559798105601264,0.0,agrees,Kenneth B. Hoyt,2,1,False,False
+154398,2022,State Representative,2nd Worcester,6.998813760379602,6.998813760379602,0.0,agrees,Bruce K. Chester,2,1,False,False
+154391,2022,State Senate,Cape and Islands,27.40482011875655,27.40482011875655,0.0,agrees,Christopher Robert Lauzon,2,1,False,False
+154385,2022,State Representative,18th Essex,20.8388746803069,20.8388746803069,0.0,agrees,Jeffrey Peter Dufour,2,1,False,False
+154378,2022,State Senate,2nd Essex and Middlesex,14.70250340644954,14.70250340644954,0.0,agrees,SalvatorE Paul Defranco,2,1,False,False
+154377,2022,State Representative,14th Essex,8.572854291417165,8.572854291417165,0.0,agrees,Joseph G. Finn,2,1,False,False
+154372,2022,State Representative,3rd Berkshire,81.17307905532765,81.17307905532765,0.0,agrees,Michael Silvio Lavery,2,1,False,False
+154369,2022,State Representative,3rd Hampden,-19.98918334234721,-19.98918334234721,0.0,agrees,Nicholas A. Boldyga,2,1,False,False
+154365,2022,State Senate,"Berkshire, Hampden, Franklin & Hampshire",52.84337924994029,52.84337924994029,0.0,agrees,Brendan M. Phair,2,1,False,False
+154358,2022,State Representative,10th Bristol,12.510566356720204,12.510566356720204,0.0,agrees,Jeffrey Gerald Swift,2,1,False,False
+154357,2022,State Representative,8th Bristol,7.048150732728536,7.048150732728536,0.0,agrees,Evan Gendreau,2,1,False,False
+154350,2022,State Senate,Middlesex and Worcester,40.542013543525954,40.542013543525954,0.0,agrees,Anthony Christakis,2,1,False,False
+140962,2020,State Representative,9th Norfolk,-17.041136321711864,-17.041136321711864,0.0,agrees,Shawn C. Dooley,2,1,False,False
+130292,2016,State Senate,"Worcester, Hampden, Hampshire and Middlesex",8.822802333629982,8.822802333629982,0.0,agrees,James P. Ehrhard,2,1,False,False
+130446,2016,State Senate,5th Middlesex,38.293593794886526,38.293593794886526,0.0,agrees,Vincent Lawrence Dixon,2,1,False,False
+112755,2012,State Representative,24th Middlesex,35.19268392556532,35.19268392556532,0.0,agrees,James F. Gammill,3,1,False,False
+112701,2012,State Representative,7th Plymouth,-8.476256567859618,-8.476256567859618,0.0,agrees,Geoff Diehl,2,1,False,False
+112708,2012,State Representative,14th Middlesex,30.802727072795257,30.802727072795257,0.0,agrees,Michael J. Benn,2,1,False,False
+112731,2012,State Representative,4th Berkshire,64.28501034788607,64.28501034788607,0.0,agrees,Lee Scott Laugenour,2,1,False,False
+112745,2012,State Representative,18th Essex,-2.202414434684785,-2.202414434684785,0.0,agrees,"James J. Lyons, Jr.",2,1,False,False
+112746,2012,State Representative,17th Essex,27.012144527419473,27.012144527419473,0.0,agrees,Kevin M. Cuff,2,1,False,False
+112747,2012,State Senate,2nd Essex and Middlesex,30.35971223021583,30.35971223021583,0.0,agrees,Paul Adams,2,1,False,False
+112756,2012,State Representative,23rd Middlesex,62.69668670845594,62.69668670845594,0.0,agrees,Joseph J. Monju,2,1,False,False
+105699,2010,State Representative,14th Essex,5.298182748912206,5.298182748912206,0.0,agrees,Kevin J. Begley,2,1,False,False
+112757,2012,State Senate,4th Middlesex,36.313935123314295,36.313935123314295,0.0,agrees,Gerry Dembrowski,2,1,False,False
+112761,2012,State Representative,2nd Worcester,1.9973687357971504,1.9973687357971504,0.0,agrees,Richard M. Bastien,2,1,False,False
+112769,2012,State Representative,7th Middlesex,42.236683879182294,42.236683879182294,0.0,agrees,Jon Andrew Fetherston,2,1,False,False
+112772,2012,State Representative,2nd Franklin,1.0758560428157926,1.0758560428157926,0.0,agrees,Susannah M. Whipps Lee,3,1,False,False
+112776,2012,State Representative,2nd Bristol,16.413628212791398,16.413628212791398,0.0,agrees,George T. Ross,2,1,False,False
+112777,2012,State Senate,Bristol and Norfolk,25.07564046665874,25.07564046665874,0.0,agrees,Jeffrey Robert Bailey,2,1,False,False
+105766,2011,State Representative,10th Middlesex,35.29631010063362,35.29631010063362,0.0,agrees,James E. Dixon,2,1,False,False
+105754,2010,State Representative,4th Norfolk,30.583783026140583,30.583783026140583,0.0,agrees,Douglas R. Ness,3,1,False,False
+105751,2010,State Representative,19th Middlesex,27.260990252404625,27.260990252404625,0.0,agrees,Mario S. Marchese,2,1,False,False
+105749,2010,State Representative,31st Middlesex,17.004780226186313,17.004780226186313,0.0,agrees,George Georgountzos,3,1,False,False
+105736,2010,State Representative,12th Essex,19.24847579942765,19.24847579942765,0.0,agrees,Martin J. Scafidi,2,1,False,False
+105734,2010,State Representative,12th Norfolk,7.462686567164178,7.462686567164178,0.0,agrees,James M. Stanton,2,1,False,False
+105732,2010,State Representative,4th Bristol,-8.958306441203051,-8.958306441203051,0.0,agrees,Steven S. Howitt,2,1,False,False
+105730,2010,State Representative,10th Middlesex,47.53201055615286,47.53201055615286,0.0,agrees,James E. Dixon,2,1,False,False
+105722,2010,State Representative,32nd Middlesex,2.977349880349495,2.977349880349495,0.0,agrees,David R. Lucas,2,1,False,False
+105721,2010,State Senate,2nd Middlesex,34.17148911891759,34.17148911891759,0.0,agrees,David M. Carnevale,2,1,False,False
+105720,2010,State Representative,34th Middlesex,47.08216394077229,47.08216394077229,0.0,agrees,Richard Cannava,2,1,False,False
+105719,2010,State Representative,9th Norfolk,-35.10119483052914,-35.10119483052914,0.0,agrees,Daniel B. Winslow,2,1,False,False
+105713,2010,State Representative,35th Middlesex,52.644960223078805,52.644960223078805,0.0,agrees,Karla Romero,2,1,False,False
+105712,2010,State Senate,Middlesex and Essex,4.636079750180161,4.636079750180161,0.0,agrees,Craig Spadafora,2,1,False,False
+105710,2010,State Senate,3rd Essex and Middlesex,35.065095329178746,35.065095329178746,0.0,agrees,Christopher Jordan Dent,2,1,False,False
+105708,2010,State Representative,9th Essex,-2.188196309204132,-2.188196309204132,0.0,agrees,Donald H. Wong,2,1,False,False
+105706,2010,State Representative,8th Essex,23.88623486279302,23.88623486279302,0.0,agrees,Katherine Kozitza,2,1,False,False
+112780,2012,State Senate,2nd Worcester,35.859023449509486,35.859023449509486,0.0,agrees,Stephen R. Simonian,2,1,False,False
+112789,2012,State Representative,5th Barnstable,-12.307692307692308,-12.307692307692308,0.0,agrees,Randy Hunt,2,1,False,False
+112792,2012,State Representative,5th Worcester,39.40325138778747,39.40325138778747,0.0,agrees,Jason M. Petraitis,2,1,False,False
+112866,2012,State Representative,9th Hampden,69.54031018583204,69.54031018583204,0.0,agrees,Robert J. Underwood,2,1,False,False
+112909,2012,State Representative,5th Hampden,40.35680152914941,40.35680152914941,0.0,agrees,Linda L. Vacon,3,1,False,False
+112908,2012,State Representative,8th Middlesex,22.730428745009547,22.730428745009547,0.0,agrees,Martin A. Lamb,2,1,False,False
+112905,2012,State Representative,4th Norfolk,61.8618925831202,61.8618925831202,0.0,agrees,Robert Montgomery Thomas,2,1,False,False
+112897,2012,State Representative,10th Norfolk,8.581115132633894,8.581115132633894,0.0,agrees,Richard A. Eustis,2,1,False,False
+112882,2012,State Representative,12th Hampden,40.53796462988457,40.53796462988457,0.0,agrees,Dennis John McCarthy,2,1,False,False
+112881,2012,State Representative,2nd Hampden,14.217129398976407,14.217129398976407,0.0,agrees,Marie Angelides,2,1,False,False
+112880,2012,State Representative,12th Plymouth,25.050025594490204,25.050025594490204,0.0,agrees,Debra A. Betz,2,1,False,False
+112879,2012,State Representative,6th Plymouth,10.138636665633172,10.138636665633172,0.0,agrees,Karen E. Barry,2,1,False,False
+112878,2012,State Senate,1st Middlesex,42.36638146339891,42.36638146339891,0.0,agrees,James J. Buba,2,1,False,False
+112877,2012,State Representative,36th Middlesex,17.134681604345502,17.134681604345502,0.0,agrees,Cathy Richardson,2,1,False,False
+112875,2012,State Representative,18th Worcester,-40.11387974716607,-40.11387974716607,0.0,agrees,Ryan C. Fattman,2,1,False,False
+112871,2012,State Representative,13th Essex,25.601397661604626,25.601397661604626,0.0,agrees,Daniel C. Bennett,2,1,False,False
+112870,2012,State Senate,Plymouth and Norfolk,-36.677560516257685,-36.677560516257685,0.0,agrees,"Robert L. Hedlund, Jr.",2,1,False,False
+112867,2012,State Representative,6th Hampden,27.387593252234694,27.387593252234694,0.0,agrees,Lincoln A. Blackie,2,1,False,False
+112862,2012,State Representative,17th Middlesex,53.59016639184531,53.59016639184531,0.0,agrees,Martin D. Burke,2,1,False,False
+112795,2012,State Senate,3rd Middlesex,21.190405831363275,21.190405831363275,0.0,agrees,Sandi Martinez,2,1,False,False
+112861,2012,State Representative,2nd Middlesex,30.197334256534532,30.197334256534532,0.0,agrees,Valerie A. Wormell,2,1,False,False
+112860,2012,State Representative,6th Worcester,-10.98239376039456,-10.98239376039456,0.0,agrees,Peter J. Durant,2,1,False,False
+112857,2012,State Representative,26th Middlesex,43.24188586854165,43.24188586854165,0.0,agrees,Mike Connolly,3,1,False,False
+112849,2012,State Representative,11th Plymouth,26.54553512076224,26.54553512076224,0.0,agrees,Daniel J. Murphy,2,1,False,False
+112847,2012,State Representative,8th Plymouth,-4.642253521126766,-4.642253521126766,0.0,agrees,Angelo L. D'Emilia,2,1,False,False
+112842,2012,State Representative,2nd Essex,-4.454342984409804,-4.454342984409804,0.0,agrees,Leonard Mirra,2,1,False,False
+112835,2012,State Senate,1st Suffolk and Middlesex,63.19976907395046,63.19976907395046,0.0,agrees,"Thomas J. Dooley, III",2,1,False,False
+112827,2012,State Representative,2nd Suffolk,64.05265257279618,64.05265257279618,0.0,agrees,Charles F. Klauder,2,1,False,False
+112822,2012,State Representative,5th Suffolk,56.33143149110109,56.33143149110109,0.0,agrees,Althea Garrison,2,1,False,False
+112810,2012,State Representative,3rd Middlesex,28.301198778431107,28.301198778431107,0.0,agrees,"Chuck S. Kuniewich, Jr.",2,1,False,False
+112807,2012,State Senate,2nd Essex,41.5059351860028,41.5059351860028,0.0,agrees,Richard A. Jolitz,2,1,False,False
+112801,2012,State Representative,12th Bristol,-15.289883596693477,-15.289883596693477,0.0,agrees,Keiko M. Orrall,2,1,False,False
+112800,2012,State Senate,2nd Suffolk and Middlesex,52.73308683921256,52.73308683921256,0.0,agrees,Steven W. Aylward,2,1,False,False
+112798,2012,State Representative,8th Worcester,-2.497190050334752,-2.497190050334752,0.0,agrees,Kevin J. Kuros,2,1,False,False
+105700,2010,State Representative,16th Essex,67.59275237273512,67.59275237273512,0.0,agrees,Enrique Matos,3,1,False,False
+105694,2010,State Representative,8th Middlesex,42.558278541542144,42.558278541542144,0.0,agrees,Jonathan A. Loya,2,1,False,False
+130439,2016,State Representative,9th Essex,-9.87183334047752,-9.87183334047752,0.0,agrees,Donald H. Wong,2,1,False,False
+105589,2010,State Senate,1st Hampden and Hampshire,16.375297003882782,16.375297003882782,0.0,agrees,Thomas A. McCarthy,2,1,False,False
+105579,2010,State Representative,5th Barnstable,-6.07770090473656,-6.07770090473656,0.0,agrees,Randy Hunt,2,1,False,False
+105580,2010,State Representative,2nd Barnstable,17.993652545881055,17.993652545881055,0.0,agrees,"James F. Munafo, Jr.",2,1,False,False
+105581,2010,State Representative,3rd Barnstable,-7.896575821104124,-7.896575821104124,0.0,agrees,David T. Vieira,2,1,False,False
+105582,2010,State Senate,Plymouth and Barnstable,4.872189381056491,4.872189381056491,0.0,agrees,Thomas Francis Keyes,2,1,False,False
+105584,2010,State Representative,5th Worcester,30.782562325023328,30.782562325023328,0.0,agrees,Rodney Arvid Josephson,2,1,False,False
+105586,2010,State Senate,3rd Middlesex,14.020465292824497,14.020465292824497,0.0,agrees,Sandra B. Martinez,2,1,False,False
+105590,2010,State Representative,18th Worcester,-5.13096113593936,-5.13096113593936,0.0,agrees,Ryan C. Fattman,2,1,False,False
+105693,2010,State Representative,1st Worcester,-26.6206313416009,-26.6206313416009,0.0,agrees,Kimberly N. Ferguson,3,1,False,False
+105591,2010,State Senate,Worcester and Norfolk,7.094565972516392,7.094565972516392,0.0,agrees,Kimberly B. Roy,2,1,False,False
+105593,2010,State Representative,6th Bristol,27.24810400866739,27.24810400866739,0.0,agrees,David K. Rose,2,1,False,False
+105594,2010,State Senate,1st Plymouth and Bristol,16.113445735576843,16.113445735576843,0.0,agrees,David W. Pottier,2,1,False,False
+105595,2010,State Representative,4th Middlesex,-0.6763154335181876,-0.6763154335181876,0.0,agrees,Steven L. Levy,2,1,False,False
+105596,2010,State Senate,1st Worcester,24.457548078775964,24.457548078775964,0.0,agrees,"William J. Higgins, Sr",2,1,False,False
+105597,2010,State Representative,6th Essex,20.61958032700073,20.61958032700073,0.0,agrees,Brett R. Schetzsle,2,1,False,False
+105577,2010,State Representative,1st Middlesex,-25.03614457831325,-25.03614457831325,0.0,agrees,Sheila C. Harrington,2,1,False,False
+105566,2010,State Representative,2nd Bristol,-4.351204351204352,-4.351204351204352,0.0,agrees,George T. Ross,3,1,False,False
+105564,2010,State Representative,2nd Franklin,10.188362693510255,10.188362693510255,0.0,agrees,Steven E. Adam,3,1,False,False
+105563,2010,State Senate,2nd Middlesex and Norfolk,18.541043878637936,18.541043878637936,0.0,agrees,Edward Bergin McGrath,2,1,False,False
+105558,2010,State Representative,2nd Berkshire,19.993351063829788,19.993351063829788,0.0,agrees,Michael F. Case,3,1,False,False
+105556,2010,State Senate,Worcester and Middlesex,17.848731709200422,17.848731709200422,0.0,agrees,Neal Andrew Heeren,2,1,False,False
+105554,2010,State Senate,"Worcester, Hampden, Hampshire and Franklin",32.48864776611847,32.48864776611847,0.0,agrees,Daniel D. Dubrule,2,1,False,False
+105548,2010,State Representative,24th Middlesex,55.38198681962412,55.38198681962412,0.0,agrees,Lalig Musserian,2,1,False,False
+105538,2010,State Senate,2nd Essex and Middlesex,11.379259909316952,11.379259909316952,0.0,agrees,Jamison Tomasek,3,1,False,False
+105536,2010,State Representative,18th Essex,-6.535471331389697,-6.535471331389697,0.0,agrees,"James J. Lyons, Jr.",2,1,False,False
+105530,2010,State Senate,1st Essex,17.95056026002908,17.95056026002908,0.0,agrees,Stephen R. Cole,2,1,False,False
+105525,2010,State Representative,4th Berkshire,63.91512861502689,63.91512861502689,0.0,agrees,Lee Scott Laugenour,2,1,False,False
+105523,2010,State Senate,Hampden,21.878443672120035,21.878443672120035,0.0,agrees,Robert A. Magovern,2,1,False,False
+105511,2010,State Representative,11th Bristol,33.276547416240774,33.276547416240774,0.0,agrees,Ivo M. Almeida,2,1,False,False
+105503,2010,State Representative,14th Middlesex,17.66628534074195,17.66628534074195,0.0,agrees,K.c. Winslow,2,1,False,False
+105497,2010,State Senate,Norfolk and Plymouth,21.222726934246776,21.222726934246776,0.0,agrees,Daniel M. Dewey,3,1,False,False
+104723,2010,State Representative,16th Essex,77.86407766990291,77.86407766990291,0.0,agrees,Rafael Gadea,2,1,False,False
+105598,2010,State Senate,2nd Essex,30.03600404838147,30.03600404838147,0.0,agrees,Richard A. Jolitz,3,1,False,False
+105599,2010,State Representative,22nd Middlesex,-16.519275943070333,-16.519275943070333,0.0,agrees,Marc T. Lombardo,4,2,False,False
+105601,2010,State Representative,3rd Middlesex,20.16871621220222,20.16871621220222,0.0,agrees,"Chuck S. Kuniewich, Jr.",2,1,False,False
+105665,2010,State Representative,36th Middlesex,17.885965487828887,17.885965487828887,0.0,agrees,George Derek Boag,3,1,False,False
+105692,2010,State Representative,3rd Norfolk,27.426766226306725,27.426766226306725,0.0,agrees,Gary M. Lowell,2,1,False,False
+105688,2010,State Representative,5th Plymouth,5.662084959556535,5.662084959556535,0.0,agrees,Korey M. Welch,2,1,False,False
+105686,2010,State Representative,9th Worcester,-34.83576539523354,-34.83576539523354,0.0,agrees,"George N. Peterson, Jr.",2,1,False,False
+105685,2010,State Representative,2nd Essex,3.67627611742925,3.67627611742925,0.0,agrees,Robert V. Finneran,2,1,False,False
+105679,2010,State Senate,1st Bristol and Plymouth,24.317155054503253,24.317155054503253,0.0,agrees,Derek A. Maksy,2,1,False,False
+105678,2010,State Representative,7th Bristol,50.49449784092492,50.49449784092492,0.0,agrees,C.J. Ferry,2,1,False,False
+105677,2010,State Representative,8th Bristol,35.367674505412474,35.367674505412474,0.0,agrees,F. George Jacome,2,1,False,False
+105676,2010,State Representative,10th Bristol,14.49232056415466,14.49232056415466,0.0,agrees,Peter F. Winters,2,1,False,False
+105675,2010,State Representative,28th Middlesex,28.048113723346084,28.048113723346084,0.0,agrees,Dennis John Giantassio,2,1,False,False
+105674,2010,State Representative,5th Essex,30.30973451327434,30.30973451327434,0.0,agrees,Janet Anne Holmes,2,1,False,False
+105672,2010,State Representative,12th Hampden,29.561051404894467,29.561051404894467,0.0,agrees,Joshua Carpenter,2,1,False,False
+105671,2010,State Representative,2nd Hampden,2.7582540901305297,2.7582540901305297,0.0,agrees,Marie Angelides,2,1,False,False
+105668,2010,State Representative,6th Plymouth,-2.761210514689644,-2.761210514689644,0.0,agrees,Daniel K. Webster,2,1,False,False
+105666,2010,State Senate,1st Middlesex,18.23631277474358,18.23631277474358,0.0,agrees,James J. Buba,3,1,False,False
+105663,2010,State Representative,8th Worcester,-14.448155781394355,-14.448155781394355,0.0,agrees,Kevin J. Kuros,2,1,False,False
+105605,2010,State Representative,8th Suffolk,54.49850049983338,54.49850049983338,0.0,agrees,Brad Marston,2,1,False,False
+105660,2010,State Representative,9th Bristol,12.881554917818944,12.881554917818944,0.0,agrees,Joe Michaud,3,1,False,False
+105659,2010,State Representative,13th Essex,2.8998294217987164,2.8998294217987164,0.0,agrees,Daniel C. Bennett,2,1,False,False
+105657,2010,State Representative,3rd Plymouth,23.578611487139824,23.578611487139824,0.0,agrees,Timothy F. Finnerty,3,1,False,False
+105656,2010,State Representative,6th Hampden,9.207033842070334,9.207033842070334,0.0,agrees,Gregory C. Neffinger,2,1,False,False
+105655,2010,State Representative,9th Hampden,60.81974438078448,60.81974438078448,0.0,agrees,Robert J. Underwood,2,1,False,False
+105649,2010,State Representative,4th Barnstable,28.815494952263492,28.815494952263492,0.0,agrees,David M. Dunford,3,1,False,False
+105640,2010,State Representative,10th Plymouth,12.292748283369615,12.292748283369615,0.0,agrees,John F. Cruz,2,1,False,False
+105634,2010,State Representative,8th Plymouth,-5.719640664383125,-5.719640664383125,0.0,agrees,Angelo L. D'Emilia,2,1,False,False
+105631,2010,State Representative,5th Norfolk,17.37071880956773,17.37071880956773,0.0,agrees,Paul Dan Clifford,2,1,False,False
+105630,2010,State Representative,12th Worcester,21.738098064822513,21.738098064822513,0.0,agrees,James F. Gettens,2,1,False,False
+105627,2010,State Representative,2nd Plymouth,-32.21438107953462,-32.21438107953462,0.0,agrees,Susan Williams Gifford,2,1,False,False
+105625,2010,State Senate,Suffolk and Norfolk,35.43024533138045,35.43024533138045,0.0,agrees,Brad Williams,2,1,False,False
+105623,2010,State Senate,"Middlesex, Suffolk and Essex",55.25470157509351,55.25470157509351,0.0,agrees,Barbara T. Bush,2,1,False,False
+105611,2010,State Representative,4th Suffolk,46.687427014402495,46.687427014402495,0.0,agrees,Patrick James Brennan,2,1,False,False
+112911,2012,State Representative,16th Essex,68.85245901639345,68.85245901639345,0.0,agrees,Jose L. Santiago,2,1,False,False
+112912,2012,State Representative,17th Worcester,53.273056057866185,53.273056057866185,0.0,agrees,William G. Lebeau,2,1,False,False
+112920,2012,State Representative,10th Essex,65.98145285935084,65.98145285935084,0.0,agrees,Dwight J. Caufield,2,1,False,False
+126330,2014,State Representative,19th Middlesex,40.615625407590976,40.615625407590976,0.0,agrees,Douglas W. Sears,2,1,False,False
+126308,2014,State Representative,5th Middlesex,25.13450292397661,25.13450292397661,0.0,agrees,Douglas A. Grindle,2,1,False,False
+126317,2014,State Representative,12th Essex,-3.086200780418591,-3.086200780418591,0.0,agrees,Leah Cole,2,1,False,False
+126319,2014,State Representative,1st Plymouth,-20.42547637692509,-20.42547637692509,0.0,agrees,Mathew J. Muratore,2,1,False,False
+126323,2014,State Representative,19th Suffolk,43.52849030742119,43.52849030742119,0.0,agrees,Paul A. Caruccio,2,1,False,False
+126324,2014,State Representative,7th Essex,68.06071104512084,68.06071104512084,0.0,agrees,Daniel J. Morris,2,1,False,False
+126326,2014,State Representative,27th Middlesex,76.21267893660533,76.21267893660533,0.0,agrees,Noelani Kamelamela,2,1,False,False
+126333,2014,State Representative,4th Hampden,17.816369191188297,17.816369191188297,0.0,agrees,Dan Allie,2,1,False,False
+112928,2012,State Representative,4th Middlesex,1.1852015950376604,1.1852015950376604,0.0,agrees,Steven L. Levy,2,1,False,False
+126336,2014,State Representative,13th Worcester,37.15688056716961,37.15688056716961,0.0,agrees,Jacqueline Gisela Kostas,2,1,False,False
+126345,2015,State Representative,1st Suffolk,80.40226921093347,80.40226921093347,0.0,agrees,Joanne T. Pomodoro,2,1,False,False
+126346,2015,State Representative,11th Worcester,-3.6274762027270366,-3.6274762027270366,0.0,agrees,Hannah E. Kane,2,1,False,False
+126355,2015,State Senate,2nd Plymouth and Bristol,16.416907200189794,16.416907200189794,0.0,agrees,Geoff Diehl,3,1,False,False
+127017,2016,State Representative,3rd Worcester,1.3734754422590978,1.3734754422590978,0.0,agrees,Dean Tran,2,1,False,False
+127018,2016,State Representative,12th Essex,20.181259103414796,20.181259103414796,0.0,agrees,Stephanie R. Peach,3,1,False,False
+126307,2014,State Representative,34th Middlesex,28.592295052035784,28.592295052035784,0.0,agrees,Nicholas Lanzilli,2,1,False,False
+126305,2014,State Representative,4th Plymouth,17.307265052210624,17.307265052210624,0.0,agrees,James Anthony Pavlik,2,1,False,False
+126302,2014,State Senate,5th Middlesex,13.681939556844508,13.681939556844508,0.0,agrees,Monica C. Medeiros,2,1,False,False
+126301,2014,State Representative,33rd Middlesex,33.187923315348414,33.187923315348414,0.0,agrees,John P. Matheson,2,1,False,False
+126300,2014,State Representative,32nd Middlesex,31.933581999759355,31.933581999759355,0.0,agrees,John P. Lock,2,1,False,False
+126295,2014,State Representative,9th Essex,-21.118863692997756,-21.118863692997756,0.0,agrees,Donald H. Wong,2,1,False,False
+126292,2014,State Representative,18th Middlesex,23.44772545889864,23.44772545889864,0.0,agrees,Fred W. Bahou,2,1,False,False
+126291,2014,State Representative,9th Middlesex,43.079291762894535,43.079291762894535,0.0,agrees,Sharon K. Antia,2,1,False,False
+126289,2014,State Representative,4th Worcester,10.082781456953644,10.082781456953644,0.0,agrees,Jacques A. Perrault,2,1,False,False
+126288,2014,State Representative,17th Worcester,-0.4607307403835803,-0.4607307403835803,0.0,agrees,Kate D. Campanale,2,1,False,False
+126287,2014,State Representative,16th Essex,5.717215741571591,5.717215741571591,0.0,agrees,William Lantigua,3,1,False,False
+126286,2014,State Representative,10th Worcester,17.8459866902078,17.8459866902078,0.0,agrees,"Mark W. Reil, Jr",2,1,False,False
+126284,2014,State Representative,8th Middlesex,13.528821759395832,13.528821759395832,0.0,agrees,Patricia M. Vanaria,2,1,False,False
+126282,2014,State Representative,3rd Norfolk,32.2090549984807,32.2090549984807,0.0,agrees,Patricia Kriegel,2,1,False,False
+126278,2014,State Representative,15th Essex,14.736059479553898,14.736059479553898,0.0,agrees,Al DiNuccio,2,1,False,False
+126274,2014,State Representative,9th Worcester,-24.77421147700431,-24.77421147700431,0.0,agrees,"David K. Muradian, Jr",2,1,False,False
+126271,2014,State Representative,6th Middlesex,67.28923920493489,67.28923920493489,0.0,agrees,Michael John Coombes,2,1,False,False
+130246,2016,State Senate,Norfolk and Plymouth,42.10056530794406,42.10056530794406,0.0,agrees,Alexander N. Mendez,2,1,False,False
+130250,2016,State Representative,14th Middlesex,23.90164600690916,23.90164600690916,0.0,agrees,Helen Brady,3,1,False,False
+130252,2016,State Senate,Middlesex and Worcester,33.29599519608296,33.29599519608296,0.0,agrees,Ted Busiek,3,1,False,False
+130340,2016,State Representative,11th Suffolk,78.48332571950662,78.48332571950662,0.0,agrees,Stephen Charles Bedell,2,1,False,False
+130436,2016,State Representative,18th Middlesex,44.48404918909286,44.48404918909286,0.0,agrees,Kamara Kay,2,1,False,False
+130432,2016,State Representative,17th Worcester,-9.126821958861186,-9.126821958861186,0.0,agrees,Kate D. Campanale,2,1,False,False
+130430,2016,State Representative,10th Worcester,10.015294063122765,10.015294063122765,0.0,agrees,Sandra Slattery E. Biagetti,2,1,False,False
+130420,2016,State Representative,5th Plymouth,-2.0886102229788595,-2.0886102229788595,0.0,agrees,David F. Decoste,2,1,False,False
+130414,2016,State Representative,1st Bristol,-20.07456266131345,-20.07456266131345,0.0,agrees,Fred Jay Barrows,2,1,False,False
+130405,2016,State Representative,3rd Bristol,-17.299436918102252,-17.299436918102252,0.0,agrees,Shaunna L. O'Connell,2,1,False,False
+130400,2016,State Representative,6th Plymouth,28.09986595174263,28.09986595174263,0.0,agrees,Vince Cogliano,2,1,False,False
+130391,2016,State Senate,Plymouth and Norfolk,-13.220990359806978,-13.220990359806978,0.0,agrees,Patrick M. O'Connor,2,1,False,False
+130390,2016,State Representative,3rd Plymouth,8.035204954771412,8.035204954771412,0.0,agrees,Kristen G. Arute,2,1,False,False
+130387,2016,State Representative,9th Hampden,61.28815833612882,61.28815833612882,0.0,agrees,Robert J. Underwood,2,1,False,False
+130380,2016,State Representative,2nd Plymouth,-15.554260176819202,-15.554260176819202,0.0,agrees,Susan Williams Gifford,2,1,False,False
+130371,2016,State Representative,9th Plymouth,71.13555537176413,71.13555537176413,0.0,agrees,Danny J. Yoon,2,1,False,False
+130361,2016,State Representative,3rd Barnstable,-5.911207183239103,-5.911207183239103,0.0,agrees,David T. Vieira,2,1,False,False
+130342,2016,State Representative,5th Suffolk,68.69997668816536,68.69997668816536,0.0,agrees,Althea Garrison,2,1,False,False
+130333,2016,State Representative,22nd Middlesex,-18.405947115837023,-18.405947115837023,0.0,agrees,Marc T. Lombardo,2,1,False,False
+130264,2016,State Senate,"Berkshire, Hampshire and Franklin",40.33755274261603,40.33755274261603,0.0,agrees,Christine M. Canning,2,1,False,False
+130331,2016,State Representative,6th Essex,49.693373884429384,49.693373884429384,0.0,agrees,Daniel Fishman,2,1,False,False
+130328,2016,State Representative,12th Worcester,60.627387894631,60.627387894631,0.0,agrees,Charlene R. Dicalogero,2,1,False,False
+130322,2016,State Senate,1st Hampden and Hampshire,11.798470986339144,11.798470986339144,0.0,agrees,James Chip Harrington,2,1,False,False
+130319,2016,State Representative,21st Middlesex,17.17241978958351,17.17241978958351,0.0,agrees,"Paul Girouard, Jr",2,1,False,False
+130316,2016,State Representative,2nd Barnstable,-9.594981086816128,-9.594981086816128,0.0,agrees,"William L. Crocker, Jr.",2,1,False,False
+130308,2016,State Senate,2nd Worcester,48.21301265754678,48.21301265754678,0.0,agrees,Mesfin H. Beshir,2,1,False,False
+130307,2016,State Representative,7th Worcester,-32.651874818331564,-32.651874818331564,0.0,agrees,Paul K. Frost,2,1,False,False
+130306,2016,State Senate,"Norfolk, Bristol and Middlesex",-20.14627258354554,-20.14627258354554,0.0,agrees,Richard J. Ross,2,1,False,False
+130294,2016,State Representative,1st Middlesex,-30.369339191717053,-30.369339191717053,0.0,agrees,Sheila C. Harrington,2,1,False,False
+130281,2016,State Senate,2nd Essex and Middlesex,27.032911463527693,27.032911463527693,0.0,agrees,Susan M. Laplante,2,1,False,False
+130279,2016,State Representative,18th Essex,-19.313556832962696,-19.313556832962696,0.0,agrees,"James J. Lyons, Jr.",2,1,False,False
+130277,2016,State Senate,"Hampshire, Franklin and Worcester",63.49318844003464,63.49318844003464,0.0,agrees,Donald Peltier,2,1,False,False
+130272,2016,State Representative,1st Essex,-8.113391984359724,-8.113391984359724,0.0,agrees,James M. Kelcourse,2,1,False,False
+130267,2016,State Senate,2nd Hampden and Hampshire,-19.08209223287558,-19.08209223287558,0.0,agrees,"Donald F. Humason, Jr",2,1,False,False
+126268,2014,State Senate,1st Bristol and Plymouth,30.734256072747375,30.734256072747375,0.0,agrees,Derek A. Maksy,2,1,False,False
+126267,2014,State Representative,6th Bristol,18.783185840707965,18.783185840707965,0.0,agrees,David L. Steinhof,2,1,False,False
+126264,2014,State Representative,10th Bristol,31.08506616257089,31.08506616257089,0.0,agrees,Abilio Bill Soares,2,1,False,False
+124862,2014,State Representative,9th Norfolk,-43.08865586272641,-43.08865586272641,0.0,agrees,Shawn C. Dooley,3,1,False,False
+126147,2014,State Representative,1st Middlesex,-28.58987603305785,-28.58987603305785,0.0,agrees,Sheila C. Harrington,2,1,False,False
+126146,2014,State Senate,"Worcester, Hampden, Hampshire and Middlesex",0.7197627314814825,0.7197627314814825,0.0,agrees,Michael J. Valanzola,2,1,False,False
+126140,2014,State Representative,23rd Middlesex,55.23809523809524,55.23809523809524,0.0,agrees,Joseph J. Monju,2,1,False,False
+126137,2014,State Senate,Cape and Islands,25.33567307436654,25.33567307436654,0.0,agrees,"Ronald R. Beaty, Jr.",3,1,False,False
+126131,2014,State Senate,2nd Essex and Middlesex,6.574379448012496,6.574379448012496,0.0,agrees,Alex J. Vispoli,2,1,False,False
+126127,2014,State Representative,3rd Hampshire,76.30465444287728,76.30465444287728,0.0,agrees,"Kenneth J. Roberts, Jr",2,1,False,False
+126123,2014,State Senate,1st Essex,7.646101864597671,7.646101864597671,0.0,agrees,Shaun P. Toohey,2,1,False,False
+126116,2014,State Senate,2nd Hampden and Hampshire,-13.326000162959344,-13.326000162959344,0.0,agrees,"Donald F. Humason, Jr",2,1,False,False
+126115,2014,State Representative,3rd Hampden,-35.76431511300455,-35.76431511300455,0.0,agrees,Nicholas A. Boldyga,2,1,False,False
+126096,2014,State Representative,14th Middlesex,50.501463900828504,50.501463900828504,0.0,agrees,Kenneth William Van Tassell,2,1,False,False
+126090,2014,State Senate,Norfolk and Plymouth,32.12978873951278,32.12978873951278,0.0,agrees,Leslie C. Gosule,2,1,False,False
+124867,2014,State Representative,4th Hampden,6.790734508018215,6.790734508018215,0.0,agrees,Dan Allie,2,1,False,False
+124866,2014,State Senate,5th Middlesex,6.472004816375682,6.472004816375682,0.0,agrees,Monica C. Medeiros,2,1,False,False
+124865,2014,State Representative,16th Suffolk,35.845824411134906,35.845824411134906,0.0,agrees,Todd B. Taylor,2,1,False,False
+124833,2013,State Representative,16th Worcester,27.79097387173397,27.79097387173397,0.0,agrees,Carol E. Claros,2,1,False,False
+126154,2014,State Representative,2nd Franklin,-9.253065774804908,-9.253065774804908,0.0,agrees,Susannah M. Whipps Lee,2,1,False,False
+124832,2013,State Representative,6th Bristol,6.28654970760234,6.28654970760234,0.0,agrees,David L. Steinhof,2,1,False,False
+124796,2013,State Senate,1st Suffolk,67.06996317727511,67.06996317727511,0.0,agrees,Joseph Anthony Ureneck,3,2,False,False
+112959,2012,State Representative,15th Worcester,50.92181800256335,50.92181800256335,0.0,agrees,Brian J. O'Malley,2,1,False,False
+112957,2012,State Representative,14th Worcester,31.18478730629129,31.18478730629129,0.0,agrees,"William J. McCarthy, III",3,1,False,False
+112955,2012,State Representative,19th Middlesex,47.03000326629649,47.03000326629649,0.0,agrees,Douglas W. Sears,2,1,False,False
+112954,2012,State Representative,31st Middlesex,19.68173846088035,19.68173846088035,0.0,agrees,George Georgountzos,2,1,False,False
+112952,2012,State Representative,11th Hampden,53.907203907203915,53.907203907203915,0.0,agrees,Norman W. Oliver,2,1,False,False
+112948,2012,State Representative,19th Suffolk,55.25887774464624,55.25887774464624,0.0,agrees,Paul A. Caruccio,2,1,False,False
+112941,2012,State Representative,12th Norfolk,21.448225923244024,21.448225923244024,0.0,agrees,James M. Stanton,2,1,False,False
+112938,2012,State Representative,10th Middlesex,51.99071723837842,51.99071723837842,0.0,agrees,"Francis Xavier Stanton, III",2,1,False,False
+112937,2012,State Representative,11th Middlesex,48.76453488372093,48.76453488372093,0.0,agrees,Greer Tan Swiston,2,1,False,False
+112932,2012,State Representative,5th Middlesex,29.296278521879504,29.296278521879504,0.0,agrees,William J. Callahan,2,1,False,False
+112931,2012,State Representative,34th Middlesex,68.42489505384195,68.42489505384195,0.0,agrees,David M. Rajczewski,2,1,False,False
+112929,2012,State Representative,4th Plymouth,36.80549664941894,36.80549664941894,0.0,agrees,Stephen W. Coulter,2,1,False,False
+126150,2014,State Representative,1st Franklin,39.928792388956985,39.928792388956985,0.0,agrees,Dylan E. Korpita,2,1,False,False
+126159,2014,State Senate,"Norfolk, Bristol and Middlesex",-22.16920952830354,-22.16920952830354,0.0,agrees,Richard J. Ross,2,1,False,False
+126262,2014,State Representative,5th Essex,18.039142124679547,18.039142124679547,0.0,agrees,Michael B. Boucher,2,1,False,False
+126218,2014,State Senate,Plymouth and Barnstable,-25.88413903316021,-25.88413903316021,0.0,agrees,Vinny M. deMacedo,3,1,False,False
+126259,2014,State Representative,12th Hampden,30.475655956222813,30.475655956222813,0.0,agrees,Bob Russell,2,1,False,False
+126256,2014,State Representative,6th Plymouth,7.636406957350483,7.636406957350483,0.0,agrees,Joseph Sheehan,2,1,False,False
+126254,2014,State Representative,36th Middlesex,7.478237027897733,7.478237027897733,0.0,agrees,Cathy Richardson,2,1,False,False
+126249,2014,State Representative,9th Bristol,33.543879797109774,33.543879797109774,0.0,agrees,Patrick t. J. Curran,2,1,False,False
+126248,2014,State Representative,13th Essex,4.872303496156705,4.872303496156705,0.0,agrees,Thomas J. Lyons,2,1,False,False
+126244,2014,State Representative,6th Hampden,13.761980087466274,13.761980087466274,0.0,agrees,Nathan A. Bech,2,1,False,False
+126243,2014,State Representative,9th Hampden,57.24460508132243,57.24460508132243,0.0,agrees,Robert J. Underwood,2,1,False,False
+126237,2014,State Representative,6th Worcester,-25.87290502793296,-25.87290502793296,0.0,agrees,Peter J. Durant,2,1,False,False
+126235,2014,State Senate,2nd Middlesex,51.33143344647946,51.33143344647946,0.0,agrees,"Robert L. Cappucci, Jr.",2,1,False,False
+126234,2014,State Representative,26th Middlesex,74.71424311698638,74.71424311698638,0.0,agrees,Thomas Michael Vasconcelos,2,1,False,False
+126230,2014,State Representative,15th Norfolk,61.34163208852006,61.34163208852006,0.0,agrees,Curt Myers,2,1,False,False
+126229,2014,State Senate,2nd Plymouth and Bristol,32.96700821979506,32.96700821979506,0.0,agrees,Viola A. Ryerson,2,1,False,False
+126224,2014,State Representative,8th Plymouth,-7.296406715832421,-7.296406715832421,0.0,agrees,Angelo L. D'Emilia,2,1,False,False
+126221,2014,State Senate,1st Worcester,20.53764615888974,20.53764615888974,0.0,agrees,Paul J. Franco,2,1,False,False
+126215,2014,State Senate,2nd Suffolk,80.07738492328218,80.07738492328218,0.0,agrees,David James Wyatt,2,1,False,False
+126160,2014,State Representative,7th Worcester,-47.39533864250749,-47.39533864250749,0.0,agrees,Paul K. Frost,2,1,False,False
+126212,2014,State Senate,1st Suffolk,68.144311112268,68.144311112268,0.0,agrees,"Robert E. Powers, Jr",2,1,False,False
+126199,2014,State Representative,1st Suffolk,52.8162511542013,52.8162511542013,0.0,agrees,Celeste Ribeiro B. Myers,2,1,False,False
+126198,2014,State Representative,5th Suffolk,78.30719147676828,78.30719147676828,0.0,agrees,Claudette N. Joseph,2,1,False,False
+126189,2014,State Representative,3rd Middlesex,20.511565291885937,20.511565291885937,0.0,agrees,Paddy Dolan,2,1,False,False
+126186,2014,State Representative,6th Essex,48.27225130890052,48.27225130890052,0.0,agrees,Euplio R. Marciano,2,1,False,False
+126184,2014,State Senate,Worcester and Middlesex,20.86626423548448,20.86626423548448,0.0,agrees,Richard M. Bastien,2,1,False,False
+126182,2014,State Senate,1st Plymouth and Bristol,21.97555693069307,21.97555693069307,0.0,agrees,David A. Rosa,2,1,False,False
+126179,2014,State Senate,Worcester and Norfolk,-11.437981884871618,-11.437981884871618,0.0,agrees,Ryan C. Fattman,2,1,False,False
+126178,2014,State Representative,8th Worcester,-25.15955903684364,-25.15955903684364,0.0,agrees,Kevin J. Kuros,3,1,False,False
+126175,2014,State Senate,3rd Middlesex,18.47735292613491,18.47735292613491,0.0,agrees,Sandi Martinez,2,1,False,False
+126174,2014,State Representative,21st Middlesex,4.539609053497945,4.539609053497945,0.0,agrees,"Paul Girouard, Jr",2,1,False,False
+126173,2014,State Representative,5th Worcester,-12.764375971349413,-12.764375971349413,0.0,agrees,"Donald R. Berthiaume, Jr",2,1,False,False
+126171,2014,State Representative,1st Barnstable,-3.993046679278084,-3.993046679278084,0.0,agrees,Timothy R. Whelan,2,1,False,False
+126170,2014,State Representative,5th Barnstable,-25.4746835443038,-25.4746835443038,0.0,agrees,Randy Hunt,2,1,False,False
+165551,2024,State Representative,9th Middlesex,52.04991087344028,52.04991087344028,0.0,agrees,Carly Marie Downs,3,1,False,False
+126188,2014,State Representative,22nd Middlesex,-92.98995909259948,,,admitted_by_write_in_absent_from_reference,Marc T. Lombardo,2,1,False,True
+126285,2014,State Representative,5th Hampden,96.3473723443906,,,admitted_by_write_in_absent_from_reference,Jerome T. Hobert,2,1,False,True
+140796,2020,State Senate,Cape and Islands,99.4775223442572,,,admitted_by_write_in_absent_from_reference,Leah Christine Mercurio,2,1,False,True
+140800,2020,State Senate,4th Middlesex,99.3828720390493,,,admitted_by_write_in_absent_from_reference,Michael Paul Robbins,2,1,False,True
+140929,2020,State Representative,10th Norfolk,92.47354366531499,,,admitted_by_write_in_absent_from_reference,Andrew M. Bissanti,2,1,False,True
+154477,2022,State Representative,11th Plymouth,84.89051094890512,,,admitted_by_write_in_absent_from_reference,Fred Fontaine,2,1,False,True
+154500,2022,State Representative,13th Essex,92.12087760452602,,,admitted_by_write_in_absent_from_reference,Michael D. Bean,2,1,False,True
+160299,2023,State Representative,9th Suffolk,99.70544918998527,,,admitted_by_write_in_absent_from_reference,Roy A. Owens,2,1,False,True
+160911,2024,State Representative,6th Worcester,-96.00772698003864,,,admitted_by_write_in_absent_from_reference,"John J. Marsi, Jr",3,1,False,True
+165453,2024,State Representative,2nd Plymouth,-78.03383438956686,,,admitted_by_write_in_absent_from_reference,John Robert Gaskey,2,1,False,True

@@ -1,0 +1,7 @@
+definition,response,races,pooled_holdout,holdout_specials,smallest_training_fold,folds,skipped_years
+current,dem_margin,623,424,24,199,10,2019
+two_party,dem_margin_two_party,517,346,22,171,10,2019
+two_party_or_strongest,dem_margin_two_party_or_strongest,610,413,24,197,10,2019
+write_in_5pct,dem_margin,625,426,24,199,10,2019
+no_dem_excluded,dem_margin,610,413,24,197,10,2019
+no_dem_train_only,dem_margin,623,413,24,199,10,2019

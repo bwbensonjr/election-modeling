@@ -2,7 +2,7 @@
 
 `data/race/ma_race_training_set.csv.gz`
 
-One row per legislative race: 623 contested State Representative and State
+One row per legislative race: 633 contested State Representative and State
 Senate elections from 2010 through 2024, general and special. Built by
 [`maprecinct races`](pipeline.md) by rolling the precinct table in
 [`schema.md`](schema.md) up to the district, and it is the table the margin
@@ -11,6 +11,12 @@ model is fit on and scored against.
 Every race in the precinct table appears here. A race would be dropped only if
 no precinct in it had two-party presidential votes for its PVI year, leaving
 `PVI_N` undefined; no race in the current window meets that condition.
+
+Like the precinct table, this table is **definition-neutral**: it carries every
+race any declared definition admits, both responses, and the flags by which a
+definition excludes a race. The race table alone is sufficient to apply a
+definition -- neither the precinct table nor a candidate-level source is read.
+See [`definitions.md`](definitions.md).
 
 ## How the rollup works
 
@@ -50,10 +56,18 @@ any carried attribute.
 | Column | Type | Description |
 |---|---|---|
 | `dem_margin` | float | Percentage points. The Democratic candidate's share of the district's votes for named candidates, minus the comparison candidate's share. Blanks and the all-others bucket are excluded from the denominator |
+| `dem_margin_two_party` | float | Percentage points. The district's Democratic share of its combined Democratic and Republican vote, minus the Republican share, computed from summed precinct votes rather than averaged precinct margins. Missing where either major party is absent. Present in 523 races |
+| `response_shift` | float | `dem_margin_two_party` minus `dem_margin`. Published so a comparison between definitions can separate a change in accuracy from a change in the target. Median 0.0; 36 races move more than a point, 5 move more than 10, and 16th Essex 2014 moves 54.4 |
 
 Where no Democrat stood, `dem_margin` negates the leader's margin over the
 strongest remaining candidate and `no_dem_candidate` is true, following the
 precinct table. 13 races are in this position.
+
+Both responses are vote-weighted, summing the race's precinct vote counts
+before dividing. An unweighted mean of the precinct two-party margins differs
+in every one of the 523 major-party races, by a median of 1.1 points and by as
+much as 22.9 -- enough to flip the sign in election 124782, where the
+vote-weighted margin is -9.6 and the precinct average is +13.3.
 
 ## Predictors
 
@@ -62,8 +76,8 @@ precinct table. 13 races are in this position.
 | `PVI_N` | float | Partisan Voter Index for the district, in percentage points. The district's Democratic share of the combined two-party presidential vote across the two presidential elections preceding the race, minus the national share computed the same way |
 | `incumbent_status` | string | `No_Incumbent`, `Dem_Incumbent`, or `GOP_Incumbent`. An unenrolled incumbent is classified as `GOP_Incumbent`, following the established model |
 | `pres_elec` | boolean | Whether the race shared a ballot with a presidential general election |
-| `is_special` | boolean | Whether the race was a special election. 37 of the 623 races |
-| `num_candidates` | integer | Candidates in the race, as published in `ma-election-db` |
+| `is_special` | boolean | Whether the race was a special election. 38 of the 633 races |
+| `num_candidates` | integer | Candidates in the race, as published in `ma-election-db`. Counts ballot lines, so a write-in is not included |
 
 ## Provenance and diagnostics
 
@@ -74,9 +88,17 @@ precinct table. 13 races are in this position.
 | `opponent_candidate` | string | Candidate on the other side |
 | `opponent_party` | string | That candidate's party |
 | `dem_candidate_count` | integer | Democrats on the ballot. Greater than one in a handful of races |
-| `dem_votes` | integer | District votes for `dem_candidate` |
+| `major_party_race` | boolean | Both a Democrat and a Republican stood. The flag a two-party definition filters on |
+| `contested_on_ballot_lines` | boolean | Two or more ballot lines, the pre-change contested test |
+| `admitted_by_write_in` | boolean | Contested only because a write-in was admitted. True in 10 races |
+| `num_candidates_admitted` | integer | Candidates counting admitted write-ins |
+| `write_in_share` | float | District share of named-candidate votes taken by all write-ins combined |
+| `top_write_in_share` | float | The same for the strongest write-in. What a write-in threshold is compared against |
+| `dem_votes` | integer | District votes for `dem_candidate`. Where a Democrat stood this is that Democrat, so with `gop_votes` it is the two-party pair |
 | `opponent_votes` | integer | District votes for `opponent_candidate` |
-| `candidate_votes` | integer | District votes for all named candidates. The denominator of `dem_margin` |
+| `gop_votes` | integer | District votes for the strongest Republican, 0 where none stood. The other half of the `dem_margin_two_party` denominator |
+| `write_in_votes` | integer | District votes for admitted write-in candidates |
+| `candidate_votes` | integer | District votes for all admitted candidates. The denominator of `dem_margin` |
 | `total_votes` | integer | All votes cast in the district, including blanks and all-others |
 | `n_precincts` | integer | Precinct rows summed into this race. Ranges from 10 to 86 |
 | `pvi_year` | integer | The later presidential election of the pair `PVI_N` was built from |
