@@ -141,6 +141,15 @@ def main(argv: list[str] | None = None) -> int:
 
         for name, spec in variants.all_variants().items():
             print(f"{name:<24} {spec.declared}")
+            # Only what the variant actually declares. A variant running on the
+            # library's priors at the default target acceptance says nothing
+            # here, so a line that does appear is a deliberate choice.
+            if spec.prior_declaration:
+                print(f"{'':<24}   prior: {spec.prior_declaration}")
+            if spec.target_accept is not None:
+                print(f"{'':<24}   target_accept: {spec.target_accept}")
+            if spec.tune is not None:
+                print(f"{'':<24}   tune: {spec.tune}")
     elif args.command == "definitions":
         from . import definitions
 

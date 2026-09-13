@@ -201,6 +201,43 @@ falls below 400, or the sampler reports a divergent transition. A flagged fold
 is published with its scores and marked in the scorecard rather than aborting
 the run, because a fold whose fit struggled is information about that fold.
 
+### What the sampler ran under is published too
+
+A seed alone does not reproduce a fit. `fit_diagnostics.csv` therefore carries
+the settings and priors each fit actually used, whether the variant declared
+them or took the defaults:
+
+| Column | Meaning |
+|---|---|
+| `target_accept` | NUTS target acceptance probability. `0.8` is pymc's default; a higher value means the variant declared one |
+| `tune` | Tuning iterations, default 1000 |
+| `draws`, `chains` | Posterior draws per chain and number of chains |
+| `group_prior` | The variant's declared priors, or `library defaults` where it declared none |
+| `separating_races` | For a variant with a group effect, how many training races keep a predictor from being exactly collinear with the grouping factor. `none` when nothing is close |
+| `refused_reason` | Set when the fold was refused before sampling, so a fold that was never fit is distinguishable from one that was fit and sampled badly |
+
+This exists because a variant can be made to converge by raising
+`target_accept`, and a result obtained that way is a different claim from one
+obtained at the default. The scorecard's pooled row also carries
+`folds_refused` alongside `folds_failing_diagnostics`, keeping the two kinds of
+failure apart.
+
+**Declared priors.** A variant that declares nothing is fit under the
+modelling library's auto-scaled defaults, which is what every variant here did
+until a hierarchical term made that untenable: those defaults scale a group
+effect's standard deviation from the intercept, landing on a prior five times
+wider than the response itself. A group effect must therefore declare a scale
+for its standard deviation, and a variant that does not is refused rather than
+fit under a default nobody chose. See
+[`variant_results.md`](variant_results.md).
+
+**Refused folds.** A predictor constant within every level of a variant's own
+grouping factor is a linear combination of that group's indicators. The fit
+would return numbers, and the numbers would describe a ridge, so the fold is
+refused and the refusal published. This is checked per fold rather than on the
+whole table, because a predictor can vary within a group somewhere in the
+record and nowhere inside an early fold's training window.
+
 ## Published outputs
 
 | File | Contents |
@@ -213,7 +250,7 @@ the run, because a fold whose fit struggled is information about that fold.
 | `data/models/definition_dropped_races.csv` | Every race each definition drops, with the reason |
 | `data/models/threshold_sweep.csv` | Races admitted and scores at each write-in threshold |
 | `data/models/coefficients.csv` | Posterior summaries per definition per variant per fold |
-| `data/models/fit_diagnostics.csv` | R-hat, ESS, divergences and seed per fit |
+| `data/models/fit_diagnostics.csv` | R-hat, ESS, divergences and seed per fit, with the sampler settings and prior declaration that produced them |
 | `data/models/coefficient_parity.csv` | Baseline coefficients against the same fit on mapoli's district table |
 
 Every figure in the scorecard is recomputable from

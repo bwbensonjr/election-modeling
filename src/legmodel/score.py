@@ -90,9 +90,32 @@ def score_variant(
     predictions, coefficients, diagnostics = [], [], []
 
     for fold in built:
-        fitted = fitmod.fit(
-            variant, fold.train, fold=fold.year, definition=definition.name
-        )
+        try:
+            fitted = fitmod.fit(
+                variant, fold.train, fold=fold.year, definition=definition.name
+            )
+        except variants.GroupedPredictorError as exc:
+            # The fold's training window cannot separate the predictor from the
+            # variant's own grouping factor. Recording it keeps the refusal
+            # visible in the published outputs instead of leaving a fold that
+            # simply has no rows (margin-model spec, "An exactly confounded
+            # predictor is refused").
+            diagnostics.append(
+                {
+                    "definition": definition.name,
+                    "variant": variant.name,
+                    "fold": fold.year,
+                    "n_holdout": fold.n_holdout,
+                    **fitmod.refused(
+                        variant, fold.year, definition.name, fold.n_train, str(exc)
+                    ).as_row(),
+                }
+            )
+            print(
+                f"  fold {fold.year}: train {fold.n_train:>3}  holdout "
+                f"{fold.n_holdout:>3}  REFUSED -- {exc}"
+            )
+            continue
         draws = fitted.predict_draws(fold.holdout)
         per_race = metrics.per_race(draws, fold.holdout["response"].to_numpy())
 
@@ -120,6 +143,12 @@ def score_variant(
             f"rmse {metrics.rmse(per_race):6.2f}{flag}"
         )
 
+    if not predictions:
+        raise fitmod.UnidentifiablePredictorError(
+            f"variant {variant.name!r} under definition {definition.name!r} was "
+            f"refused on every one of its {len(built)} folds, so it has no "
+            "holdout predictions to score"
+        )
     return (
         pd.concat(predictions, ignore_index=True),
         pd.concat(coefficients, ignore_index=True),
@@ -128,15 +157,33 @@ def score_variant(
     )
 
 
+def _refusal(value) -> str:
+    """The refusal reason for a fold, or "" if it was fit.
+
+    An empty reason written to CSV reads back as NaN, and NaN is truthy, so the
+    emptiness test has to be a null check rather than a falsiness one.
+    """
+    if value is None or pd.isna(value):
+        return ""
+    return str(value).strip()
+
+
 def scorecard(
     predictions: pd.DataFrame, diagnostics: pd.DataFrame, skipped: list
 ) -> pd.DataFrame:
     """Pooled, per-fold and per-segment metrics for every scored variant."""
+    refused = {
+        (row.definition, row.variant, row.fold)
+        for row in diagnostics.itertuples()
+        if _refusal(getattr(row, "refused_reason", None))
+    }
+    # A fold that was never fit is not a fold that sampled badly, so the two
+    # are reported in separate columns rather than pooled into one flag.
     failed = {
         (row.definition, row.variant, row.fold)
         for row in diagnostics.itertuples()
         if not row.diagnostics_passed
-    }
+    } - refused
     rows = []
     for (definition_name, variant_name), group in predictions.groupby(
         ["definition", "variant"], sort=False
@@ -144,6 +191,11 @@ def scorecard(
         variant_failed = sorted(
             fold
             for definition, name, fold in failed
+            if name == variant_name and definition == definition_name
+        )
+        variant_refused = sorted(
+            fold
+            for definition, name, fold in refused
             if name == variant_name and definition == definition_name
         )
 
@@ -170,6 +222,7 @@ def scorecard(
                 "bias_non_presidential_years": bias_midterm,
                 "pres_bias_gap": bias_presidential - bias_midterm,
                 "folds_failing_diagnostics": ",".join(str(f) for f in variant_failed),
+                "folds_refused": ",".join(str(f) for f in variant_refused),
             }
         )
         for fold, fold_group in group.groupby("fold", sort=True):
@@ -229,6 +282,7 @@ def scorecard(
         "bias_non_presidential_years",
         "pres_bias_gap",
         "folds_failing_diagnostics",
+        "folds_refused",
         "skipped_years",
     ]
     return card[ordered]

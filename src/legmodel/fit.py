@@ -56,6 +56,12 @@ from . import variants  # noqa: E402
 DRAWS = 2000
 TUNE = 1000
 CHAINS = 4
+# pymc's own NUTS default. Recorded rather than passed: a variant declaring no
+# setting is sampled by exactly the call that produced the committed results,
+# so its published numbers stay reproducible, while the value it ran under is
+# still written out (margin-model spec, "Settings are published, not only
+# applied").
+DEFAULT_TARGET_ACCEPT = 0.8
 
 # Diagnostic thresholds (design.md, D10).
 RHAT_MAX = 1.01
@@ -74,6 +80,27 @@ def seed_for(variant_name: str, fold: object, definition: str = "current") -> in
     return int.from_bytes(digest[:4], "big") % (2**31 - 1)
 
 
+def _bambi_prior(declared: "variants.Prior") -> bmb.Prior:
+    """Translate a declared prior into the fitting library's own type."""
+    params = {
+        name: _bambi_prior(value) if isinstance(value, variants.Prior) else value
+        for name, value in declared.params
+    }
+    return bmb.Prior(declared.distribution, **params)
+
+
+def _bambi_priors(variant: "variants.Variant") -> dict | None:
+    """The priors to hand the model, or None to keep the library's defaults.
+
+    Returning None rather than an empty mapping matters: it is the difference
+    between "this variant declares nothing" and "this variant declares nothing
+    for any term", and only the first reproduces a published result unchanged.
+    """
+    if not variant.priors:
+        return None
+    return {term: _bambi_prior(prior) for term, prior in variant.priors.items()}
+
+
 class UnidentifiablePredictorError(ValueError):
     """A predictor is constant in the training races, so it has no data."""
 
@@ -86,9 +113,28 @@ class Diagnostics:
     divergences: int
     seed: int
     n_train: int
+    # What the sampler actually ran under, whether declared or defaulted. A
+    # passing fit that needed a raised target acceptance is a different claim
+    # from one that passed at the default, and the published record has to be
+    # able to tell them apart.
+    target_accept: float = DEFAULT_TARGET_ACCEPT
+    tune: int = TUNE
+    draws: int = DRAWS
+    chains: int = CHAINS
+    group_prior: str = ""
+    # Training races carrying within-group variation for a predictor that is
+    # nearly spanned by the variant's grouping factor. Empty when the variant
+    # has no group effect, or when nothing is close to confounded.
+    separating_races: str = ""
+    # Set when the fold was refused before sampling, so a fold that was never
+    # fit is distinguishable in the published record from one that was fit and
+    # sampled badly.
+    refused_reason: str = ""
 
     @property
     def passed(self) -> bool:
+        if self.refused_reason:
+            return False
         return (
             self.max_rhat <= RHAT_MAX
             and self.min_ess_bulk >= ESS_MIN
@@ -105,7 +151,49 @@ class Diagnostics:
             "seed": int(self.seed),
             "n_train": int(self.n_train),
             "diagnostics_passed": bool(self.passed),
+            "target_accept": float(self.target_accept),
+            "tune": int(self.tune),
+            "draws": int(self.draws),
+            "chains": int(self.chains),
+            # Spelled out rather than left blank: an empty cell in a published
+            # CSV reads as missing data, and "this fit used the library's own
+            # priors" is a fact about the fit, not an absence of one.
+            "group_prior": self.group_prior or "library defaults",
+            "separating_races": self.separating_races or "none",
+            "refused_reason": self.refused_reason,
         }
+
+
+def refused(
+    variant: "variants.Variant",
+    fold: object,
+    definition: str,
+    n_train: int,
+    reason: str,
+) -> Diagnostics:
+    """Diagnostics for a fold whose fit was refused before it was sampled.
+
+    A refusal is not a sampling failure and should not read like one: the
+    sampling fields are absent rather than zero, and the reason travels with
+    the row (margin-model spec, "An exactly confounded predictor is refused").
+    """
+    nan = float("nan")
+    return Diagnostics(
+        max_rhat=nan,
+        min_ess_bulk=nan,
+        min_ess_tail=nan,
+        divergences=0,
+        seed=seed_for(variant.name, fold, definition),
+        n_train=n_train,
+        target_accept=(
+            DEFAULT_TARGET_ACCEPT
+            if variant.target_accept is None
+            else variant.target_accept
+        ),
+        tune=TUNE if variant.tune is None else variant.tune,
+        group_prior=variant.prior_declaration,
+        refused_reason=reason,
+    )
 
 
 def _response_name(model: bmb.Model) -> str:
@@ -210,15 +298,33 @@ def fit(
             "be estimated"
         )
 
-    model = bmb.Model(variant.formula, data=prepared, family="gaussian")
+    # A predictor the grouping factor already contains is a specification
+    # error, not a sampling one: the fit would return numbers describing a
+    # ridge. Checked per fold, because the confounding is exact only in the
+    # early windows (design.md, D5).
+    separating = variants.check_grouping(variant, prepared)
+
+    model = bmb.Model(
+        variant.formula,
+        data=prepared,
+        family="gaussian",
+        priors=_bambi_priors(variant),
+    )
+    target_accept = variant.target_accept
+    tune = TUNE if variant.tune is None else variant.tune
+    # A variant declaring no target acceptance is sampled by exactly the call
+    # that produced the committed results, rather than by the same call with
+    # the default written out, so its published numbers stay reproducible.
+    sampler_kwargs = {} if target_accept is None else {"target_accept": target_accept}
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         idata = model.fit(
             draws=DRAWS,
-            tune=TUNE,
+            tune=tune,
             chains=CHAINS,
             random_seed=seed,
             progressbar=False,
+            **sampler_kwargs,
         )
 
     with warnings.catch_warnings():
@@ -242,5 +348,15 @@ def fit(
         divergences=divergences,
         seed=seed,
         n_train=len(train),
+        target_accept=(
+            DEFAULT_TARGET_ACCEPT if target_accept is None else target_accept
+        ),
+        tune=tune,
+        draws=DRAWS,
+        chains=CHAINS,
+        group_prior=variant.prior_declaration,
+        separating_races=", ".join(
+            f"{term}={count}" for term, count in sorted(separating.items())
+        ),
     )
     return Fit(variant=variant, model=model, idata=idata, diagnostics=diagnostics)

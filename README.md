@@ -256,7 +256,7 @@ presidential-year bias swinging from -6.4 to +2.7 points. Both are settled in
 - [x] Test the deferred variables: presidential-year bias and `num_candidates` - [`docs/variant_results.md`](docs/variant_results.md)
 - Put together expanded variable data set and evaluate the variables via principle component analysis (PCA) or something similar.
 - Evaluate different machine learning algorithm alternatives to Bayesian regression and decide on how to matrix testing of algorithms vs. variables.
-- Resolve the [open issues](#open-issues) carried forward, starting with the `baseline_year` convergence failure.
+- Resolve the [open issues](#open-issues) carried forward. The `baseline_year` convergence failure is resolved; special elections and the provisional data definition remain.
 - Iteratively test model alternatives
 ## Answered Questions
 
@@ -339,10 +339,13 @@ Republican one, 0 in a presidential year. It lowers RMSE by 0.775
 effect it is known before the election, so it can shift a holdout year's mean
 and carries forward to 2026, where it takes the value +1.
 
-`baseline_year`, a hierarchical year intercept, improves calibration as
-designed — coverage 0.898 to 0.927 — but **every fold fails sampling
-diagnostics**, so its fits are not publishable as they stand.
-`baseline_pres_incumbent` is undecided.
+`baseline_year`, a hierarchical year intercept, is the other adopted
+variant: RMSE 14.209, a difference of +0.804 [+0.410, +1.179], coverage 0.927,
+and a presidential-year bias gap of -0.34. Its fits originally diverged on
+every fold; that was a specification defect and is
+[fixed](#baseline_year-fits-do-not-converge----resolved). It cannot shift a
+forward year's mean, so it complements `baseline_national_env` rather than
+replacing it. `baseline_pres_incumbent` is undecided.
 
 **5. `num_candidates` — undecided; it does not belong in the baseline.** A wash
 under `current` (+0.026) and under the adopted definition (-0.033), and
@@ -352,39 +355,84 @@ term adds variance without adding signal, exactly as anticipated.
 
 ### Accuracy under the adopted definition
 
-| Segment | Races | RMSE | Coverage (90%) | Win accuracy |
-|---|---|---|---|---|
-| Pooled, `baseline` | 413 | 15.01 | 0.898 | 0.910 |
-| Pooled, `baseline_national_env` | 413 | 14.24 | 0.923 | 0.915 |
-| General elections | 389 | 14.19 | 0.910 | 0.915 |
-| Special elections | 24 | 24.76 | 0.708 | 0.833 |
+| Variant | Segment | Races | RMSE | Coverage (90%) | Win accuracy |
+|---|---|---|---|---|---|
+| `baseline` | Pooled | 413 | 15.01 | 0.898 | 0.910 |
+| `baseline` | General elections | 389 | 14.19 | 0.910 | 0.915 |
+| `baseline` | Special elections | 24 | 24.76 | 0.708 | 0.833 |
+| `baseline_national_env` | Pooled | 413 | 14.24 | 0.923 | 0.915 |
+| `baseline_national_env` | General elections | 389 | 13.55 | 0.931 | 0.915 |
+| `baseline_national_env` | Special elections | 24 | **22.68** | **0.792** | **0.917** |
+| `baseline_year` | Pooled | 413 | **14.21** | **0.927** | **0.927** |
+| `baseline_year` | General elections | 389 | **13.45** | **0.938** | **0.933** |
+| `baseline_year` | Special elections | 24 | 23.25 | 0.750 | 0.833 |
 
 These supersede the baseline table above but are not the same measurement:
 different races and a different response. `current` stays registered and
 scorable, so the earlier figures remain reproducible.
+
+The two adopted variants are close on pooled RMSE and differ in where they
+help. `baseline_year` is better on general elections and on win accuracy;
+`baseline_national_env` is better on special elections and is the only one
+usable for a forward prediction. Neither is a strict improvement on the
+other.
 
 ## Open Issues
 
 Known defects and limitations carried forward, as distinct from the planned
 work in [Model Enhancements](#model-enhancements) and [Plan](#plan).
 
-### `baseline_year` fits do not converge
+### ~~`baseline_year` fits do not converge~~ --- resolved
 
-The hierarchical year intercept is the best-calibrated variant tested --
-coverage rises from 0.898 to 0.927, and RMSE falls 0.510 [+0.349, +0.672] --
-but **every fold fails sampling diagnostics** on divergent transitions: 9 of 10
-folds under `current` and 10 of 10 under each other definition. With ten to
-fourteen years of effects, several of them single-race odd years, the
-year-level hyperprior is poorly identified.
+**Resolved.** Every fold under every definition now samples cleanly: zero
+divergent transitions across all 40 fits, worst R-hat 1.0027, lowest bulk ESS
+2436. The variant is adopted alongside `baseline_national_env`.
 
-The improvement is real and the mechanism is the intended one, so this is worth
-fixing rather than abandoning. A non-centred parameterisation of the year
-offsets is the first thing to try, then raising `target_accept`. Until then
-`baseline_national_env` is the variant to use: it closes more of the
-presidential-year bias, and its fits are clean on every fold.
+The fix is not the one this section originally proposed, and the way it was
+wrong is worth keeping. It suggested a non-centred parameterisation first ---
+but bambi builds group effects non-centred by default and the project never
+overrode it, so the sampler had always been running the recommended fix. There
+was no funnel to straighten.
 
-The scorecard marks the affected folds in `folds_failing_diagnostics`, so this
-is visible in the data as well as here.
+The two real causes were:
+
+- **An auto-scaled group-SD prior.** Bambi derived
+  `1|election_year ~ Normal(0, HalfNormal(135))` from the intercept's scale,
+  against a response whose own standard deviation is 25.2 points, and asked it
+  to inform a between-year SD estimated from as few as four year groups. The
+  variant now declares `HalfNormal(5)`.
+- **`pres_elec` collinear with the year grouping.** A per-year intercept spans
+  a term that is a property of the calendar year. Across 610 races `pres_elec`
+  varies within a year only in 2016 and 2020, on 8 races; in the 2010-2013
+  training window, not at all. The variant now drops it.
+
+The improvement grew rather than shrank once the fits were clean: RMSE 14.209
+against the superseded 14.503, a paired difference of +0.804 [+0.410, +1.179]
+against the superseded +0.510, and coverage holding at 0.927. The
+presidential-year bias gap closes from 9.46 to **-0.34**, further than
+`baseline_national_env` manages --- driven by the term removed rather than the
+one added, since the baseline's fitted `pres_elec` coefficient was applying a
+four-point shift that miscalibrated out of sample.
+
+`baseline_national_env` is still the variant to use for a **forward**
+prediction. A year intercept cannot move a future year's mean, because that
+year's effect is unobserved and is drawn from the hyperprior; the national
+environment is known before the votes are cast. The two answer different
+questions and are reported together rather than ranked.
+
+Three things carried forward from the fix:
+
+- A variant now declares its own priors and sampler settings, and
+  `fit_diagnostics.csv` records what each fit actually ran under, so a result
+  obtained at a raised `target_accept` is distinguishable from one obtained at
+  the default.
+- A predictor constant within every level of a variant's own grouping factor
+  is refused per fold, with the refusal published. `national_env` has the same
+  defect as `pres_elec` if combined with a year effect, and would be caught.
+- `baseline_year` is no longer nested in `baseline`, and its comparison is
+  labelled non-nested, naming the term added and the term removed.
+
+Full writeup: [`docs/variant_results.md`](docs/variant_results.md).
 
 ### Special elections remain the worst segment
 

@@ -190,12 +190,139 @@ def prepare(races: "pd.DataFrame") -> "pd.DataFrame":
     return derive(prepared)
 
 
+# The scale of the half-normal prior on a group effect's standard deviation,
+# in margin points. The quantity is the residual year-to-year swing left after
+# PVI, incumbency and the national environment are accounted for, not the
+# spread of the response itself: HalfNormal(5) puts about 95% of its mass
+# below 10 points and its median near 3.4, which spans every swing in the
+# record without licensing a hundred. Bambi's auto-scaled default here is
+# derived from the intercept's scale and lands on HalfNormal(135), five times
+# the response's own standard deviation (design.md, D2).
+GROUP_SD_PRIOR_SCALE = 5.0
+
+
+@dataclass(frozen=True)
+class Prior:
+    """A prior declaration, independent of the fitting library.
+
+    Declared here rather than as a `bambi.Prior` so that the registry stays
+    free of the modelling backend, and so that a declaration has one stable
+    rendering to publish alongside the fit that used it (margin-model spec,
+    "A variant declares the priors its fit uses"). `fit.py` translates it.
+    """
+
+    distribution: str
+    # Pairs rather than a mapping, so the rendering is ordered and the
+    # declaration stays hashable. A value is a number or a nested Prior, which
+    # is how a hyperprior on a group-level standard deviation is spelled.
+    params: tuple[tuple[str, "float | Prior"], ...] = ()
+
+    def __str__(self) -> str:
+        rendered = ", ".join(f"{name}={_render(value)}" for name, value in self.params)
+        return f"{self.distribution}({rendered})"
+
+
+def _render(value) -> str:
+    if isinstance(value, Prior):
+        return str(value)
+    number = float(value)
+    return str(int(number)) if number.is_integer() else str(number)
+
+
+def group_intercept_prior(sigma: float = GROUP_SD_PRIOR_SCALE) -> Prior:
+    """A group intercept whose standard deviation carries a declared scale."""
+    return Prior(
+        "Normal",
+        (("mu", 0.0), ("sigma", Prior("HalfNormal", (("sigma", float(sigma)),)))),
+    )
+
+
+def group_term(group: str) -> str:
+    """The term name a group effect's prior is declared under."""
+    return f"1|{group}"
+
+
 class UnknownPredictorError(ValueError):
     """A variant names a column the race table does not carry."""
 
 
+class MissingGroupPriorError(ValueError):
+    """A group effect was declared without a prior for its standard deviation.
+
+    Bambi would otherwise supply an auto-scaled default derived from the
+    intercept's scale, which is the prior that left every `baseline_year` fold
+    diverging. A group effect's scale has to be stated (margin-model spec, "A
+    group effect without a declared scale is rejected").
+    """
+
+
 class UnknownVariantError(KeyError):
     """A variant name is not registered."""
+
+
+class GroupedPredictorError(ValueError):
+    """A predictor is spanned by the variant's own grouping factor.
+
+    A predictor constant within every level of a group effect is a linear
+    combination of that group's indicators, so the two are not separately
+    identified and the sampler explores a ridge instead of estimating two
+    effects (margin-model spec, "A predictor constant within a grouping level
+    is rejected").
+    """
+
+
+# Below this many training races carrying within-group variation, a predictor
+# is fit but its identifying count is published, because a coefficient resting
+# on a handful of races out of hundreds should not read like one resting on all
+# of them (design.md, D5). Nothing branches on the value; it is a reporting
+# threshold.
+SEPARATING_RACES_DISCLOSED = 30
+
+
+def separating_races(frame: "pd.DataFrame", predictor: str, group: str) -> int:
+    """How many races stand between `predictor` and exact confounding.
+
+    Within each level of the group, the races that do not carry that level's
+    most common value of the predictor: the smallest set whose removal would
+    leave the predictor constant within every level. Those races are the entire
+    basis on which the predictor's fixed effect is distinguished from the group
+    effect, so this, rather than the size of the levels that happen to vary, is
+    what the coefficient rests on. Zero means the two are already exactly
+    confounded.
+    """
+    counts = frame.groupby(group)[predictor].agg(
+        lambda values: len(values) - values.value_counts().max()
+    )
+    return int(counts.sum())
+
+
+def check_grouping(variant: "Variant", prepared: "pd.DataFrame") -> dict:
+    """Refuse a predictor the variant's grouping factor already contains.
+
+    Checked against the fold's own training races rather than the full table:
+    `pres_elec` varies within a year somewhere in the record, but not within
+    any year an early fold trains on, and it is the early folds that fail.
+    """
+    counts = {}
+    for group in variant.group_effects:
+        if group not in prepared.columns:
+            continue
+        for predictor in variant.predictors:
+            for column in expand(predictor):
+                if column not in prepared.columns:
+                    continue
+                count = separating_races(prepared, column, group)
+                if count == 0:
+                    raise GroupedPredictorError(
+                        f"variant {variant.name!r}: predictor {column!r} is "
+                        f"constant within every level of {group!r} across the "
+                        f"{len(prepared)} training races, so it is a linear "
+                        f"combination of the {group!r} effects and the two "
+                        "cannot be separately identified"
+                    )
+                if count < SEPARATING_RACES_DISCLOSED:
+                    counts[f"{column}|{group}"] = count
+    return counts
 
 
 @dataclass(frozen=True)
@@ -211,6 +338,17 @@ class Variant:
     # the group-level hyperprior at prediction time rather than fixed at a
     # value that does not exist (design.md, D9).
     group_effects: tuple[str, ...] = ()
+    # Prior declarations by term name, e.g. {"1|election_year": Prior(...)}.
+    # A term absent here keeps the fitting library's own default, which is what
+    # keeps a variant declaring none byte-identical to its published result.
+    priors: dict = field(default_factory=dict)
+    # Sampler settings. None means the module default in `fit.py`; the value
+    # actually used is recorded with the fit either way, so a fit that needed a
+    # raised target acceptance is distinguishable from one that did not
+    # (margin-model spec, "A variant declares the sampler settings its fit
+    # uses").
+    target_accept: float | None = None
+    tune: int | None = None
 
     @property
     def formula(self) -> str:
@@ -226,10 +364,32 @@ class Variant:
         ]
         return f"{self.response} ~ " + " + ".join(terms)
 
+    @property
+    def prior_declaration(self) -> str:
+        """The declared priors as one stable string, for publication.
+
+        Empty when the variant declares none, which reads in the published
+        diagnostics as "the fitting library's defaults" (margin-model spec, "A
+        declared prior is recorded with the fit").
+        """
+        return "; ".join(
+            f"{term} ~ {self.priors[term]}" for term in sorted(self.priors)
+        )
+
     def validate(self, columns) -> None:
         """Fail loudly on a predictor the table does not carry."""
         for predictor in self.predictors:
             check_knowable(predictor)
+        for group in self.group_effects:
+            if group_term(group) not in self.priors:
+                raise MissingGroupPriorError(
+                    f"variant {self.name!r} declares the group effect "
+                    f"{group_term(group)!r} with no prior for its group-level "
+                    "standard deviation; declare one with "
+                    f"group_intercept_prior(), because the auto-scaled default "
+                    "is derived from the intercept's scale rather than from "
+                    "the spread of the effect being estimated"
+                )
         available = set(columns) | set(DERIVED)
         missing = [p for p in self.predictors if p not in available]
         missing += [g for g in self.group_effects if g not in set(columns)]
@@ -288,12 +448,41 @@ register(
         description="the baseline plus presidential-year by incumbency interaction",
     )
 )
+# `pres_elec` is a property of the calendar year, so a per-year intercept
+# already contains it: across the adopted definition's 610 races it varies
+# within a year only in 2016 and 2020, on 8 races, and within an early fold's
+# training window not at all. Carrying both asks the sampler to split one
+# column between two parameters, which is the ridge the original fits diverged
+# along. The year variant therefore drops it, which also stops it being nested
+# in `baseline` -- a fact its comparison has to state (design.md, D3).
 register(
     Variant(
         name="baseline_year",
+        predictors=("PVI_N", "incumbent_status"),
+        group_effects=("election_year",),
+        priors={group_term("election_year"): group_intercept_prior()},
+        target_accept=0.95,
+        description=(
+            "the baseline plus a hierarchical year intercept, minus the "
+            "pres_elec term the year effect contains"
+        ),
+    )
+)
+# The contrast arm: the same variant keeping `pres_elec`, under the same prior
+# and the same sampler setting, so that dropping the term is evidence rather
+# than assertion. It is refused outright on the folds where the confounding is
+# exact, which is itself the evidence (design.md, D3).
+register(
+    Variant(
+        name="baseline_year_pres",
         predictors=BASELINE_PREDICTORS,
         group_effects=("election_year",),
-        description="the baseline plus a hierarchical year intercept",
+        priors={group_term("election_year"): group_intercept_prior()},
+        target_accept=0.95,
+        description=(
+            "the year-intercept variant retaining pres_elec, as the contrast "
+            "arm for dropping it"
+        ),
     )
 )
 register(
