@@ -11,6 +11,12 @@ The effect is concentrated exactly where the prior said it would be: **+3.686
 incumbent, and **undecided against a Democratic incumbent** (+0.561
 [-0.186, +1.277]).
 
+The same four contrasts over **expenditures** are also registered and scored.
+They land in the same place, reproduce the same ordering, and beat receipts by
+about a fifth of a point under two of the four definitions and undecidedly
+under the other two. `baseline_money_logratio` stays adopted; see
+[The other side of the ledger](#the-other-side-of-the-ledger).
+
 **This is not evidence that spending changes outcomes.** See
 [Endogeneity](#endogeneity) below, which is the reason this page reports a
 predictor and not a lever.
@@ -290,6 +296,101 @@ running 3.28 to 4.13 at the 14-day window with a posterior standard deviation
 near 0.35 --- it is not a term that appears in one window of the record and
 vanishes in another.
 
+## The other side of the ledger
+
+Receipts were scored first, on the stated ground that spending is closer to the
+outcome in time and more likely to respond to a race already tightening. The
+expenditure columns were collected in the same pass and left unscored. They are
+scored now, as the same four contrasts over `dem_expenditures_*` and
+`opp_expenditures_*`, at both windows, on exactly the same races.
+
+Both measures are as of the same date: this is not a later snapshot, it is a
+different column in the same window.
+
+Against `baseline`, under the adopted definition, on the same 398 races:
+
+| Variant | RMSE | vs baseline | 90% interval |
+|---|---|---|---|
+| `baseline_spend_both` | **13.018** | **+2.052** | [+1.420, +2.696] |
+| `baseline_spend_logratio` | 13.048 | +2.022 | [+1.414, +2.636] |
+| `baseline_money_logratio` (receipts) | 13.370 | +1.700 | [+1.128, +2.255] |
+| `baseline_spend_share` | 13.573 | +1.497 | [+0.905, +2.071] |
+| `baseline_spend_diff` | 14.843 | +0.227 | [+0.039, +0.416] |
+
+**Spending reproduces the receipts ordering exactly**: log ratio and the
+two-term form tied and best, the share behind them, the raw difference far
+weaker. That the same shape appears over a different column is evidence the
+shape is a property of how money enters a margin, not an artifact of one
+measure.
+
+### Does spending beat receipts?
+
+Narrowly, and not everywhere. Paired against `baseline_money_logratio` on
+identical races:
+
+| Definition | `spend_logratio` | `spend_both` | `spend_share` | `spend_logratio_wide` |
+|---|---|---|---|---|
+| `current` | +0.127 (undecided) | +0.119 (undecided) | -0.096 (undecided) | -0.256 (undecided) |
+| `two_party` | **+0.308** | **+0.281** | -0.010 (undecided) | +0.208 (undecided) |
+| `two_party_or_strongest` | **+0.322** | **+0.352** | -0.203 (undecided) | -0.080 (undecided) |
+| `write_in_5pct` | +0.164 (undecided) | +0.132 (undecided) | -0.055 (undecided) | -0.095 (undecided) |
+
+Bold is decided; everything else spans zero. Spending's advantage is **decided
+under two of the four definitions and undecided under the other two**, and even
+where decided it is about a fifth of a point against receipts' own 1.700 over
+the baseline. The two measures are close substitutes, and this sweep does not
+establish a general ordering between them.
+
+These are **non-nested** comparisons — the spend variant removes the receipts
+term and adds a spending one — so the harness labels them as such and the
+difference is the combined effect of both, not the effect of adding spending.
+
+### Where spending differs
+
+The one place the two measures genuinely part company is the segment
+breakdown. `baseline_spend_logratio` against `baseline`:
+
+| Segment | Races | Difference | 90% interval | Receipts, same segment |
+|---|---|---|---|---|
+| Pooled | 398 | +2.022 | [+1.414, +2.636] | +1.700 |
+| No incumbent | 109 | **+3.956** | [+2.489, +5.356] | +3.686 |
+| Republican incumbent | 87 | +1.454 | [+0.836, +2.029] | +1.501 |
+| **Democratic incumbent** | 202 | **+1.046** | [+0.368, +1.768] | **+0.561, undecided** |
+| Special elections | 22 | **+5.369** | [+1.552, +8.723] | +3.698 |
+
+Spending is decided against a Democratic incumbent, where receipts was
+undecided, and it is worth over five points on special elections against
+receipts' 3.698. Both are the segments where a challenger's *willingness to
+spend down a war chest* says something a bank balance does not: an incumbent's
+committee can sit on money it never deploys, and in a low-information special
+the money that was actually put into the field is the campaign that voters saw.
+
+The fits are clean — 180 of 180 passed, worst R-hat 1.0037, zero divergences —
+and the coefficient is stable across folds at 3.42 (posterior SD near 0.33) at
+the 14-day window, 2.39 at 60 days.
+
+### This does not change the adopted variant
+
+`baseline_money_logratio` stays adopted, on three grounds, none of which is the
+RMSE:
+
+1. **The advantage is undecided under half the definition grid**, and this
+   project's standing rule is that an undecided comparison is not a result.
+2. **Spending is the more endogenous of the two.** A campaign spends down its
+   reserves *because* it reads the race as close, so a spending term is closer
+   to the campaigns' own forecast of the outcome than a receipts term is.
+   Predicting better and telling you less about the world are entirely
+   compatible, and the gap here is small enough that the interpretive cost is
+   not obviously worth paying.
+3. **Receipts are knowable earlier in practice.** Both are reported to the same
+   deadline, but money raised is a fact about a campaign's position; money
+   spent is a decision the campaign is still making.
+
+This is a recommendation, not a measurement. A reader who cares only about
+holdout accuracy under the adopted definition should use
+`baseline_spend_logratio`, and it is registered, scored and published so that
+they can.
+
 ## Endogeneity
 
 **Money flows toward candidates already expected to win.** A strong coefficient
@@ -313,6 +414,13 @@ Roughly a fifth of what incumbency was carrying is now carried by money. That
 is consistent with money being a partial *proxy* for incumbency's advantages
 rather than an independent cause of them.
 
+**Spending sharpens the concern rather than settling it.** It predicts slightly
+better than receipts, and it is the quantity a campaign controls in response to
+how the race looks. The most natural reading of a spend term that beats a
+receipts term is not that spending wins votes, but that a campaign's spending
+decisions encode the campaign's own read of its position — information the
+model has no other way to see.
+
 The closest thing to evidence available here is the incumbency breakdown, and
 it cuts slightly the other way: the effect is largest in **open seats**, where
 there is no incumbent for expectations to attach to and where two candidates
@@ -333,11 +441,8 @@ more votes, and no figure on this page should be quoted to that effect.
   a separate collection problem.
 - **No expenditure categorisation.** Who a committee paid, and for what, is
   available but is a different question.
-- **Expenditures are collected but not scored.** The same four contrasts are
-  available over spending rather than receipts. Spending is closer to the
-  outcome in time and more likely to respond to a race already tightening, so
-  receipts were scored first; the columns are in the table for whoever asks the
-  question next.
+- **No contrast over cash on hand, start balance, in-kinds or liabilities.**
+  The raw feeds carry them; only receipts and expenditures are collected here.
 - **No separate primary window.** A September primary is a real contest that
   consumes real money, and a general-election window that includes it mixes two
   campaigns. The 14-day and 60-day pair shows the cutoff sensitivity is small,

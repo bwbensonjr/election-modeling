@@ -393,9 +393,12 @@ spending changes outcomes**; see
 | `baseline_year` | Pooled | 413 | 14.21 | **0.927** | **0.927** |
 | `baseline_year` | General elections | 389 | 13.45 | **0.938** | **0.933** |
 | `baseline_year` | Special elections | 24 | 23.25 | 0.750 | 0.833 |
-| `baseline_money_logratio` | Pooled | 398 | **13.37** | 0.895 | 0.920 |
-| `baseline_money_logratio` | General elections | 376 | **12.81** | 0.904 | 0.928 |
-| `baseline_money_logratio` | Special elections | 22 | **20.73** | 0.727 | 0.773 |
+| `baseline_money_logratio` | Pooled | 398 | 13.37 | 0.895 | 0.920 |
+| `baseline_money_logratio` | General elections | 376 | 12.81 | 0.904 | 0.928 |
+| `baseline_money_logratio` | Special elections | 22 | 20.73 | 0.727 | 0.773 |
+| `baseline_spend_logratio` | Pooled | 398 | **13.05** | 0.895 | 0.920 |
+| `baseline_spend_logratio` | General elections | 376 | **12.61** | 0.904 | 0.931 |
+| `baseline_spend_logratio` | Special elections | 22 | **19.06** | 0.727 | 0.773 |
 
 These supersede the baseline table above but are not the same measurement:
 different races and a different response. `current` stays registered and
@@ -407,7 +410,16 @@ missing filer and a candidate who raised nothing are different facts and the
 variant may not impute one into the other. The paired comparison above scores
 both models on those same 398 races, so it is a like-for-like difference.
 
-Of the three, `baseline_money_logratio` is much the most accurate, including
+The same four contrasts over **expenditures** rather than receipts are
+registered and scored too. `baseline_spend_logratio` is the most accurate
+variant on this holdout, but it beats the receipts term by only +0.322
+[+0.056, +0.599] and that margin is undecided under two of the four
+definitions, so **`baseline_money_logratio` stays the adopted money variant** —
+spending is also the more endogenous measure, being the quantity a campaign
+adjusts in response to how close the race looks. See
+[`docs/money_results.md`](docs/money_results.md#the-other-side-of-the-ledger).
+
+Of the money and pre-money variants, `baseline_money_logratio` is much the most accurate, including
 on special elections, which are the model's worst segment. It loses a little
 interval calibration relative to `baseline_year` and gives up the ability to
 score the 15 unmatched races at all. `baseline_year` is best calibrated;

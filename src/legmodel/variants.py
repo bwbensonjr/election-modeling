@@ -100,9 +100,19 @@ MONEY_WINDOWS = {
     "wide": "60 days before the election",
 }
 
-# Receipts rather than expenditures. Both are collected, and the same contrasts
-# are available over either, but spending is closer to the outcome in time and
-# more likely to respond to a race already tightening (design.md, D5).
+# The two sides of a committee's ledger, both collected over both windows. Each
+# maps to the prefix its derived predictors carry: the receipts predictors keep
+# the `money_` names their published results were recorded under, and spending
+# is `spend_`. Receipts were scored first because spending is closer to the
+# outcome in time and more likely to respond to a race already tightening
+# (design.md, D5); that is a reason to read the two differently, not a reason
+# to leave one unmeasured.
+MONEY_MEASURES = {
+    "receipts": {"prefix": "money", "noun": "receipts", "verb": "raised"},
+    "expenditures": {"prefix": "spend", "noun": "spending", "verb": "spent"},
+}
+
+# The measure whose predictors the bare helpers default to.
 MONEY_MEASURE = "receipts"
 
 # In thousands of dollars, so the coefficient on an absolute advantage is
@@ -110,12 +120,9 @@ MONEY_MEASURE = "receipts"
 MONEY_DIFF_SCALE = 1000.0
 
 
-def money_columns(window: str) -> tuple[str, str]:
+def money_columns(window: str, measure: str = MONEY_MEASURE) -> tuple[str, str]:
     """The race table's Democratic and opponent money columns for a window."""
-    return (
-        f"dem_{MONEY_MEASURE}_{window}",
-        f"opp_{MONEY_MEASURE}_{window}",
-    )
+    return (f"dem_{measure}_{window}", f"opp_{measure}_{window}")
 
 
 def money_as_of_column(window: str) -> str:
@@ -127,44 +134,46 @@ def money_as_of_column(window: str) -> str:
 # tracking one candidate's fundraising alone measures race salience rather than
 # advantage (design.md, D5). Which of them the data separates is the scoring
 # harness's question, not one to settle by argument here.
-for _window, _when in MONEY_WINDOWS.items():
-    _dem, _opp = money_columns(_window)
-    DERIVED.update(
-        {
-            f"money_share_{_window}": {
-                "from": (_dem, _opp),
-                "description": (
-                    "the Democratic share of the race's total receipts as of "
-                    f"{_when}; 0.5 when the two sides raised the same"
-                ),
-            },
-            f"money_logratio_{_window}": {
-                "from": (_dem, _opp),
-                "description": (
-                    "log of the ratio of Democratic to opponent receipts as of "
-                    f"{_when}, each offset by a dollar so a genuine zero is "
-                    "admitted; 0 when the two sides raised the same"
-                ),
-            },
-            f"money_diff_{_window}": {
-                "from": (_dem, _opp),
-                "description": (
-                    "Democratic minus opponent receipts as of "
-                    f"{_when}, in thousands of dollars; 0 when the two sides "
-                    "raised the same"
-                ),
-            },
-            f"money_log_dem_{_window}": {
-                "from": (_dem,),
-                "description": f"log1p of Democratic receipts as of {_when}",
-            },
-            f"money_log_opp_{_window}": {
-                "from": (_opp,),
-                "description": f"log1p of opponent receipts as of {_when}",
-            },
-        }
-    )
-del _window, _when, _dem, _opp
+for _measure, _spec in MONEY_MEASURES.items():
+    _p, _noun, _verb = _spec["prefix"], _spec["noun"], _spec["verb"]
+    for _window, _when in MONEY_WINDOWS.items():
+        _dem, _opp = money_columns(_window, _measure)
+        DERIVED.update(
+            {
+                f"{_p}_share_{_window}": {
+                    "from": (_dem, _opp),
+                    "description": (
+                        f"the Democratic share of the race's total {_noun} as of "
+                        f"{_when}; 0.5 when the two sides {_verb} the same"
+                    ),
+                },
+                f"{_p}_logratio_{_window}": {
+                    "from": (_dem, _opp),
+                    "description": (
+                        f"log of the ratio of Democratic to opponent {_noun} as of "
+                        f"{_when}, each offset by a dollar so a genuine zero is "
+                        f"admitted; 0 when the two sides {_verb} the same"
+                    ),
+                },
+                f"{_p}_diff_{_window}": {
+                    "from": (_dem, _opp),
+                    "description": (
+                        f"Democratic minus opponent {_noun} as of "
+                        f"{_when}, in thousands of dollars; 0 when the two sides "
+                        f"{_verb} the same"
+                    ),
+                },
+                f"{_p}_log_dem_{_window}": {
+                    "from": (_dem,),
+                    "description": f"log1p of Democratic {_noun} as of {_when}",
+                },
+                f"{_p}_log_opp_{_window}": {
+                    "from": (_opp,),
+                    "description": f"log1p of opponent {_noun} as of {_when}",
+                },
+            }
+        )
+del _measure, _spec, _p, _noun, _verb, _window, _when, _dem, _opp
 
 # A predictor computed from the fold year's own results would leak the outcome
 # into the fit. None of the derived predictors may be built from these.
@@ -245,21 +254,23 @@ def derive(races: "pd.DataFrame") -> "pd.DataFrame":
         frame["pres_elec_x_incumbent_gop"] = pres * (
             frame["incumbent_status"] == "GOP_Incumbent"
         ).astype(int)
-    for window in MONEY_WINDOWS:
-        dem_column, opp_column = money_columns(window)
-        if dem_column not in frame.columns or opp_column not in frame.columns:
-            continue
-        # Missing money stays missing through every contrast. A race whose
-        # filer was never found must not arrive at the fit as a candidate who
-        # raised nothing (design.md, D4), and a variant carrying one of these
-        # predictors is refused before it can (`check_complete`).
-        dem, opp = frame[dem_column], frame[opp_column]
-        total = dem + opp
-        frame[f"money_share_{window}"] = (dem / total).where(total > 0)
-        frame[f"money_logratio_{window}"] = np.log((dem + 1.0) / (opp + 1.0))
-        frame[f"money_diff_{window}"] = (dem - opp) / MONEY_DIFF_SCALE
-        frame[f"money_log_dem_{window}"] = np.log1p(dem)
-        frame[f"money_log_opp_{window}"] = np.log1p(opp)
+    for measure, spec in MONEY_MEASURES.items():
+        prefix = spec["prefix"]
+        for window in MONEY_WINDOWS:
+            dem_column, opp_column = money_columns(window, measure)
+            if dem_column not in frame.columns or opp_column not in frame.columns:
+                continue
+            # Missing money stays missing through every contrast. A race whose
+            # filer was never found must not arrive at the fit as a candidate
+            # who raised nothing (design.md, D4), and a variant carrying one of
+            # these predictors is refused before it can (`check_complete`).
+            dem, opp = frame[dem_column], frame[opp_column]
+            total = dem + opp
+            frame[f"{prefix}_share_{window}"] = (dem / total).where(total > 0)
+            frame[f"{prefix}_logratio_{window}"] = np.log((dem + 1.0) / (opp + 1.0))
+            frame[f"{prefix}_diff_{window}"] = (dem - opp) / MONEY_DIFF_SCALE
+            frame[f"{prefix}_log_dem_{window}"] = np.log1p(dem)
+            frame[f"{prefix}_log_opp_{window}"] = np.log1p(opp)
     return frame
 
 
@@ -364,10 +375,14 @@ def register_dated(predictor: str, as_of_column: str) -> None:
 # it was measured to is a property of the race rather than of the run: the
 # window ends a fixed number of days before each race's own election, so the
 # calendar date differs from race to race and is carried in the table.
-for _window in MONEY_WINDOWS:
-    for _form in ("share", "logratio", "diff", "log_dem", "log_opp"):
-        register_dated(f"money_{_form}_{_window}", money_as_of_column(_window))
-del _window, _form
+for _measure in MONEY_MEASURES.values():
+    for _window in MONEY_WINDOWS:
+        for _form in ("share", "logratio", "diff", "log_dem", "log_opp"):
+            register_dated(
+                f"{_measure['prefix']}_{_form}_{_window}",
+                money_as_of_column(_window),
+            )
+del _measure, _window, _form
 
 # What a variant writes in `as_of` when its predictors were measured a fixed
 # distance before each race's own election rather than on one calendar date.
@@ -679,40 +694,52 @@ register(
 # rather than after it. The second exists so the sensitivity of any result to
 # that cutoff is measurable rather than assumed (design.md, D2).
 MONEY_FORMS = {
-    "share": ("money_share_{window}",),
-    "logratio": ("money_logratio_{window}",),
-    "diff": ("money_diff_{window}",),
-    "both": ("money_log_dem_{window}", "money_log_opp_{window}"),
+    "share": ("{prefix}_share_{window}",),
+    "logratio": ("{prefix}_logratio_{window}",),
+    "diff": ("{prefix}_diff_{window}",),
+    "both": ("{prefix}_log_dem_{window}", "{prefix}_log_opp_{window}"),
 }
 
 MONEY_FORM_DESCRIPTIONS = {
-    "share": "the Democratic share of the race's total receipts",
-    "logratio": "the log ratio of Democratic to opponent receipts",
-    "diff": "the Democratic receipts advantage in thousands of dollars",
-    "both": "log receipts for each side as separate terms",
+    "share": "the Democratic share of the race's total {noun}",
+    "logratio": "the log ratio of Democratic to opponent {noun}",
+    "diff": "the Democratic {noun} advantage in thousands of dollars",
+    "both": "log {noun} for each side as separate terms",
 }
 
-for _window in MONEY_WINDOWS:
-    _suffix = "" if _window == "primary" else f"_{_window}"
-    for _form, _terms in MONEY_FORMS.items():
-        register(
-            Variant(
-                name=f"baseline_money_{_form}{_suffix}",
-                predictors=BASELINE_PREDICTORS
-                + tuple(term.format(window=_window) for term in _terms),
-                # Races where a candidate could not be matched to a filer are
-                # excluded rather than imputed: a missing filer and a candidate
-                # who raised nothing are different facts, and a fake zero would
-                # land exactly where the match is hardest (design.md, D4).
-                requires=("money_complete",),
-                as_of=RELATIVE_AS_OF[_window],
-                description=(
-                    f"the baseline plus {MONEY_FORM_DESCRIPTIONS[_form]}, "
-                    f"measured {MONEY_WINDOWS[_window]}"
-                ),
+# The same four contrasts over each side of the ledger. Spending is registered
+# as its own family rather than replacing receipts, because the two are
+# different claims: a committee's receipts say who could afford a campaign, its
+# expenditures say what was actually put into the field, and the second is
+# closer in time to the outcome it is being asked to predict.
+for _measure in MONEY_MEASURES.values():
+    _prefix, _noun = _measure["prefix"], _measure["noun"]
+    for _window in MONEY_WINDOWS:
+        _suffix = "" if _window == "primary" else f"_{_window}"
+        for _form, _terms in MONEY_FORMS.items():
+            register(
+                Variant(
+                    name=f"baseline_{_prefix}_{_form}{_suffix}",
+                    predictors=BASELINE_PREDICTORS
+                    + tuple(
+                        term.format(prefix=_prefix, window=_window)
+                        for term in _terms
+                    ),
+                    # Races where a candidate could not be matched to a filer
+                    # are excluded rather than imputed: a missing filer and a
+                    # candidate who raised nothing are different facts, and a
+                    # fake zero would land exactly where the match is hardest
+                    # (design.md, D4).
+                    requires=("money_complete",),
+                    as_of=RELATIVE_AS_OF[_window],
+                    description=(
+                        "the baseline plus "
+                        + MONEY_FORM_DESCRIPTIONS[_form].format(noun=_noun)
+                        + f", measured {MONEY_WINDOWS[_window]}"
+                    ),
+                )
             )
-        )
-del _window, _suffix, _form, _terms
+del _measure, _prefix, _noun, _window, _suffix, _form, _terms
 
 
 def get(name: str) -> Variant:
