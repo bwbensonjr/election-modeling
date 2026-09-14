@@ -3,6 +3,7 @@
     uv run legmodel score
     uv run legmodel score --variants baseline
     uv run legmodel compare baseline baseline_special
+    uv run legmodel importance
     uv run legmodel parity
 """
 
@@ -73,6 +74,17 @@ def main(argv: list[str] | None = None) -> int:
         help="report admitted races without scoring each threshold",
     )
 
+    imp_cmd = sub.add_parser(
+        "importance", help="marginal effect, contribution spread and drop-one cost"
+    )
+    imp_cmd.add_argument("--variant", default="baseline_money_logratio")
+    imp_cmd.add_argument("--definition", default=None)
+    imp_cmd.add_argument(
+        "--no-write",
+        action="store_true",
+        help="print results without writing the committed report",
+    )
+
     sub.add_parser("parity", help="check baseline coefficients against mapoli")
     sub.add_parser("variants", help="list registered variants")
     sub.add_parser("definitions", help="list registered data definitions")
@@ -132,6 +144,10 @@ def main(argv: list[str] | None = None) -> int:
         print()
         print(frame.round(4).to_string(index=False))
         config.write_csv(frame.round(6), config.THRESHOLD_SWEEP)
+    elif args.command == "importance":
+        from . import importance
+
+        importance.run(args.variant, args.definition, write=not args.no_write)
     elif args.command == "parity":
         from . import parity
 

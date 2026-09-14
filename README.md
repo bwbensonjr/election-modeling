@@ -206,6 +206,7 @@ uv run legmodel definitions                        # list the data definitions
 uv run legmodel score                              # score under the adopted definition
 uv run legmodel compare baseline baseline_special  # paired comparison of variants
 uv run legmodel compare-definitions current two_party_or_strongest
+uv run legmodel importance                         # variable importance and effect sizes
 ```
 
 ### Baseline accuracy
@@ -279,7 +280,9 @@ though 6 also adds a collection stage and new columns.
 Full writeups: [`docs/definition_result.md`](docs/definition_result.md) for the
 data definitions, [`docs/variant_results.md`](docs/variant_results.md) for the
 variants, [`docs/money_results.md`](docs/money_results.md) for campaign
-finance, and [`docs/definitions.md`](docs/definitions.md) for the mechanism.
+finance, [`docs/variable_importance.md`](docs/variable_importance.md) for which
+predictors carry the model and what each is worth, and
+[`docs/definitions.md`](docs/definitions.md) for the mechanism.
 
 ### The data definition
 
@@ -431,6 +434,22 @@ knowable before the election it predicts.
 
 Known defects and limitations carried forward, as distinct from the planned
 work in [Model Enhancements](#model-enhancements) and [Plan](#plan).
+
+### `pres_elec` costs accuracy in the money model
+
+Dropping `pres_elec` from `baseline_money_logratio` **improves** pooled holdout
+RMSE by 0.722 [−1.116, −0.320] — decided — even though its coefficient is
++7.09 [+5.19, +8.94] and nowhere near zero. `pres_elec` is a property of the
+calendar year and folds are years, so a wrong year-level shift lands on every
+race in a holdout at once; across the nine folds the coefficient ranges from
+7.09 to 13.50, and the presidential years themselves disagree (2012 +27.5 mean
+margin, 2020 +13.9).
+
+This extends the presidential-year bias already recorded under question 4
+rather than contradicting it. Not yet acted on: a variant dropping the term is
+a registry entry and a rescore, and no alternative is adopted until that is
+compared under every scored definition. See
+[`docs/variable_importance.md`](docs/variable_importance.md).
 
 ### ~~`baseline_year` fits do not converge~~ --- resolved
 

@@ -14,6 +14,7 @@ uv run legmodel score --variants baseline          # rescore one
 uv run legmodel compare baseline baseline_special  # paired comparison
 uv run legmodel parity                             # coefficients vs mapoli
 uv run legmodel variants                           # list registered variants
+uv run legmodel importance                         # variable importance and effect sizes
 ```
 
 Everything reads committed CSVs. A scoring run needs no network and no fetch
@@ -307,6 +308,7 @@ record and nowhere inside an early fold's training window.
 | `data/models/coefficients.csv` | Posterior summaries per definition per variant per fold |
 | `data/models/fit_diagnostics.csv` | R-hat, ESS, divergences and seed per fit, with the sampler settings and prior declaration that produced them |
 | `data/models/coefficient_parity.csv` | Baseline coefficients against the same fit on mapoli's district table |
+| `data/models/variable_importance.csv` | Per-predictor marginal effect, contribution spread and drop-one holdout cost. See [`variable_importance.md`](variable_importance.md) |
 
 Every figure in the scorecard is recomputable from
 `holdout_predictions.csv.gz` alone, which is verified as part of the run.

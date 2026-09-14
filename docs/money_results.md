@@ -459,5 +459,8 @@ more votes, and no figure on this page should be quoted to that effect.
   what missing means.
 - [`scoring.md`](scoring.md#dated-predictors-and-the-as-of-date) --- the as-of
   date in the published record, and how a variant excludes races.
+- [`variable_importance.md`](variable_importance.md) --- where the money term
+  ranks against the other predictors, and what a doubled money advantage is
+  worth in margin points.
 - [`variant_results.md`](variant_results.md) --- the variants tested before
   this one.
