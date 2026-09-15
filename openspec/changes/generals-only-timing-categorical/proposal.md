@@ -99,8 +99,10 @@ None.
 - `response-definition`: a definition may mark a race train-only on grounds of
   the race's own kind rather than its response, which is what `generals_only`
   needs; `generals_only` is registered and its holdout population stated.
-- `model-scoring`: the `ballot_timing` segment becomes a predictor level set
-  rather than a derived one, and a scoring run under `generals_only` reports a
+- `model-scoring`: the segment-breakout requirement is renamed, because its
+  scenario names a level count this change makes wrong --- the `ballot_timing`
+  segment takes its levels from the predictor's declaration rather than
+  deriving its own three; and a scoring run under `generals_only` reports a
   holdout of general elections only.
 
 ## Impact

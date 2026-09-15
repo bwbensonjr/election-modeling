@@ -1,6 +1,6 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
-### Requirement: Scores are broken out per fold and per segment
+### Requirement: Scores are broken out per fold and per declared segment level
 
 Every metric SHALL be reported for the pooled holdout, for each fold date, and
 for each level of `office`, `is_special`, `pres_elec`, `ballot_timing`,
@@ -77,8 +77,6 @@ omitting it.
 - **THEN** the segment appears with a count of zero
 - **AND** it is not silently dropped from the scorecard
 
-## ADDED Requirements
-
 ### Requirement: A generals-only run reports the population it scored
 
 A scoring run under a definition that marks special elections train-only SHALL
@@ -105,3 +103,20 @@ what the model was fit on.
 - **AND** the races exclusive to each side are reported separately, so a
   definition that declines to score its hardest segment is not credited for
   the resulting lower error
+
+## REMOVED Requirements
+
+### Requirement: Scores are broken out per fold and per segment
+
+**Reason**: Its scenario "Ballot timing is reported in three segments" names a
+level count this change makes wrong: `ballot_timing` becomes a declared
+four-level predictor, and the segment takes its levels from that declaration
+rather than deriving its own three. Renamed rather than reworded in place,
+because the scenario title carries the stale count.
+
+**Migration**: Replaced by "Scores are broken out per fold and per declared
+segment level", which keeps every other scenario unchanged and adds two: the
+segment and the predictor must agree on their level set, and a definition
+scoring no special election reports the `special` level with a count of zero
+rather than omitting it. The scenario "Ballot timing is reported in three
+segments" becomes "Ballot timing is reported by its declared levels".

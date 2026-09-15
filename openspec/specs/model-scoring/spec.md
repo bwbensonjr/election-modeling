@@ -7,55 +7,6 @@ is reported as decided or undecided.
 
 ## Requirements
 
-### Requirement: Evaluation is rolling-origin with an expanding training window
-
-The system SHALL evaluate a variant by fitting it once per fold year on every
-race strictly preceding that year and predicting only the races held in that
-year. The training window SHALL expand with each successive fold rather than
-sliding.
-
-#### Scenario: A fold trains only on prior years
-
-- **WHEN** the fold for year `Y` is run
-- **THEN** the training races are every race in the table with
-  `election_year` less than `Y`
-- **AND** the holdout races are every race in the table with
-  `election_year` equal to `Y`
-- **AND** no race in year `Y` or later appears in the training set
-
-#### Scenario: Splitting by year rather than randomly
-
-- **WHEN** folds are constructed
-- **THEN** every race of a given year falls on the same side of the split
-- **AND** a district that recurs across cycles never has one of its races in
-  training and another in the same fold's holdout
-
-### Requirement: The fold schedule covers every election year from 2014 onward
-
-The fold years SHALL be 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022,
-2023, and 2024. 2019 SHALL NOT be a fold because the table contains no
-contested races for it. Races from 2010 through 2013 SHALL form the seed
-training window and SHALL NOT be scored.
-
-#### Scenario: Odd years are scored
-
-- **WHEN** the fold schedule is constructed
-- **THEN** 2015, 2017, 2021, and 2023 are fold years
-- **AND** their holdout races, which are entirely special elections, enter
-  the pooled holdout
-
-#### Scenario: A year with no races produces no fold
-
-- **WHEN** an otherwise eligible year contains no races in the table
-- **THEN** no fold is created for it
-- **AND** its absence is recorded in the published scorecard rather than
-  passing unremarked
-
-#### Scenario: Seed years are training-only
-
-- **WHEN** the fold schedule is run
-- **THEN** no race from 2010 through 2013 appears in any holdout set
-
 ### Requirement: Holdout predictions from all folds are pooled and scored together
 
 The primary score SHALL be computed over the union of every fold's holdout
@@ -65,15 +16,16 @@ produced it or how many races that fold held out.
 #### Scenario: Each holdout race is predicted exactly once
 
 - **WHEN** a scoring run completes
-- **THEN** every race in a fold year has exactly one holdout prediction
+- **THEN** every race held on a fold date has exactly one holdout prediction
 - **AND** no race in the seed window has any
 
 #### Scenario: Pooling is by race, not by fold
 
 - **WHEN** the pooled score is computed
 - **THEN** it is computed from the full set of holdout races directly
-- **AND** not as an average of the per-fold scores, which would over-weight
-  the one-race and two-race odd-year folds
+- **AND** not as an average of the per-fold scores, which under a date
+  schedule would give a one-race special-election date the same weight as a
+  general election deciding the whole chamber
 
 ### Requirement: RMSE in margin points is the primary score
 
@@ -114,11 +66,28 @@ probability that `dem_margin` exceeds zero.
 
 ### Requirement: Scores are broken out per fold and per segment
 
-Every metric SHALL be reported for the pooled holdout, for each fold year, and
+Every metric SHALL be reported for the pooled holdout, for each fold date, and
 for each level of `office`, `is_special`, `pres_elec`, `redistricting_cycle`,
 `no_dem_candidate`, and whether the race was admitted on a write-in, so that a
 pooled result can be traced to where the model succeeds or fails. A segment
 that a definition empties SHALL be reported as empty rather than omitted.
+
+Because every special election in the record falls off the presidential
+general date, `pres_elec` and `is_special` are not independent: the
+`pres_elec = False` races are a mixture of midterm general elections and
+special elections. Metrics broken out by ballot timing SHALL therefore
+distinguish three segments rather than two, so that neither figure silently
+carries the other population.
+
+#### Scenario: Ballot timing is reported in three segments
+
+- **WHEN** a variant is scored
+- **THEN** its metrics are reported separately for presidential-date general
+  elections, for non-presidential-date general elections, and for special
+  elections
+- **AND** the count behind each is reported
+- **AND** no published figure describes the union of midterm generals and
+  specials as "non-presidential" without saying so
 
 #### Scenario: Special elections are scored separately
 
@@ -138,10 +107,12 @@ that a definition empties SHALL be reported as empty rather than omitted.
 #### Scenario: Presidential-year bias is visible as a segment
 
 - **WHEN** a variant is scored
-- **THEN** the mean signed error within presidential years and within
-  non-presidential years is reported separately
+- **THEN** the mean signed error within presidential-date general elections
+  and within non-presidential-date general elections is reported separately
 - **AND** the gap between them is reported, since it is the quantity a bias
   variant sets out to close
+- **AND** the gap is computed from general elections only, so that the
+  special-election segment cannot move it
 
 #### Scenario: Small segments are reported with their counts
 
@@ -164,6 +135,12 @@ with a per-race paired comparison. Where the two variants are not nested ---
 where one adds a term and also removes one --- the comparison SHALL state
 that, so the difference is not read as the effect of a single term.
 
+A composite variant, which predicts different races from different component
+fits, SHALL be comparable to a single-fit variant on this procedure provided
+every race in the comparison is predicted exactly once by exactly one
+component. A comparison involving a composite variant SHALL name the
+components and state which races each one predicted.
+
 #### Scenario: The comparison is paired by race
 
 - **WHEN** two variants are compared
@@ -171,6 +148,16 @@ that, so the difference is not read as the effect of a single term.
   same set of races
 - **AND** a race dropped from one variant's holdout for any reason is dropped
   from the other's before comparing
+
+#### Scenario: A composite variant is compared race by race
+
+- **WHEN** a composite variant is compared to a single-fit variant
+- **THEN** each race's error for the composite comes from whichever component
+  predicted it
+- **AND** the published comparison names the components and the race
+  population each one covered
+- **AND** it is labelled non-nested, since the two arms do not stand in a
+  subset relation on their predictors
 
 #### Scenario: The comparison reports an interval, not only a point
 
@@ -193,28 +180,6 @@ that, so the difference is not read as the effect of a single term.
 - **THEN** the published comparison names the terms added and the terms
   removed
 - **AND** it is not described as isolating a single term
-
-### Requirement: The is_special comparison is run and published
-
-The system SHALL run the comparison between the `baseline` and
-`baseline_special` variants under this procedure and publish its result,
-whichever direction it falls.
-
-#### Scenario: The result is recorded either way
-
-- **WHEN** the `is_special` comparison completes
-- **THEN** the scorecard records both variants' pooled and segmented metrics,
-  the paired difference, and its interval
-- **AND** a written conclusion accompanies it, including when the conclusion
-  is that adding `is_special` does not measurably help
-
-#### Scenario: The special-election segment is examined explicitly
-
-- **WHEN** the `is_special` comparison is published
-- **THEN** the two variants' RMSE over holdout special elections is reported
-  alongside the pooled figures
-- **AND** the count of holdout special elections is stated, so the weight of
-  the evidence is visible
 
 ### Requirement: Scoring runs are reproducible and published
 
@@ -267,6 +232,11 @@ rescoring does change another variant's numbers, the change SHALL be reported
 with the reason, since the scorecard is the yardstick later work is measured
 against.
 
+A change to the fold schedule itself SHALL be treated as changing every
+variant's numbers. Such a run SHALL NOT attempt the unchanged-variant
+verification, and SHALL instead state that the schedule changed and that every
+previously published figure is superseded.
+
 #### Scenario: An untouched variant is verified unchanged
 
 - **WHEN** one variant is rescored and its rows in the published outputs are
@@ -275,6 +245,14 @@ against.
   identical to the committed ones
 - **AND** any difference is reported with the variant, the definition and the
   fold it occurred on
+
+#### Scenario: A schedule change supersedes every published figure
+
+- **WHEN** the fold schedule changes and every variant is rescored under it
+- **THEN** the run reports that the schedule changed rather than reporting
+  per-variant drift
+- **AND** the published writeups state that the earlier figures were computed
+  on the previous schedule and are superseded rather than reproduced
 
 #### Scenario: A superseded result is not silently overwritten
 
@@ -299,9 +277,9 @@ against. The definition SHALL be recorded in every output the run produces.
 #### Scenario: The fold schedule is unchanged by the definition
 
 - **WHEN** a definition is applied
-- **THEN** the fold years remain every election year from 2014 through 2024
-  that the definition admits races in
-- **AND** a fold year the definition empties is recorded as skipped rather
+- **THEN** the fold dates remain every election date after the seed cutoff
+  that the definition admits races on
+- **AND** a fold date the definition empties is recorded as skipped rather
   than omitted silently
 
 #### Scenario: Holdout counts are published per definition
@@ -453,3 +431,143 @@ real in one segment and absent in another.
   influence
 - **AND** the result is not presented as evidence that spending changes
   outcomes
+
+### Requirement: Evaluation is rolling-origin over election dates
+
+The system SHALL evaluate a variant by fitting it once per election date on
+every race held strictly before that date and predicting only the races held
+on that date. The training window SHALL expand with each successive fold
+rather than sliding.
+
+A fold SHALL correspond to one election date, not to one calendar year. A race
+held earlier in the same calendar year as a fold's date SHALL be in that
+fold's training set, because its result was known before the fold's election
+occurred.
+
+#### Scenario: A fold trains only on earlier dates
+
+- **WHEN** the fold for election date `D` is run
+- **THEN** the training races are every race in the table with
+  `election_date` strictly less than `D`
+- **AND** the holdout races are every race in the table with `election_date`
+  equal to `D`
+- **AND** no race held on `D` or later appears in the training set
+
+#### Scenario: An earlier election in the same year trains the fold
+
+- **WHEN** the fold for a November general election is run and special
+  elections were held earlier that calendar year
+- **THEN** those earlier special elections appear in the fold's training set
+- **AND** they do not appear in its holdout
+
+#### Scenario: Dates are not blended into a single holdout
+
+- **WHEN** two elections in the same calendar year are held on different dates
+- **THEN** they fall in different folds
+- **AND** neither fold's metrics mix races decided on different days
+
+#### Scenario: Splitting by date rather than randomly
+
+- **WHEN** folds are constructed
+- **THEN** every race sharing an election date falls on the same side of the
+  split
+- **AND** a district that recurs across cycles never has one of its races in
+  training and another in the same fold's holdout
+
+### Requirement: The fold schedule is every election date after the seed cutoff
+
+The fold dates SHALL be every distinct `election_date` in the race table on or
+after the seed cutoff of 2014-01-01. Races held before that cutoff --- those of
+2010 through 2013 --- SHALL form the seed training window and SHALL NOT be
+scored, preserving the seed window of the previous schedule unchanged. The schedule SHALL be derived
+from the dates present in the table rather than enumerated in code, so that
+adding an election year adds folds without a code change.
+
+A fold date carrying only special elections SHALL be a scored fold on the same
+footing as a general-election date. Its holdout may hold a single race.
+
+#### Scenario: The schedule is derived from the table
+
+- **WHEN** the fold schedule is constructed
+- **THEN** it contains one fold per distinct election date at or after the
+  seed cutoff
+- **AND** no election date present in the table after the cutoff is absent
+  from the schedule
+- **AND** adding a later election year to the table adds folds without any
+  change to the schedule's definition
+
+#### Scenario: Special-election dates are scored folds
+
+- **WHEN** an election date carries only special elections
+- **THEN** it is a fold, and its races enter the pooled holdout
+- **AND** its fold row is marked as a small sample rather than suppressed
+
+#### Scenario: Seed races are training-only
+
+- **WHEN** the fold schedule is run
+- **THEN** no race held before 2014-01-01 appears in any holdout set
+- **AND** every such race is available to every fold's training set
+
+#### Scenario: The published schedule states its size
+
+- **WHEN** the fold schedule is published
+- **THEN** it reports the number of folds, the number of general-election
+  dates and special-election dates among them, and the holdout race count of
+  each
+- **AND** the training window bounds of each fold are reported as dates
+
+### Requirement: The three special-election handling arms are compared and published
+
+The system SHALL score three arms for special-election handling and publish
+their comparison, whichever direction it falls:
+
+- an arm that trains and scores on all races and declares `is_special`;
+- an arm that trains and scores on all races and declares no `is_special`
+  term;
+- a composite arm of two fits --- a general model that excludes special
+  elections from both training and holdout, and a special model fit on all
+  races with `is_special` declared --- in which each race is predicted by the
+  component matching its own `is_special` value.
+
+The three arms SHALL cover the same holdout races, so their comparison is
+paired race by race.
+
+#### Scenario: All three arms score the same races
+
+- **WHEN** the three arms are scored under one definition
+- **THEN** each arm produces exactly one prediction for every holdout race
+  that all three admit
+- **AND** the comparison is computed on that shared set
+- **AND** any race an arm cannot predict is dropped from all three before
+  comparing, and the count dropped is reported
+
+#### Scenario: The composite arm routes each race to one component
+
+- **WHEN** the composite arm predicts a holdout race
+- **THEN** a special election is predicted by the special model and a general
+  election by the general model
+- **AND** no race is predicted by both components
+- **AND** the published per-race predictions record which component produced
+  each one
+
+#### Scenario: The general component never sees a special election
+
+- **WHEN** the composite arm's general model is fit for a fold
+- **THEN** its training races exclude every special election
+- **AND** its holdout excludes every special election
+
+#### Scenario: The arms are compared on general and special races separately
+
+- **WHEN** the three-arm comparison is published
+- **THEN** the pooled paired difference between each pair of arms is reported
+  with its interval and its decided or undecided label
+- **AND** the difference restricted to general elections and the difference
+  restricted to special elections are reported alongside it
+- **AND** the holdout count behind each is stated
+
+#### Scenario: An undecided result is published as undecided
+
+- **WHEN** the interval on a paired difference between two arms contains zero
+- **THEN** the published conclusion states that the data does not separate
+  them
+- **AND** no arm is adopted on the point estimate alone
