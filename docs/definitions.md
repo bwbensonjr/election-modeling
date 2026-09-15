@@ -23,6 +23,15 @@ Four things, all explicit — none left to a default inside the fitting code:
 | **Write-in threshold** | The share of named-candidate votes at which a write-in counts as a candidate |
 | **No-Democrat treatment** | `keep`, `exclude`, or `train_only` |
 
+A definition **may** additionally mark a named class of race **train-only** on
+grounds of the kind of contest it is rather than of its response. That is a
+fifth statement, declared the same explicit way, and the class is named in the
+definition's own record — so "this definition does not *score* special
+elections" and "this definition does not *admit* special elections" are
+distinguishable in the declaration and not only in the counts. Like
+eligibility, a train-only class may read only columns describing the kind of
+contest and who stood in it, never the outcome.
+
 ### Eligibility is declared, not coded
 
 A criterion is registered with the columns it reads, and those columns must
@@ -76,12 +85,13 @@ That is reported as removal, not as improvement.
 
 ## The registered definitions
 
-| Name | Response | Threshold | No-Dem | Races | Holdout | Specials |
-|---|---|---|---|---|---|---|
-| `current` | `dem_margin` | ballot lines | keep | 623 | 424 | 24 |
-| `two_party` | `dem_margin_two_party` | ballot lines | exclude | 517 | 346 | 22 |
-| `two_party_or_strongest` | two-party, else strongest pair | ballot lines | exclude | 610 | 413 | 24 |
-| `write_in_5pct` | `dem_margin` | 5% | keep | 625 | 426 | 24 |
+| Name | Response | Threshold | No-Dem | Train-only | Races | Holdout | Specials |
+|---|---|---|---|---|---|---|---|
+| `current` | `dem_margin` | ballot lines | keep | none | 623 | 424 | 24 |
+| `two_party` | `dem_margin_two_party` | ballot lines | exclude | none | 517 | 346 | 22 |
+| `two_party_or_strongest` | two-party, else strongest pair | ballot lines | exclude | none | 610 | 413 | 24 |
+| `generals_only` | two-party, else strongest pair | ballot lines | exclude | `special_elections` | 610 | 389 | 0 |
+| `write_in_5pct` | `dem_margin` | 5% | keep | none | 625 | 426 | 24 |
 
 `current` reproduces the rule in force before this change, including its
 asymmetry: eligibility on ballot lines, with every named candidate — write-ins
@@ -93,6 +103,16 @@ stood, and where no Republican ran compares the Democrat against the strongest
 non-Democrat **on that pair's own two-candidate denominator**. It is not
 `dem_margin`, which divides by every named candidate and would reintroduce the
 mismatch the two-party response exists to remove.
+
+`generals_only` is the adopted definition with one thing added: the same 610
+races, the same response, the same threshold and the same no-Democrat
+treatment, and special elections marked train-only. Any difference between the
+two is therefore attributable to the holdout population alone. Its holdout is
+**389 races over 6 general-election dates**, and its zero special elections are
+zero *by declaration*: all 37 admitted specials stay in the frame and inform
+every fit that follows them. `definition_summary.csv` carries the declaration
+alongside the counts (`train_only`, `train_only_races`, `training_specials`),
+so a reader does not have to infer it from a zero.
 
 ## How a threshold is resolved
 

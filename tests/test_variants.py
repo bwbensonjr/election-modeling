@@ -189,3 +189,85 @@ def test_the_plain_arm_matches_the_baseline():
     assert variants.get("special_pooled_plain").predictors == (
         variants.get("baseline").predictors
     )
+
+
+# --- predictor-versus-predictor collinearity ---------------------------------
+
+
+def pair(a, b, name="probe_pair") -> tuple:
+    frame = pd.DataFrame({"a": a, "b": b})
+    return variants.Variant(name=name, predictors=("a", "b")), frame
+
+
+def test_an_exactly_collinear_pair_is_refused_naming_both():
+    variant, frame = pair([0, 1, 0, 1, 1], [-1, 0, -1, 0, 0])
+    with pytest.raises(variants.CollinearPredictorError) as excinfo:
+        variants.check_collinear(variant, frame, fold="2014-11-04")
+    message = str(excinfo.value)
+    assert "'a'" in message and "'b'" in message
+    assert "2014-11-04" in message
+
+
+def test_an_affine_pair_of_continuous_predictors_is_refused():
+    values = [1.0, 2.5, 3.7, 9.1, 4.4, 8.8]
+    variant, frame = pair(values, [-2.0 * v + 7.0 for v in values])
+    with pytest.raises(variants.CollinearPredictorError):
+        variants.check_collinear(variant, frame)
+
+
+def test_a_pair_separated_by_one_race_is_fit():
+    """One race is enough to identify the two effects, however badly."""
+    variant, frame = pair([0, 0, 1, 1, 1], [0, 0, 1, 1, 0])
+    variants.check_collinear(variant, frame)
+
+
+def test_a_constant_column_is_skipped_rather_than_refused():
+    """An unobserved categorical level is disclosed, not refused (D3)."""
+    variant, frame = pair([0, 0, 0, 0], [0, 1, 1, 0])
+    variants.check_collinear(variant, frame)
+
+
+def test_a_continuous_predictor_does_not_refuse_everything_beside_it():
+    """Grouping on near-unique values would make every level a singleton."""
+    variant, frame = pair(
+        [float(i) for i in range(40)], [i % 2 for i in range(40)]
+    )
+    variants.check_collinear(variant, frame)
+
+
+def test_the_check_runs_over_expanded_columns_not_declared_names():
+    frame = pd.DataFrame(
+        {
+            "incumbent_status": ["Dem_Incumbent", "GOP_Incumbent"] * 4,
+            "twin": [1, 0] * 4,
+            "election_year": [2016] * 8,
+            "pres_elec": [True] * 8,
+            "is_special": [False] * 8,
+        }
+    )
+    variant = variants.Variant(
+        name="probe_expanded", predictors=("incumbent_status", "twin")
+    )
+    with pytest.raises(variants.CollinearPredictorError) as excinfo:
+        variants.check_collinear(variant, variants.prepare(frame))
+    assert "incumbent_dem" in str(excinfo.value)
+
+
+def test_the_national_env_pair_is_the_shape_that_is_refused():
+    """`national_env` is `pres_elec - 1` on any all-Democratic-president window."""
+    frame = pd.DataFrame(
+        {
+            "election_id": [f"r{i}" for i in range(6)],
+            "election_year": [2012, 2012, 2014, 2014, 2013, 2013],
+            "pres_elec": [True, True, False, False, False, False],
+            "is_special": [False, False, False, False, True, True],
+            "incumbent_status": ["No_Incumbent"] * 6,
+            "PVI_N": [1.0, -2.0, 3.0, -4.0, 5.0, -6.0],
+            "response": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        }
+    )
+    variant = variants.get("baseline_national_env")
+    with pytest.raises(variants.CollinearPredictorError) as excinfo:
+        variants.check_grouping(variant, variants.prepare(frame), fold="2015-11-03")
+    assert "national_env" in str(excinfo.value)
+    assert "pres_elec" in str(excinfo.value)

@@ -474,51 +474,65 @@ about the timing term. See
 [`docs/special_handling_result.md`](docs/special_handling_result.md) and
 [`docs/variable_importance.md`](docs/variable_importance.md).
 
-### `national_env` is collinear with `pres_elec` for nine folds
+### ~~`national_env` is collinear with `pres_elec` for nine folds~~ --- resolved
 
-`baseline_national_env` carries both `pres_elec` and `national_env` as fixed
-effects. Every midterm in the record before 2017 had a Democratic president, so
-`national_env = -(1 - pres_elec)` identically across the first nine folds'
-training windows --- two parameters, one column. It becomes identified on
-2017-10-17, when a Trump-era special first enters the training window, and
-genuinely identified only from 2018-11-06, at which point its basis for
-distinguishing a Republican from a Democratic president is the single 2018
-election.
+**Resolved.** The confounding refusal now runs predictor-versus-predictor, not
+only predictor-versus-grouping-factor, and `baseline_national_env` is refused
+on exactly the nine folds 2014-01-07 through 2017-07-25.
 
-Nothing refuses it: the harness checks a predictor against a *grouping factor*,
-never against another predictor. `baseline_year_pres` is refused for exactly
-this shape of collinearity.
+The defect was real and is now measured rather than argued. `national_env` is
+`pres_elec - 1` identically on every training window whose midterms all fell
+under a Democratic president, so the two terms were one column carrying two
+parameters. Nothing refused it, because the harness only ever tested a
+predictor against a *grouping factor* --- which is why `baseline_year_pres`
+was refused for this exact shape while `baseline_national_env` was not. The
+check is now pairwise over the expanded design columns, the separating count
+is published per fold, and the refusal reason travels on each row of
+`fit_diagnostics.csv`.
 
-Compounding it, `national_env` is computed as `midterm = ~pres_elec`, and every
-special election carries `pres_elec = False` --- so a March 2016 special is
-labelled a midterm-backlash electorate, as is a July 2017 one. For the five
-folds where the term is identified but 2018 has not happened, those miscoded
-specials are what identifies it.
+What the measurement showed: the term becomes identified on 2017-10-17, and
+for the five folds from there to 2018-11-06 its entire basis for distinguishing
+a Republican from a Democratic presidency is between one and six special
+elections --- races coded as a midterm-backlash electorate they are not. Only
+from 2020-03-03, once the 71 races of the 2018 general enter the training
+window, does the separating count reach 77. The variant's holdout falls from
+413 races to **253** under the adopted definition and to 240 under
+`generals_only`; its previously published figures over 413 races are superseded
+by the refusal, not by a rescore.
 
-This is the most likely explanation for the variant losing its verdict in the
-refold. Not yet acted on. The fix is a predictor-versus-predictor collinearity
-check, plus a timing variable that does not have to be reconstructed from two
-booleans.
+Its replacement, `baseline_timing`, keeps all 413. See
+[`docs/timing_result.md`](docs/timing_result.md).
 
-### Special elections are entangled with the timing terms
+### ~~Special elections are entangled with the timing terms~~ --- resolved
+
+**Resolved.** Ballot timing is now one declared four-level categorical,
+`ballot_timing`, with `presidential` as the reference; special elections take
+their own level rather than being coded by the president's party.
 
 Every special election in the record carries `pres_elec = False`, because none
-has ever fallen on a presidential general date. Three consequences, none
-deliberate:
+has ever fallen on a presidential general date, and that produced three
+consequences, none deliberate: any "non-presidential" figure blended midterm
+generals with specials; specials were the only races separating `pres_elec`
+from a per-date effect; and specials received a `national_env` value
+describing an electorate they are not. Restricted to general elections there
+are exactly three timing groups --- presidential ballot (231 races), midterm
+under a Democratic president (271), midterm under a Republican one (71) ---
+and `pres_elec` plus `national_env` saturated them, with the third group
+resting on the single 2018 election.
 
-- any "non-presidential" figure blends 237 midterm generals with 24 specials
-  --- which is why bias is now reported over general elections only, with a
-  three-level `ballot_timing` segment alongside;
-- specials are the only races separating `pres_elec` from a per-date effect;
-- specials receive a `national_env` value describing an electorate they are
-  not.
+What the measurement showed: `baseline_timing` beats `baseline` by
+**+0.771 [+0.394, +1.163]** under the adopted definition and
+**+0.754 [+0.343, +1.169]** under `generals_only` --- decided under both ---
+and the gain is almost entirely the 71 races of 2018, where it is +4.265. It
+narrows the presidential-date bias gap from 8.99 to 6.60 and halves pooled
+bias, without the collinearity `baseline_national_env` bought its bias
+reduction with. Against `baseline_year` it is undecided.
 
-Restricted to general elections, `~pres_elec` simply *means* midterm, and the
-three timing groups --- presidential ballot, midterm under a Democratic
-president, midterm under a Republican one --- are exactly saturated by
-`pres_elec` plus `national_env`. One three-level variable would say the same
-thing without the reconstruction, and would make the identification
-requirement visible.
+The scorecard's `ballot_timing` segment now takes its levels from the
+predictor's declaration, so a segment row and a coefficient describing the
+same population cannot disagree. `midterm_general` has split into
+`midterm_dem_pres` and `midterm_gop_pres`; any figure quoted against the old
+three-level names describes a different population.
 
 ### ~~`baseline_year` fits do not converge~~ --- resolved
 

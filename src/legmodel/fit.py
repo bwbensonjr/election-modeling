@@ -9,6 +9,7 @@ swapping in a different model family later means implementing `predict_draws`
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import os
 import re
@@ -105,6 +106,75 @@ class UnidentifiablePredictorError(ValueError):
     """A predictor is constant in the training races, so it has no data."""
 
 
+class MissingLevelPriorError(ValueError):
+    """A categorical level absent from training carries no declared prior.
+
+    Its likelihood is flat, so its posterior is exactly its prior and the
+    prediction for every holdout race carrying that level rests on it. An
+    auto-scaled default derived from the response's spread would then be doing
+    real work that nobody chose (design.md, D3).
+    """
+
+
+def _unobserved_indicators(variant: "variants.Variant", prepared: pd.DataFrame) -> list:
+    """Declared categorical indicators with no variation in the training races.
+
+    A level the fold's training window never held. The level set is fixed in
+    advance precisely so the column survives into the design matrix, and the
+    count published per level is what makes a prediction resting on the prior
+    identifiable as one (margin-model spec, "A categorical level absent from
+    training is fit from its prior and disclosed").
+    """
+    declared = {
+        column
+        for predictor in variant.predictors
+        for spec in [variants.CATEGORICAL_INDICATORS.get(predictor)]
+        if spec is not None
+        for column in spec["levels"].values()
+    }
+    return sorted(
+        column
+        for column in declared
+        if column in prepared.columns and prepared[column].nunique(dropna=False) < 2
+    )
+
+
+@contextlib.contextmanager
+def _allow_unobserved_levels(columns):
+    """Let a declared indicator with no training variation reach the sampler.
+
+    Bambi refuses a constant common term outright, which is the right default:
+    a constant predictor usually means a mis-specified model. It is the wrong
+    answer for a categorical level the record does not yet hold, where the
+    column is constant by fixed declaration rather than by accident, the
+    coefficient has an explicit prior, and the sampler recovers that prior
+    exactly. The exemption is narrowed to the named columns so that an
+    ordinary constant predictor is still refused, and it is lifted again on
+    the way out.
+    """
+    if not columns:
+        yield
+        return
+    from bambi.terms.common import CommonTerm
+
+    exempt, original = set(columns), CommonTerm.__init__
+
+    def permissive(self, term, prior, prefix=None):
+        try:
+            original(self, term, prior, prefix)
+        except ValueError as exc:
+            if "is constant" not in str(exc) or term.name not in exempt:
+                raise
+            self.term, self.prior = term, prior
+            self.data, self.prefix = np.squeeze(term.data), prefix
+
+    CommonTerm.__init__ = permissive
+    try:
+        yield
+    finally:
+        CommonTerm.__init__ = original
+
+
 @dataclass
 class Diagnostics:
     max_rhat: float
@@ -131,6 +201,13 @@ class Diagnostics:
     # nearly spanned by the variant's grouping factor. Empty when the variant
     # has no group effect, or when nothing is close to confounded.
     separating_races: str = ""
+    # Training races at each declared level of each categorical the variant
+    # declares, zero counts included. A level with no training races has a flat
+    # likelihood, so its coefficient is a draw from the declared prior; this is
+    # what makes such a prediction identifiable as one (margin-model spec, "A
+    # categorical level absent from training is fit from its prior and
+    # disclosed").
+    level_counts: str = ""
     # Set when the fold was refused before sampling, so a fold that was never
     # fit is distinguishable in the published record from one that was fit and
     # sampled badly.
@@ -166,6 +243,7 @@ class Diagnostics:
             "group_prior": self.group_prior or "library defaults",
             "as_of": self.as_of or "not dated",
             "separating_races": self.separating_races or "none",
+            "level_counts": self.level_counts or "no categorical declared",
             "refused_reason": self.refused_reason,
         }
 
@@ -176,6 +254,7 @@ def refused(
     definition: str,
     n_train: int,
     reason: str,
+    level_counts: str = "",
 ) -> Diagnostics:
     """Diagnostics for a fold whose fit was refused before it was sampled.
 
@@ -199,6 +278,7 @@ def refused(
         tune=TUNE if variant.tune is None else variant.tune,
         group_prior=variant.prior_declaration,
         as_of=variant.as_of,
+        level_counts=level_counts,
         refused_reason=reason,
     )
 
@@ -292,11 +372,25 @@ def fit(
     # effect. Dropping it would let the fit proceed and then predict a holdout
     # race carrying that level as though it were the reference level, which is
     # a confidently wrong answer rather than a missing one.
+    #
+    # A declared categorical's indicator is exempt. An all-zero indicator is a
+    # level the fold's training window never held, and the level set is fixed
+    # in advance precisely so the column survives: bambi keeps it, the
+    # likelihood is flat in its coefficient, and the posterior is the declared
+    # prior. That widens the holdout interval rather than silently borrowing
+    # another level's estimate, and the training count published per level is
+    # what makes it identifiable (margin-model spec, "A categorical level
+    # absent from training is fit from its prior and disclosed").
+    indicators = {
+        column
+        for spec in variants.CATEGORICAL_INDICATORS.values()
+        for column in spec["levels"].values()
+    }
     constant = [
         column
         for predictor in variant.predictors
         for column in variants.expand(predictor)
-        if prepared[column].nunique(dropna=False) < 2
+        if column not in indicators and prepared[column].nunique(dropna=False) < 2
     ]
     if constant:
         raise UnidentifiablePredictorError(
@@ -309,14 +403,31 @@ def fit(
     # error, not a sampling one: the fit would return numbers describing a
     # ridge. Checked per fold, because the confounding is exact only in the
     # early windows (design.md, D5).
-    separating = variants.check_grouping(variant, prepared)
+    separating = variants.check_grouping(variant, prepared, fold)
 
-    model = bmb.Model(
-        variant.formula,
-        data=prepared,
-        family="gaussian",
-        priors=_bambi_priors(variant),
-    )
+    # A level this fold's training window never held. The fit proceeds -- that
+    # is a statement about what the record holds, not a defect in the variant
+    # -- but only against a prior the variant chose, since that prior is the
+    # whole of the resulting posterior (design.md, D3).
+    unobserved = _unobserved_indicators(variant, prepared)
+    undeclared = [column for column in unobserved if column not in variant.priors]
+    if undeclared:
+        raise MissingLevelPriorError(
+            f"variant {variant.name!r} on fold {fold}: {undeclared} are "
+            f"declared categorical levels that none of the {len(prepared)} "
+            "training races carries, and the variant declares no prior for "
+            "them. Their likelihood is flat, so their posterior would be "
+            "whatever auto-scaled default the fitting library supplies; "
+            "declare a prior instead"
+        )
+
+    with _allow_unobserved_levels(unobserved):
+        model = bmb.Model(
+            variant.formula,
+            data=prepared,
+            family="gaussian",
+            priors=_bambi_priors(variant),
+        )
     target_accept = variant.target_accept
     tune = TUNE if variant.tune is None else variant.tune
     # A variant declaring no target acceptance is sampled by exactly the call
@@ -365,6 +476,9 @@ def fit(
         as_of=variant.as_of,
         separating_races=", ".join(
             f"{term}={count}" for term, count in sorted(separating.items())
+        ),
+        level_counts=variants.render_level_counts(
+            variants.level_counts(variant, prepared)
         ),
     )
     return Fit(variant=variant, model=model, idata=idata, diagnostics=diagnostics)

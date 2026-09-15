@@ -9,12 +9,25 @@ exactly what `pres_elec` turns out to do.
 ```bash
 uv run legmodel importance                                  # the adopted money model
 uv run legmodel importance --variant baseline               # any registered variant
+uv run legmodel importance --variant baseline --append      # keep other variants' rows
 uv run legmodel importance --definition current --no-write
 ```
 
-Writes `data/models/variable_importance.csv`. The model analysed here is
-`baseline_money_logratio` under the adopted `two_party_or_strongest`
-definition: 593 races fit, 398 pooled holdout over 21 folds, **13.342 RMSE**.
+Writes `data/models/variable_importance.csv`, replacing it unless `--append` is
+given, in which case only this variant's rows under this definition are
+replaced. The model analysed here is `baseline_money_logratio` under the
+adopted `two_party_or_strongest` definition: 593 races fit, 398 pooled holdout
+over 21 folds, **13.342 RMSE**.
+
+**The `pres_elec` finding has been re-measured under the ballot-timing
+categorical.** In `baseline_timing_money`, where the two timing booleans are
+replaced by one four-level `ballot_timing` term, the drop-one cost of the whole
+timing term is **+0.273 [-0.185, +0.721] — undecided**, against `pres_elec`'s
+-0.705 [-1.100, -0.299] below. The term is no longer actively costing accuracy.
+That is reported, not acted on: the open issue stays open until a variant
+dropping the timing term is registered and compared under every scored
+definition. Both variants' rows are in `variable_importance.csv`; see
+[`timing_result.md`](timing_result.md).
 
 ## The three measures
 

@@ -61,6 +61,11 @@ def main(argv: list[str] | None = None) -> int:
         default=[None],
         help="definitions to run the comparison under (default: adopted)",
     )
+    compare_cmd.add_argument(
+        "--append",
+        action="store_true",
+        help="add these comparisons to the committed output instead of replacing it",
+    )
 
     cd_cmd = sub.add_parser(
         "compare-definitions",
@@ -73,6 +78,11 @@ def main(argv: list[str] | None = None) -> int:
         help="reference definition first, then each definition to compare to it",
     )
     cd_cmd.add_argument("--variant", default="baseline")
+    cd_cmd.add_argument(
+        "--append",
+        action="store_true",
+        help="add these comparisons to the committed output instead of replacing it",
+    )
 
     sweep_cmd = sub.add_parser("sweep", help="sweep the write-in threshold")
     sweep_cmd.add_argument("--variant", default="baseline")
@@ -91,6 +101,11 @@ def main(argv: list[str] | None = None) -> int:
         "--no-write",
         action="store_true",
         help="print results without writing the committed report",
+    )
+    imp_cmd.add_argument(
+        "--append",
+        action="store_true",
+        help="add this variant's rows to the committed report instead of replacing it",
     )
 
     folds_cmd = sub.add_parser("folds", help="print the rolling-origin fold schedule")
@@ -127,10 +142,14 @@ def main(argv: list[str] | None = None) -> int:
             for other in others:
                 reports.append(compare.run(reference, other, definition, write=False))
                 print()
-        config_module.write_csv(
-            pd.concat(reports, ignore_index=True).round(6),
-            config_module.VARIANT_COMPARISON,
-        )
+        report = pd.concat(reports, ignore_index=True).round(6)
+        if args.append:
+            report = config_module.merge_cells(
+                report,
+                config_module.VARIANT_COMPARISON,
+                ["definition", "left_variant", "right_variant"],
+            )
+        config_module.write_csv(report, config_module.VARIANT_COMPARISON)
     elif args.command == "compare-definitions":
         from . import compare_definitions, config
 
@@ -145,10 +164,14 @@ def main(argv: list[str] | None = None) -> int:
                 compare_definitions.run(reference, other, args.variant)
             )
             print()
-        config.write_csv(
-            pd.concat(reports, ignore_index=True).round(6),
-            config.DEFINITION_COMPARISON,
-        )
+        report = pd.concat(reports, ignore_index=True).round(6)
+        if args.append:
+            report = config.merge_cells(
+                report,
+                config.DEFINITION_COMPARISON,
+                ["left_definition", "right_definition", "variant"],
+            )
+        config.write_csv(report, config.DEFINITION_COMPARISON)
     elif args.command == "sweep":
         from . import config, sweep
 
@@ -159,7 +182,12 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "importance":
         from . import importance
 
-        importance.run(args.variant, args.definition, write=not args.no_write)
+        importance.run(
+            args.variant,
+            args.definition,
+            write=not args.no_write,
+            append=args.append,
+        )
     elif args.command == "parity":
         from . import parity
 
@@ -258,6 +286,7 @@ def main(argv: list[str] | None = None) -> int:
                     "write_in_threshold",
                     "no_dem",
                     "criteria",
+                    "train_only",
                     "races",
                     "scoreable",
                     "specials",

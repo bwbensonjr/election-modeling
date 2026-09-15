@@ -20,7 +20,8 @@ them changes a verdict. See [`scoring.md`](scoring.md) for the schedule.
 
 | Question | Variant | Verdict |
 |---|---|---|
-| 4 | `baseline_national_env` | **Undecided under three of four definitions**, where it was decided under all four before the refold. Cuts bias from -2.90 to -0.56, but the term is exactly collinear with `pres_elec` for the first nine folds |
+| 4 | `baseline_national_env` | **Now refused on nine of 23 folds**, where `national_env` and `pres_elec` are exactly collinear. Its published figures over 413 races are superseded by the refusal; it scores 14.069 over the 253 races that remain |
+| 4 | `baseline_timing` | **Adopt over `baseline`.** The same timing idea as one four-level categorical, so the collinearity cannot arise. Lowers RMSE by 0.771 [+0.394, +1.163] under the adopted definition and 0.754 [+0.343, +1.169] under `generals_only`, keeping every holdout race. Undecided against `baseline_year` |
 | 4 | `baseline_year` | **Adopt.** Lowers RMSE by 0.66 and closes the bias gap to -0.56; converges on every fold |
 | 4 | `baseline_year_pres` | The contrast arm. Now refused on **every** fold: the sharper evidence for dropping `pres_elec` |
 | 4 | `baseline_pres_incumbent` | Undecided |
@@ -106,10 +107,23 @@ two parameters competing for one column:
 | 2017-10-17 through 2018-04-03 (5) | plus four 2017 specials | identified, by specials alone |
 | 2018-11-06 onward (9) | plus the 2018 midterm | genuinely identified |
 
-Nothing refuses it, because the harness's confounding check tests a predictor
-against a **grouping factor** and never against another predictor. That is a
-gap: `baseline_year_pres` is refused for exactly this shape of collinearity and
-`baseline_national_env` is not.
+~~Nothing refuses it~~ **— it is now refused on those nine folds.** The
+confounding check originally tested a predictor against a **grouping factor**
+and never against another predictor, so `baseline_year_pres` was refused for
+exactly this shape of collinearity and `baseline_national_env` was not. The
+check is now pairwise over the expanded design columns as well.
+
+**Every figure quoted for `baseline_national_env` above and below is
+superseded — by the refusal, not by a rescore.** They were computed over 413
+holdout races across 23 folds. Nine of those folds are now refused before
+sampling, so the variant's holdout is **253 races over 14 folds** under the
+adopted definition (and 240 over 4 under `generals_only`), and it scores
+**14.069** there. The refused folds are in `fit_diagnostics.csv` with the
+reason on each row; `folds_refused` on the scorecard's pooled row lists all
+nine. The comparison against the baseline necessarily narrows to the races
+both arms still hold out. This is not a rescore correcting an error in the old
+numbers — it is the same model, refused on the folds where it was never
+identified in the first place.
 
 The five folds in the middle band are worse than unidentified — they are
 identified by special elections, and those are miscoded. `national_env` is
@@ -127,6 +141,40 @@ is a fact about the evidence, not about whether midterm backlash is real.
 Republican-president level rests on 2018 alone. It should be read as "the
 midterm penalty runs against the president's party and is worth about four
 points", not as a precisely estimated national-environment effect.
+
+### `baseline_timing`: the same idea, identified
+
+The replacement declares ballot timing as **one four-level categorical**
+instead of `pres_elec` plus `national_env`, which removes the collinearity by
+construction and gives special elections their own level rather than coding
+them as midterms. Non-nested against every arm in this section.
+
+| Definition | Variant | n | RMSE | Bias | Presidential general | Midterm general | Gap | Coverage |
+|---|---|---|---|---|---|---|---|---|
+| adopted | `baseline_timing` | 413 | 14.237 | -1.65 | +2.67 | -3.94 | 6.60 | 0.913 |
+| adopted | `baseline_timing_money` | 398 | 12.363 | -1.32 | +3.25 | -3.78 | 7.03 | 0.910 |
+| `generals_only` | `baseline_timing` | 389 | 13.422 | -1.27 | +2.66 | -3.93 | 6.58 | 0.928 |
+| `generals_only` | `baseline_timing_money` | 376 | 11.928 | -0.94 | +3.24 | -3.86 | 7.11 | 0.912 |
+
+| Definition | Against | n | Difference | 90% interval | Verdict |
+|---|---|---|---|---|---|
+| adopted | `baseline` | 413 | +0.771 | [+0.394, +1.163] | **lower** (non-nested) |
+| adopted | `baseline_year` | 413 | +0.108 | [-0.287, +0.501] | undecided |
+| adopted | `baseline_national_env` | 253 | +0.671 | [-0.133, +1.709] | undecided |
+| `generals_only` | `baseline` | 389 | +0.754 | [+0.343, +1.169] | **lower** (non-nested) |
+| `generals_only` | `baseline_year` | 389 | +0.138 | [-0.314, +0.571] | undecided |
+| `generals_only` | `baseline_national_env` | 240 | -0.077 | [-0.319, +0.167] | undecided |
+
+It keeps all 413 holdout races where `baseline_national_env` keeps 253, beats
+the baseline under both definitions, and is indistinguishable from
+`baseline_year` — which is the interesting result, since `baseline_year`'s
+per-date intercept is not knowable before the election and this is. The gain
+over `baseline` is concentrated in the 71 races of 2018 (+4.265), the
+population `pres_elec` alone was most wrong about.
+
+The full writeup, including the per-fold collinearity table, the unobserved
+`midterm_gop_pres` level and what the `special` coefficient is and is not, is
+in [`timing_result.md`](timing_result.md).
 
 ### `baseline_year` converges, and is the strongest variant tested
 

@@ -4,3 +4,10 @@ two_party_or_strongest,baseline_money_logratio,incumbent_status,incumbent_dem,7.
 two_party_or_strongest,baseline_money_logratio,incumbent_status,incumbent_gop,-18.055165,-20.917457,-15.288281,-18.962324,-16.63661,9.464845,7.703696,0.383145,15.881748,2.540248,1.873345,3.204792,True
 two_party_or_strongest,baseline_money_logratio,money_logratio_primary,money_logratio_primary,3.863251,3.393655,4.341025,3.272415,4.136044,8.011071,7.981995,2.07366,15.010493,1.668993,1.095543,2.231715,True
 two_party_or_strongest,baseline_money_logratio,pres_elec,pres_elec,7.086662,5.237376,8.971599,7.086662,13.543981,3.450289,7.086662,0.486871,12.636997,-0.704503,-1.099787,-0.298918,True
+two_party_or_strongest,baseline_timing_money,PVI_N,PVI_N,1.460451,1.361371,1.559041,1.414027,1.639635,13.22118,15.895991,9.052808,16.774317,4.411329,3.253228,5.569685,True
+two_party_or_strongest,baseline_timing_money,incumbent_status,incumbent_dem,9.094165,7.022199,11.145755,8.489444,11.588244,10.343086,9.094165,0.498147,15.653237,3.290249,2.63073,3.943753,True
+two_party_or_strongest,baseline_timing_money,incumbent_status,incumbent_gop,-18.988957,-21.764441,-16.183383,-19.120674,-15.933709,10.343086,9.094165,0.383145,15.653237,3.290249,2.63073,3.943753,True
+two_party_or_strongest,baseline_timing_money,money_logratio_primary,money_logratio_primary,3.813785,3.367921,4.274058,3.274886,4.064303,7.908494,7.879791,2.07366,14.099762,1.736774,1.191257,2.291728,True
+two_party_or_strongest,baseline_timing_money,ballot_timing,timing_midterm_dem_pres,-10.024312,-11.885687,-8.14749,-12.987371,-10.024312,5.070464,10.024312,0.496197,12.636438,0.27345,-0.184517,0.721067,False
+two_party_or_strongest,baseline_timing_money,ballot_timing,timing_midterm_gop_pres,1.458705,-1.214729,4.082295,-0.138824,1.839417,5.070464,10.024312,0.320653,12.636438,0.27345,-0.184517,0.721067,False
+two_party_or_strongest,baseline_timing_money,ballot_timing,timing_special,-1.882563,-5.667419,1.958955,-10.534997,-0.714805,5.070464,10.024312,0.235666,12.636438,0.27345,-0.184517,0.721067,False

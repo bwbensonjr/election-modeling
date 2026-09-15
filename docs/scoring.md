@@ -282,20 +282,49 @@ generals and specials, and specials are the model's worst-calibrated
 population by a wide margin. A bias figure read off that level silently
 carries a group the reader is not thinking about.
 
-`ballot_timing` splits the three apart:
+`ballot_timing` splits them apart:
 
-| Level | What it holds |
-|---|---|
-| `presidential_general` | general elections on a presidential ballot |
-| `midterm_general` | general elections on a non-presidential ballot |
-| `special` | special elections, whatever year they fell in |
+| Level | What it holds | Races |
+|---|---|---|
+| `presidential` | general elections on a presidential ballot | 231 |
+| `midterm_dem_pres` | general elections off the presidential ballot, under a Democratic president | 271 |
+| `midterm_gop_pres` | the same, under a Republican president | 71 |
+| `special` | special elections, whatever year or ballot they fell on | 37 |
+
+Counts are over the 610 races the adopted definition admits.
 
 It sits alongside the `pres_elec` and `is_special` breakouts rather than
 replacing them, so nothing that read the scorecard before loses a row.
 
+**These are the predictor's own levels, not a set the scorecard derives.**
+`ballot_timing` is also a declared categorical predictor
+([`variants.py`](../src/legmodel/variants.py)), and a segment row and a
+coefficient describing the same population have to be labelled the same — two
+level sets under one name is how a writeup ends up with the two quietly
+describing different races. The segment reads the level each race's own
+predictor carried, which travels with the race in
+`holdout_predictions.csv.gz`.
+
+A definition that scores no special election reports `special` with a count of
+zero rather than omitting the row, which is how `generals_only` declaring that
+it holds out no specials is distinguishable from a run that happened to score
+none.
+
+**Renamed from the three-level segment.** The earlier breakout had
+`presidential_general`, `midterm_general` and `special`.
+`presidential_general` became `presidential`, and **`midterm_general` split in
+two** — `midterm_dem_pres` and `midterm_gop_pres` — because the midterm
+electorate moves against the party holding the presidency and the record holds
+only one Republican-president midterm, the 71 races of 2018. Blending it into
+270 Democratic-president midterms hid exactly the group that matters. Any
+figure quoted against the old names is a figure over a different population.
+
 The pooled row additionally carries `bias_presidential_general`,
-`bias_midterm_general` and `pres_bias_gap`. **All three are computed over
-general elections only**, so the special-election segment cannot move a figure
+`bias_midterm_general` and `pres_bias_gap`. These three column names predate
+the level split and are unaffected by it: `bias_midterm_general` is measured
+over the union of `midterm_dem_pres` and `midterm_gop_pres`, because the gap is
+a claim about presidential versus non-presidential *ballots*. **All three are
+computed over general elections only**, so the special-election segment cannot move a figure
 that is supposed to measure ballot timing. The gap is the quantity the
 presidential-date variants set out to close, and a variant can narrow it
 without moving pooled RMSE at all.
@@ -352,6 +381,7 @@ them or took the defaults:
 | `draws`, `chains` | Posterior draws per chain and number of chains |
 | `group_prior` | The variant's declared priors, or `library defaults` where it declared none |
 | `separating_races` | For a variant with a group effect, how many training races keep a predictor from being exactly collinear with the grouping factor. `none` when nothing is close |
+| `level_counts` | Training races at each declared level of each categorical the variant declares, zero counts included. A level at zero has a flat likelihood, so its coefficient is a draw from the declared prior rather than an estimate. `no categorical declared` where the variant declares none |
 | `refused_reason` | Set when the fold was refused before sampling, so a fold that was never fit is distinguishable from one that was fit and sampled badly |
 | `as_of` | The date any dated predictor was measured to, or `not dated`. See above |
 
@@ -381,7 +411,7 @@ record and nowhere inside an early fold's training window.
 
 | File | Contents |
 |---|---|
-| `data/models/holdout_predictions.csv.gz` | One row per definition per variant per holdout race: point prediction, 90% interval, win probability, observed response, and the per-race error terms every metric is built from |
+| `data/models/holdout_predictions.csv.gz` | One row per definition per variant per holdout race: point prediction, 90% interval, win probability, observed response, the per-race error terms every metric is built from, and the `ballot_timing` level the race's own predictor carried |
 | `data/models/scorecard.csv` | One row per definition per variant per segment, with `n_races` and each metric |
 | `data/models/variant_comparison.csv` | Paired differences between variants, within one definition |
 | `data/models/definition_comparison.csv` | The three sections above, per definition pair |

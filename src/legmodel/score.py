@@ -7,7 +7,6 @@ coefficients and the fit diagnostics (model-scoring spec).
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 
 from . import config, definitions, fit as fitmod, folds, metrics, variants
@@ -30,27 +29,38 @@ SEGMENTS = [
 # reader is not thinking about -- specials being the model's worst segment by
 # a wide margin. This splits the two apart. It sits alongside the `pres_elec`
 # and `is_special` breakouts rather than replacing them, so no existing
-# consumer of the scorecard loses a row (model-scoring spec, "Ballot timing is
-# reported in three segments").
-BALLOT_TIMING_LEVELS = [
-    "presidential_general",
-    "midterm_general",
-    "special",
-]
+# consumer of the scorecard loses a row.
+#
+# The levels are the predictor's own, not a set derived here. A segment row and
+# a coefficient describing the same population must be labelled the same, and
+# two functions named `ballot_timing` returning different level sets is exactly
+# how a writeup ends up with the two quietly describing different races
+# (design.md, D5; model-scoring spec, "The segment and the predictor agree on
+# their levels").
+BALLOT_TIMING_LEVELS = list(variants.CATEGORICAL_LEVELS["ballot_timing"])
+
+# The general-election levels held off the presidential ballot. The
+# presidential-date bias gap is measured against their union, because the gap
+# is a claim about presidential versus non-presidential ballots and is not
+# affected by the change that split the midterm side in two.
+MIDTERM_LEVELS = ["midterm_dem_pres", "midterm_gop_pres"]
+PRESIDENTIAL_LEVEL = "presidential"
 
 
 def ballot_timing(frame: pd.DataFrame) -> pd.Series:
-    """Which of the three ballot-timing populations each race belongs to."""
-    special = frame["is_special"].astype(bool)
-    presidential = frame["pres_elec"].astype(bool)
-    return pd.Series(
-        np.where(
-            special,
-            "special",
-            np.where(presidential, "presidential_general", "midterm_general"),
-        ),
-        index=frame.index,
-    )
+    """Each race's declared ballot-timing level.
+
+    Read from the prepared predictor column where the frame carries it. Rows
+    written before that column was published fall back to the predictor's own
+    derivation, which is the same function -- there is one level set, not a
+    segment's and a predictor's (design.md, D5).
+    """
+    if "ballot_timing" in frame.columns:
+        levels = frame["ballot_timing"]
+        if not levels.isna().any():
+            return levels
+        return levels.where(levels.notna(), variants.ballot_timing_levels(frame))
+    return variants.ballot_timing_levels(frame)
 
 # Segment values that must be reported even when a definition admits no races
 # in them, so a definition that empties a segment is visible as having done so
@@ -80,6 +90,10 @@ IDENTITY = [
     "is_special",
     "no_dem_candidate",
     "admitted_by_write_in",
+    # The level the race's own predictor carried, carried through to the
+    # predictions so a segment row can be joined back to the coefficient that
+    # produced it.
+    "ballot_timing",
 ]
 
 
@@ -213,12 +227,16 @@ def score_variant(
             fitted = fitmod.fit(
                 variant, fold.train, fold=fold.key, definition=definition.name
             )
-        except variants.GroupedPredictorError as exc:
+        except (
+            variants.GroupedPredictorError,
+            variants.CollinearPredictorError,
+        ) as exc:
             # The fold's training window cannot separate the predictor from the
-            # variant's own grouping factor. Recording it keeps the refusal
-            # visible in the published outputs instead of leaving a fold that
-            # simply has no rows (margin-model spec, "An exactly confounded
-            # predictor is refused").
+            # variant's own grouping factor, or from another of its own
+            # predictors. Recording it keeps the refusal visible in the
+            # published outputs instead of leaving a fold that simply has no
+            # rows (margin-model spec, "An exactly confounded predictor is
+            # refused", "Two exactly collinear predictors are refused").
             diagnostics.append(
                 {
                     "definition": definition.name,
@@ -226,7 +244,19 @@ def score_variant(
                     "fold": fold.key,
                     "n_holdout": fold.n_holdout,
                     **fitmod.refused(
-                        variant, fold.key, definition.name, fold.n_train, str(exc)
+                        variant,
+                        fold.key,
+                        definition.name,
+                        fold.n_train,
+                        str(exc),
+                        # A refused fold still reports what its training races
+                        # held, so the refusal and the level counts can be read
+                        # against each other in one place.
+                        variants.render_level_counts(
+                            variants.level_counts(
+                                variant, variants.prepare(fold.train)
+                            )
+                        ),
                     ).as_row(),
                 }
             )
@@ -241,7 +271,10 @@ def score_variant(
         draws = fitted.predict_draws(fold.holdout)
         per_race = metrics.per_race(draws, fold.holdout["response"].to_numpy())
 
-        frame = fold.holdout[IDENTITY].reset_index(drop=True)
+        holdout = fold.holdout.assign(
+            ballot_timing=variants.ballot_timing_levels(fold.holdout)
+        )
+        frame = holdout[IDENTITY].reset_index(drop=True)
         frame.insert(0, "definition", definition.name)
         frame.insert(1, "variant", variant.name)
         frame.insert(2, "fold", fold.key)
@@ -366,8 +399,8 @@ def scorecard(
         # (model-scoring spec, "the gap is computed from general elections
         # only").
         timing = ballot_timing(group)
-        presidential = group[timing == "presidential_general"]
-        midterm = group[timing == "midterm_general"]
+        presidential = group[timing == PRESIDENTIAL_LEVEL]
+        midterm = group[timing.isin(MIDTERM_LEVELS)]
         bias_presidential = (
             float(presidential["error"].mean()) if len(presidential) else float("nan")
         )
@@ -544,6 +577,20 @@ def fold_summary(
 ) -> dict:
     """The holdout counts a definition produces, reported per definition."""
     built, skipped = folds.build(races, eligible)
+    scoreable = (
+        races["scoreable"].astype(bool)
+        if "scoreable" in races.columns
+        else pd.Series(True, index=races.index)
+    )
+    # Specials that inform at least one fit. A definition withholding them from
+    # every holdout is keeping their evidence, not discarding it, and the two
+    # readings are only distinguishable if the training count is published
+    # alongside the holdout one (model-scoring spec, "The holdout population is
+    # stated, not inferred").
+    trained_specials = set()
+    for fold in built:
+        specials = fold.train["is_special"].astype(bool)
+        trained_specials.update(fold.train.loc[specials, "election_id"])
     return {
         "definition": definition.name,
         "response": definition.response,
@@ -552,6 +599,14 @@ def fold_summary(
         "holdout_specials": sum(
             int(fold.holdout["is_special"].astype(bool).sum()) for fold in built
         ),
+        # What the definition declares it will not score, and what that costs.
+        # "does not score special elections" and "does not admit special
+        # elections" produce the same holdout count and are different claims
+        # (response-definition spec, "A train-only class is declared, not
+        # inferred").
+        "train_only": ",".join(definition.train_only) or "none",
+        "train_only_races": int((~scoreable).sum()),
+        "training_specials": len(trained_specials),
         "smallest_training_fold": min((fold.n_train for fold in built), default=0),
         "folds": len(built),
         "general_dates": sum(1 for fold in built if not fold.is_special_date),
@@ -602,6 +657,18 @@ def run(
         all_skipped.extend(d for d in summary["skipped_dates"].split(",") if d)
 
         print(f"\ndefinition {definition.name}: {definition.description}")
+        if definition.train_only:
+            classes = ", ".join(
+                definitions.TRAIN_ONLY_CLASSES[name].description
+                for name in definition.train_only
+            )
+            print(
+                f"  holdout population: {summary['pooled_holdout']} races, "
+                f"{summary['holdout_specials']} special elections -- none by "
+                f"declaration, not by accident ({classes}). "
+                f"{summary['train_only_races']} races are train-only, of which "
+                f"{summary['training_specials']} specials inform at least one fit"
+            )
         print(
             f"  {summary['races']} races, pooled holdout {summary['pooled_holdout']} "
             f"({summary['holdout_specials']} specials), smallest training fold "

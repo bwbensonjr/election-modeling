@@ -79,6 +79,16 @@ vote-weighted margin is -9.6 and the precinct average is +13.3.
 | `is_special` | boolean | Whether the race was a special election. 38 of the 633 races |
 | `num_candidates` | integer | Candidates in the race, as published in `ma-election-db`. Counts ballot lines, so a write-in is not included |
 
+**`ballot_timing` is not a column of this table.** It is a four-level
+categorical — `presidential`, `midterm_dem_pres`, `midterm_gop_pres`,
+`special` — derived at fit time from `is_special`, `pres_elec` and
+`election_year`, and it travels with the scored races in
+`data/models/holdout_predictions.csv.gz` rather than with the training table.
+Nothing here is persisted that the derivation does not already read. See
+[`scoring.md`](scoring.md#why-ballot_timing-exists-alongside-pres_elec) for the
+levels and [`timing_result.md`](timing_result.md) for why they are what they
+are.
+
 ## Provenance and diagnostics
 
 | Column | Type | Description |

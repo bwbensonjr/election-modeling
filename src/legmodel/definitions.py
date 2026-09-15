@@ -123,6 +123,61 @@ register_criterion(
 )
 
 
+# A train-only class withholds a race from every holdout while keeping it in
+# every fold's training set. Like eligibility it decides a race's fate before
+# the votes are counted, so it may read what kind of contest a race is and who
+# stood in it, and nothing else.
+ALLOWED_TRAIN_ONLY_COLUMNS = frozenset({"is_special", "no_dem_candidate"})
+
+
+@dataclass(frozen=True)
+class TrainOnlyClass:
+    """A named class of race a definition scores no instance of.
+
+    Named rather than expressed as a predicate, because the point is that the
+    declaration says what is withheld: "this definition does not score special
+    elections" and "this definition does not admit special elections" have the
+    same holdout count and are different claims (response-definition spec, "A
+    train-only class is declared, not inferred").
+    """
+
+    name: str
+    columns: tuple[str, ...]
+    test: object
+    description: str
+
+    def validate(self) -> None:
+        forbidden = set(self.columns) - ALLOWED_TRAIN_ONLY_COLUMNS
+        if forbidden:
+            raise InvalidDefinitionError(
+                f"train-only class {self.name!r} reads {sorted(forbidden)}, "
+                "which is not a column describing the kind of contest or who "
+                f"stood in it; allowed columns are "
+                f"{sorted(ALLOWED_TRAIN_ONLY_COLUMNS)}"
+            )
+
+
+TRAIN_ONLY_CLASSES: dict[str, TrainOnlyClass] = {}
+
+
+def register_train_only(train_only: TrainOnlyClass) -> TrainOnlyClass:
+    train_only.validate()
+    TRAIN_ONLY_CLASSES[train_only.name] = train_only
+    return train_only
+
+
+register_train_only(
+    TrainOnlyClass(
+        name="special_elections",
+        columns=("is_special",),
+        test=lambda races: races["is_special"].astype(bool),
+        description=(
+            "special elections: they inform every fit and enter no holdout"
+        ),
+    )
+)
+
+
 @dataclass(frozen=True)
 class Definition:
     """A named answer to who counts and what the margin measures."""
@@ -132,6 +187,10 @@ class Definition:
     write_in_threshold: float
     no_dem: str
     criteria: tuple[str, ...] = ()
+    # Classes of race this definition trains on but never scores, named from
+    # `TRAIN_ONLY_CLASSES`. Separate from `no_dem`, which is a treatment of a
+    # race's response; this is a treatment of the kind of contest it is.
+    train_only: tuple[str, ...] = ()
     description: str = ""
     adopted: bool = field(default=False)
 
@@ -159,11 +218,21 @@ class Definition:
                     f"{sorted(CRITERIA)}"
                 )
             CRITERIA[name].validate()
+        for name in self.train_only:
+            if name not in TRAIN_ONLY_CLASSES:
+                raise InvalidDefinitionError(
+                    f"definition {self.name!r} marks train-only class "
+                    f"{name!r}, which is not registered; registered classes "
+                    f"are {sorted(TRAIN_ONLY_CLASSES)}"
+                )
+            TRAIN_ONLY_CLASSES[name].validate()
 
     def required_columns(self) -> set[str]:
         columns = {"election_id", "election_year", "no_dem_candidate"}
         for name in self.criteria:
             columns.update(CRITERIA[name].columns)
+        for name in self.train_only:
+            columns.update(TRAIN_ONLY_CLASSES[name].columns)
         if self.response != RESPONSE_TWO_PARTY_OR_STRONGEST:
             columns.add(self.response)
         else:
@@ -184,6 +253,10 @@ class Definition:
             "write_in_threshold": self.write_in_threshold,
             "no_dem": self.no_dem,
             "criteria": ",".join(self.criteria) or "none",
+            # Spelled out rather than left blank: "scores every class it
+            # admits" is a statement the declaration should make, not one a
+            # reader should infer from an empty cell.
+            "train_only": ",".join(self.train_only) or "none",
             "description": self.description,
         }
 
@@ -241,6 +314,25 @@ register(
         # races, which it does by construction, was separately decided a small
         # improvement. See docs/definition_result.md.
         adopted=True,
+    )
+)
+# The adopted definition's races, scored over general elections only. Specials
+# stay in the frame and so in every fold's training set; none enters a holdout.
+# Eligibility, response, write-in threshold and no-Democrat treatment are the
+# adopted definition's unchanged, so any difference between the two is
+# attributable to the holdout population alone (design.md, D4).
+register(
+    Definition(
+        name="generals_only",
+        response=RESPONSE_TWO_PARTY_OR_STRONGEST,
+        write_in_threshold=BUILD_THRESHOLD,
+        no_dem=NO_DEM_EXCLUDE,
+        criteria=("contested_on_ballot_lines", "has_democrat"),
+        train_only=("special_elections",),
+        description=(
+            "the adopted definition, scoring general elections only; special "
+            "elections train every fold and enter no holdout"
+        ),
     )
 )
 # Question 3 in isolation: the same rule as `current` but for how races with no
@@ -474,6 +566,13 @@ def apply(
     frame["scoreable"] = True
     if definition.no_dem == NO_DEM_TRAIN_ONLY:
         frame["scoreable"] = ~frame["no_dem_candidate"].astype(bool)
+    # The same mechanism on a different predicate: a class withheld for the
+    # kind of contest it is rather than for its response. `generals_only`
+    # withholds special elections, which keeps 37 races of evidence in every
+    # fit while leaving the scored population general elections alone
+    # (design.md, D4).
+    for name in definition.train_only:
+        frame["scoreable"] &= ~TRAIN_ONLY_CLASSES[name].test(frame)
 
     frame["definition"] = definition.name
     return frame.reset_index(drop=True), pd.DataFrame(

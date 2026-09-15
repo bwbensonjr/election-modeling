@@ -25,6 +25,18 @@ RESPONSE = "response"
 # reference: incumbency coefficients read against an open seat.
 CATEGORICAL_LEVELS = {
     "incumbent_status": ["No_Incumbent", "Dem_Incumbent", "GOP_Incumbent"],
+    # The kind of electorate a race was decided by. One categorical rather than
+    # `pres_elec` alongside a signed midterm term, because restricted to
+    # general elections those two booleans have three joint levels and stating
+    # them as two hides both the saturation and which level the record barely
+    # holds (design.md, D1). The first level is the reference: every timing
+    # coefficient reads against a presidential ballot.
+    "ballot_timing": [
+        "presidential",
+        "midterm_dem_pres",
+        "midterm_gop_pres",
+        "special",
+    ],
 }
 
 # Categoricals are expanded into explicit indicator columns rather than left
@@ -42,6 +54,14 @@ CATEGORICAL_INDICATORS = {
         "levels": {
             "Dem_Incumbent": "incumbent_dem",
             "GOP_Incumbent": "incumbent_gop",
+        },
+    },
+    "ballot_timing": {
+        "reference": "presidential",
+        "levels": {
+            "midterm_dem_pres": "timing_midterm_dem_pres",
+            "midterm_gop_pres": "timing_midterm_gop_pres",
+            "special": "timing_special",
         },
     },
 }
@@ -88,6 +108,18 @@ DERIVED = {
     "pres_elec_x_incumbent_gop": {
         "from": ("pres_elec", "incumbent_status"),
         "description": "presidential-year timing interacted with Republican incumbency",
+    },
+    # Knowable before the race: `is_special` and the election date are fixed
+    # when the election is called, and which party holds the presidency is
+    # settled by an election held two or four years earlier. Nothing here is
+    # read from the result.
+    "ballot_timing": {
+        "from": ("is_special", "pres_elec", "election_year"),
+        "description": (
+            "the kind of electorate the race was decided by: presidential "
+            "ballot, midterm under a Democratic or a Republican president, or "
+            "a special election"
+        ),
     },
 }
 
@@ -231,21 +263,57 @@ def check_knowable(predictor: str) -> None:
         )
 
 
+def president_party(frame: "pd.DataFrame") -> "pd.Series":
+    """The party holding the presidency for each race's election year."""
+    party = frame["election_year"].map(PRESIDENT_PARTY)
+    if party.isna().any():
+        missing = sorted(frame.loc[party.isna(), "election_year"].unique().tolist())
+        raise ValueError(
+            f"no recorded presidential party for election years {missing}; "
+            "extend PRESIDENT_PARTY before scoring them"
+        )
+    return party
+
+
+# The columns `ballot_timing` is computed from. A frame missing any of them
+# simply does not get the column, which is what lets the synthetic frames the
+# refusal tests build stay as small as the refusal they exercise.
+BALLOT_TIMING_INPUTS = ("is_special", "pres_elec", "election_year")
+
+
+def ballot_timing_levels(frame: "pd.DataFrame") -> "pd.Series":
+    """Each race's ballot-timing level.
+
+    The single place a race is assigned a timing level. The predictor reads it
+    through `derive`, and the scorecard's segment reads the same column, so a
+    segment row and a coefficient cannot come to describe different races
+    (design.md, D5).
+
+    A special election takes `special` whatever year or ballot it fell on. No
+    special in the record has fallen on a presidential general date, so every
+    one of them carries `pres_elec = False`; coding them by the president's
+    party would describe a March special as the midterm-backlash electorate it
+    is not.
+    """
+    party = president_party(frame)
+    special = frame["is_special"].astype(bool)
+    presidential = frame["pres_elec"].astype(bool)
+    midterm = np.where(party == "D", "midterm_dem_pres", "midterm_gop_pres")
+    return pd.Series(
+        np.where(special, "special", np.where(presidential, "presidential", midterm)),
+        index=frame.index,
+    )
+
+
 def derive(races: "pd.DataFrame") -> "pd.DataFrame":
     """Add the derived predictor columns."""
     frame = races
     if "election_year" in frame.columns:
-        party = frame["election_year"].map(PRESIDENT_PARTY)
-        if party.isna().any():
-            missing = sorted(
-                frame.loc[party.isna(), "election_year"].unique().tolist()
-            )
-            raise ValueError(
-                f"no recorded presidential party for election years {missing}; "
-                "extend PRESIDENT_PARTY before scoring them"
-            )
+        party = president_party(frame)
         midterm = ~frame["pres_elec"].astype(bool)
         frame["national_env"] = midterm.astype(int) * party.map({"D": -1, "R": 1})
+    if set(BALLOT_TIMING_INPUTS) <= set(frame.columns):
+        frame["ballot_timing"] = ballot_timing_levels(frame)
     if "incumbent_status" in frame.columns:
         pres = frame["pres_elec"].astype(int)
         frame["pres_elec_x_incumbent_dem"] = pres * (
@@ -281,7 +349,10 @@ def prepare(races: "pd.DataFrame") -> "pd.DataFrame":
     whose training races happen to omit a level still produces a design matrix
     that accepts a holdout race carrying it.
     """
-    prepared = races.copy()
+    # Derived before the categoricals are expanded, because `ballot_timing` is
+    # both: a column computed from the table and a categorical whose indicators
+    # the design matrix carries.
+    prepared = derive(with_flags(races.copy()))
     for column, levels in CATEGORICAL_LEVELS.items():
         if column not in prepared.columns:
             continue
@@ -298,7 +369,7 @@ def prepare(races: "pd.DataFrame") -> "pd.DataFrame":
     for column in BOOLEAN_PREDICTORS:
         if column in prepared.columns:
             prepared[column] = prepared[column].astype(int)
-    return derive(with_flags(prepared))
+    return prepared
 
 
 # The scale of the half-normal prior on a group effect's standard deviation,
@@ -351,6 +422,54 @@ def group_intercept_prior(sigma: float = GROUP_SD_PRIOR_SCALE) -> Prior:
 def group_term(group: str) -> str:
     """The term name a group effect's prior is declared under."""
     return f"1|{group}"
+
+
+# The scale of the normal prior on a ballot-timing coefficient, in margin
+# points. Unlike most coefficients this one cannot be left to the fitting
+# library: a level the fold's training window never held has a flat likelihood,
+# so its posterior *is* its prior, and fold 2018-11-06 predicts 71 races on a
+# `midterm_gop_pres` coefficient of exactly that kind. Normal(0, 10) puts about
+# 95% of its mass within 20 margin points of no timing effect, which spans
+# every timing swing the record holds without licensing a hundred-point one.
+# Bambi's auto-scaled default is derived from the response's own spread and is
+# several times wider, which is a choice nobody made (design.md, D3).
+TIMING_PRIOR_SCALE = 10.0
+
+
+def timing_priors(sigma: float = TIMING_PRIOR_SCALE) -> dict:
+    """An explicit prior on every `ballot_timing` coefficient."""
+    prior = Prior("Normal", (("mu", 0.0), ("sigma", float(sigma))))
+    return {column: prior for column in expand("ballot_timing")}
+
+
+def level_counts(variant, prepared: "pd.DataFrame") -> dict:
+    """Training races at each declared level of each categorical declared.
+
+    Every declared level appears, including one no training race carries. A
+    zero here is the signal that the corresponding coefficient was drawn from
+    its prior rather than estimated, and it is only a signal if the level is
+    present to carry it (margin-model spec, "Level counts travel with the
+    fit").
+    """
+    counts = {}
+    for predictor in variant.predictors:
+        levels = CATEGORICAL_LEVELS.get(predictor)
+        if levels is None or predictor not in prepared.columns:
+            continue
+        observed = prepared[predictor].value_counts()
+        counts[predictor] = {
+            level: int(observed.get(level, 0)) for level in levels
+        }
+    return counts
+
+
+def render_level_counts(counts: dict) -> str:
+    """The level counts as one stable string, for publication."""
+    return "; ".join(
+        f"{predictor}: "
+        + ", ".join(f"{level}={n}" for level, n in levels.items())
+        for predictor, levels in sorted(counts.items())
+    )
 
 
 class UnknownPredictorError(ValueError):
@@ -486,12 +605,34 @@ class GroupedPredictorError(ValueError):
     """
 
 
+class CollinearPredictorError(ValueError):
+    """Two of a variant's own predictors are exactly collinear in a fold.
+
+    The same defect as a predictor its grouping factor spans -- two parameters
+    competing for one column, not separately identified -- arrived at without a
+    group effect. `national_env` is `pres_elec - 1` on every training window
+    whose midterms all fell under a Democratic president, and nothing refused
+    it while the confounding test only ever looked at grouping factors
+    (margin-model spec, "Two exactly collinear predictors are refused").
+    """
+
+
 # Below this many training races carrying within-group variation, a predictor
 # is fit but its identifying count is published, because a coefficient resting
 # on a handful of races out of hundreds should not read like one resting on all
 # of them (design.md, D5). Nothing branches on the value; it is a reporting
 # threshold.
 SEPARATING_RACES_DISCLOSED = 30
+
+# A pair of predictors is tested by grouping on the coarser of the two, which
+# is only meaningful while that column behaves as a factor. Group by a column
+# whose values are nearly all distinct and every level is a singleton, so the
+# other column is constant within each of them and `separating_races` returns
+# zero for any pair whatever -- `baseline` would be refused for carrying PVI_N
+# beside anything. Above this many distinct values a column is not a grouping,
+# and the pair is judged by exact linear dependence instead, which is the other
+# half of what the requirement names: "or is an exact affine function of it".
+PAIRWISE_GROUPING_LEVELS = 10
 
 
 def separating_races(frame: "pd.DataFrame", predictor: str, group: str) -> int:
@@ -511,7 +652,82 @@ def separating_races(frame: "pd.DataFrame", predictor: str, group: str) -> int:
     return int(counts.sum())
 
 
-def check_grouping(variant: "Variant", prepared: "pd.DataFrame") -> dict:
+def exactly_affine(frame: "pd.DataFrame", a: str, b: str) -> bool:
+    """Whether one column is an exact affine function of the other.
+
+    Exact linear dependence, not a strong relationship: a correlation of one in
+    magnitude means the two columns differ by a scale and a shift and so span a
+    single direction of the design matrix. Anything short of that is a
+    collinearity to report, not a specification error to refuse.
+    """
+    for column in (a, b):
+        if not pd.api.types.is_numeric_dtype(frame[column]):
+            return False
+        if frame[column].isna().any():
+            return False
+    with np.errstate(invalid="ignore", divide="ignore"):
+        matrix = np.corrcoef(
+            frame[a].to_numpy(dtype=float), frame[b].to_numpy(dtype=float)
+        )
+    return bool(np.isclose(abs(matrix[0, 1]), 1.0, atol=1e-10))
+
+
+def collinear_pair(frame: "pd.DataFrame", a: str, b: str) -> str:
+    """Why `a` and `b` are exactly collinear here, or "" if they are not.
+
+    A column with no variation in the training races is skipped rather than
+    refused. That is the unobserved-level case: a categorical level the fold's
+    training window never held has an all-zero indicator, which is a statement
+    about what the record holds and is disclosed through the published level
+    counts (design.md, D3).
+    """
+    if frame[a].nunique(dropna=False) < 2 or frame[b].nunique(dropna=False) < 2:
+        return ""
+    group, other = (a, b) if frame[a].nunique() <= frame[b].nunique() else (b, a)
+    if frame[group].nunique() <= PAIRWISE_GROUPING_LEVELS:
+        if separating_races(frame, other, group) == 0:
+            return (
+                f"{other!r} is constant within every level of {group!r}, so the "
+                "two are a single column carrying two parameters"
+            )
+    if exactly_affine(frame, a, b):
+        return f"{a!r} is an exact affine function of {b!r}"
+    return ""
+
+
+def check_collinear(
+    variant: "Variant", prepared: "pd.DataFrame", fold: object = None
+) -> None:
+    """Refuse a variant carrying two exactly collinear predictors.
+
+    Pairwise over the expanded design columns rather than a rank test on the
+    whole matrix: a rank deficiency says the matrix is singular without saying
+    which two terms to name, and the error message is the point. Pairwise also
+    leaves the all-zero indicator of an unobserved level alone, which a rank
+    test would not (design.md, D2).
+    """
+    columns = [
+        column
+        for predictor in variant.predictors
+        for column in expand(predictor)
+        if column in prepared.columns
+    ]
+    where = f" on fold {fold}" if fold is not None else ""
+    for i, a in enumerate(columns):
+        for b in columns[i + 1 :]:
+            reason = collinear_pair(prepared, a, b)
+            if reason:
+                raise CollinearPredictorError(
+                    f"variant {variant.name!r}{where}: predictors {a!r} and "
+                    f"{b!r} are exactly collinear across the "
+                    f"{len(prepared)} training races -- {reason} -- so they "
+                    "are not separately identified"
+                )
+
+
+def check_grouping(
+    variant: "Variant", prepared: "pd.DataFrame", fold: object = None
+) -> dict:
     """Refuse a predictor the variant's grouping factor already contains.
 
     Checked against the fold's own training races rather than the full table:
@@ -537,6 +753,10 @@ def check_grouping(variant: "Variant", prepared: "pd.DataFrame") -> dict:
                     )
                 if count < SEPARATING_RACES_DISCLOSED:
                     counts[f"{column}|{group}"] = count
+    # A grouping factor is one way two parameters end up over one column; two
+    # fixed effects are another, and the refusal is the same either way
+    # (margin-model spec, "Two exactly collinear predictors are refused").
+    check_collinear(variant, prepared, fold)
     return counts
 
 
@@ -940,6 +1160,48 @@ register(
         name="baseline_national_env",
         predictors=BASELINE_PREDICTORS + ("national_env",),
         description="the baseline plus a signed national-environment term",
+    )
+)
+# The same three timing groups `pres_elec` and `national_env` between them
+# described, declared as one categorical instead of two booleans. Restricted to
+# general elections there are exactly three of them, so intercept plus two
+# booleans was already saturated; stating them as two hid both that and the
+# fact that the third group is the single 2018 election. The categorical adds a
+# fourth level for special elections, which stay in training and would
+# otherwise have to be coded by the president's party -- the miscoding this
+# change exists to remove (design.md, D1).
+#
+# `pres_elec` and `national_env` are absent by construction: the categorical
+# supplies the whole timing contrast, and declaring either beside it is the
+# collinear pair the refusal now catches.
+TIMING_PREDICTORS = ("PVI_N", "incumbent_status", "ballot_timing")
+
+register(
+    Variant(
+        name="baseline_timing",
+        predictors=TIMING_PREDICTORS,
+        # An unobserved level's posterior is its prior, and fold 2018-11-06
+        # predicts 71 races on one. Left to the library the scale would be
+        # derived from the response's spread rather than from any judgement
+        # about plausible timing shifts (design.md, D3).
+        priors=timing_priors(),
+        description=(
+            "the baseline with ballot timing as one four-level categorical in "
+            "place of the pres_elec boolean"
+        ),
+    )
+)
+register(
+    Variant(
+        name="baseline_timing_money",
+        predictors=TIMING_PREDICTORS + ("money_logratio_primary",),
+        requires=("money_complete",),
+        as_of=RELATIVE_AS_OF["primary"],
+        priors=timing_priors(),
+        description=(
+            "the timing categorical plus the log ratio of Democratic to "
+            "opponent receipts, measured 14 days before the election"
+        ),
     )
 )
 

@@ -105,8 +105,10 @@ def paired_frame(
     operation with different hazards (compare_definitions.py).
     """
     predictions = predictions[predictions["definition"] == definition]
-    # Derived rather than read: the published predictions carry `pres_elec` and
-    # `is_special`, and the three-way split is a function of the two.
+    # Read from the predictions where they carry the level the race's own
+    # predictor held, and derived by the same function where they predate the
+    # column, so the comparison's segments and the variant's coefficients are
+    # labelled alike (design.md, D5).
     predictions = predictions.assign(
         ballot_timing=score.ballot_timing(predictions)
     )

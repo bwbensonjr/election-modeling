@@ -94,6 +94,7 @@ def run(
     variant_name: str = "baseline_money_logratio",
     definition_name: str | None = None,
     write: bool = True,
+    append: bool = False,
 ) -> pd.DataFrame:
     """Fit the full variant and every drop-one arm, and report all three measures."""
     variant = variants.get(variant_name)
@@ -176,7 +177,12 @@ def run(
         "drop_one_cost", ascending=False, ignore_index=True
     )
     if write:
-        config.write_csv(report.round(6), REPORT)
+        rounded = report.round(6)
+        if append:
+            # Measuring one variant's importance must not delete another's
+            # published rows, the same posture `score --append` takes.
+            rounded = config.merge_cells(rounded, REPORT, ["definition", "variant"])
+        config.write_csv(rounded, REPORT)
 
     print(f"\nfull model rmse {full_rmse:.3f} on {len(full_predictions)} holdout races")
     print("\ndrop-one cost in pooled RMSE (positive means the model needs it):")

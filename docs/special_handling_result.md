@@ -135,6 +135,13 @@ Every figure above is in `data/models/scorecard.csv` and
 `data/models/holdout_predictions.csv.gz`. The composite arm's per-race
 predictions carry a `component` column naming which fit produced each one.
 
+**The `ballot_timing` segment has been renamed since these figures were
+computed.** `presidential_general` became `presidential`, and
+`midterm_general` split into `midterm_dem_pres` and `midterm_gop_pres`. The
+figures above are quoted against the old three-level names; the midterm figure
+covers what are now two levels. See
+[`timing_result.md`](timing_result.md) for why the split was made.
+
 See [`scoring.md`](scoring.md) for the fold schedule and the `ballot_timing`
 segment, and [`is_special_result.md`](is_special_result.md) for the earlier
 two-arm version of this question under the year-based schedule.

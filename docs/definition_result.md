@@ -36,6 +36,7 @@ measured against the same denominator.**
 | `write_in_5pct` | 625 | 426 | 24 | 199 | 16.161 |
 | `no_dem_excluded` | 610 | 413 | 24 | 197 | 15.031 |
 | `no_dem_train_only` | 623 | 413 | 24 | 199 | 15.113 |
+| `generals_only` | 610 | 389 | 0 | 201 | 14.177 |
 
 These RMSEs are **not comparable to each other.** Each is computed over that
 definition's own holdout, against its own response. The next table is the one
@@ -167,6 +168,45 @@ leaves the mismatch in place.
 
 The adopted definition also excludes no-Democrat races by construction, which
 was separately decided a real improvement.
+
+## The sixth definition: `generals_only`
+
+Registered later, with the ballot-timing work, and **not adopted on this
+evidence.**
+
+It is `two_party_or_strongest` with special elections marked **train-only**:
+the same 610 races, the same response, the same threshold, the same
+no-Democrat treatment. All 37 admitted specials stay in every fold's training
+set and none enters a holdout. The holdout is **389 races over 6
+general-election dates**, against 413 over 23 — the schedule loses the 17
+special-election dates entirely, because a definition that scores no special
+has nothing to hold out on a date that carried only specials.
+
+Paired against the adopted definition on the races both hold out, using
+`baseline_timing` (the only variant scored under both at the time):
+
+| Against | Shared | `two_party_or_strongest` | `generals_only` | Difference | 90% interval | Verdict |
+|---|---|---|---|---|---|---|
+| `generals_only` | 389 | 13.426 | 13.422 | +0.004 | [-0.012, +0.022] | undecided |
+
+The response column is identical and the shift on shared races is exactly
+zero, so this isolates the training question alone: withholding 24 specials
+from the holdout changes what the models trained on, and it moved nothing.
+
+**Why that is not an argument for adopting it.** The 24 races exclusive to
+`two_party_or_strongest` are scored at RMSE **23.790** — the worst segment in
+the model by a wide margin. A definition that declines to score its hardest
+races posts a lower pooled figure for that reason alone, and the pooled
+`generals_only` number (14.177 for `baseline`, against 15.008) is mostly that
+effect rather than a better model. The existing definition-comparison
+procedure reports the exclusive races separately precisely so that cannot be
+banked as an improvement.
+
+What it is good for is isolating the timing question: with specials out of the
+holdout, a timing figure is about ballots rather than about a mixture of
+ballots and specials. See [`timing_result.md`](timing_result.md), where every
+result is reported under both definitions and none of them depends on the
+choice.
 
 ## What this supersedes
 

@@ -125,29 +125,6 @@ two_party,165479,2024,State Representative,5th Essex,fails eligibility criterion
 two_party,165524,2024,State Representative,7th Norfolk,fails eligibility criterion 'major_party': both a Democrat and a Republican stood
 two_party,165377,2024,State Representative,7th Worcester,fails eligibility criterion 'major_party': both a Democrat and a Republican stood
 two_party,165376,2024,State Senate,Bristol and Norfolk,fails eligibility criterion 'major_party': both a Democrat and a Republican stood
-two_party_or_strongest,126188,2014,State Representative,22nd Middlesex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,126285,2014,State Representative,5th Hampden,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,140929,2020,State Representative,10th Norfolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,140800,2020,State Senate,4th Middlesex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,140796,2020,State Senate,Cape and Islands,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,154477,2022,State Representative,11th Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,154500,2022,State Representative,13th Essex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,160299,2023,State Representative,9th Suffolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,160911,2024,State Representative,6th Worcester,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,165453,2024,State Representative,2nd Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
-two_party_or_strongest,105658,2010,State Senate,Plymouth and Norfolk,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,112809,2012,State Representative,22nd Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,130303,2016,State Representative,14th Bristol,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,131694,2018,State Representative,1st Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,140818,2020,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,154409,2022,State Representative,2nd Franklin,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,154340,2022,State Representative,7th Plymouth,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,154414,2022,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,154471,2022,State Senate,1st Essex and Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,165499,2024,State Representative,1st Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,165404,2024,State Representative,22nd Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,165371,2024,State Representative,2nd Franklin,fails eligibility criterion 'has_democrat': a Democrat stood
-two_party_or_strongest,165377,2024,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
 write_in_5pct,126188,2014,State Representative,22nd Middlesex,fewer than two candidates at a 5% write-in threshold
 write_in_5pct,126285,2014,State Representative,5th Hampden,fewer than two candidates at a 5% write-in threshold
 write_in_5pct,140929,2020,State Representative,10th Norfolk,fewer than two candidates at a 5% write-in threshold
@@ -189,3 +166,49 @@ no_dem_train_only,154500,2022,State Representative,13th Essex,"fails eligibility
 no_dem_train_only,160299,2023,State Representative,9th Suffolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
 no_dem_train_only,160911,2024,State Representative,6th Worcester,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
 no_dem_train_only,165453,2024,State Representative,2nd Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,126188,2014,State Representative,22nd Middlesex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,126285,2014,State Representative,5th Hampden,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,140929,2020,State Representative,10th Norfolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,140800,2020,State Senate,4th Middlesex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,140796,2020,State Senate,Cape and Islands,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,154477,2022,State Representative,11th Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,154500,2022,State Representative,13th Essex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,160299,2023,State Representative,9th Suffolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,160911,2024,State Representative,6th Worcester,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,165453,2024,State Representative,2nd Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+two_party_or_strongest,105658,2010,State Senate,Plymouth and Norfolk,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,112809,2012,State Representative,22nd Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,130303,2016,State Representative,14th Bristol,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,131694,2018,State Representative,1st Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,140818,2020,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,154409,2022,State Representative,2nd Franklin,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,154340,2022,State Representative,7th Plymouth,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,154414,2022,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,154471,2022,State Senate,1st Essex and Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,165499,2024,State Representative,1st Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,165404,2024,State Representative,22nd Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,165371,2024,State Representative,2nd Franklin,fails eligibility criterion 'has_democrat': a Democrat stood
+two_party_or_strongest,165377,2024,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,126188,2014,State Representative,22nd Middlesex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,126285,2014,State Representative,5th Hampden,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,140929,2020,State Representative,10th Norfolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,140800,2020,State Senate,4th Middlesex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,140796,2020,State Senate,Cape and Islands,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,154477,2022,State Representative,11th Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,154500,2022,State Representative,13th Essex,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,160299,2023,State Representative,9th Suffolk,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,160911,2024,State Representative,6th Worcester,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,165453,2024,State Representative,2nd Plymouth,"fails eligibility criterion 'contested_on_ballot_lines': two or more ballot lines, ignoring write-ins"
+generals_only,105658,2010,State Senate,Plymouth and Norfolk,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,112809,2012,State Representative,22nd Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,130303,2016,State Representative,14th Bristol,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,131694,2018,State Representative,1st Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,140818,2020,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,154409,2022,State Representative,2nd Franklin,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,154340,2022,State Representative,7th Plymouth,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,154414,2022,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,154471,2022,State Senate,1st Essex and Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,165499,2024,State Representative,1st Worcester,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,165404,2024,State Representative,22nd Middlesex,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,165371,2024,State Representative,2nd Franklin,fails eligibility criterion 'has_democrat': a Democrat stood
+generals_only,165377,2024,State Representative,7th Worcester,fails eligibility criterion 'has_democrat': a Democrat stood

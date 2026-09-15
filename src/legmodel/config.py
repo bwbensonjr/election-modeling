@@ -61,6 +61,33 @@ def load_roster() -> "pd.DataFrame":  # noqa: F821
     return pd.read_csv(RACE_CANDIDATE_ROSTER)
 
 
+def merge_cells(report, path, key):
+    """Replace the reported cells in a committed output, keeping the rest.
+
+    The same posture `score --append` takes: a run that recomputes some cells
+    of a published table must not delete the cells it did not recompute. The
+    key names what a cell is -- a comparison is identified by its two sides and
+    the definition it ran under -- and every row of the committed file matching
+    one of the reported cells is dropped before the fresh rows are added.
+    """
+    if not path.exists():
+        return report
+    import pandas as pd
+
+    existing = pd.read_csv(path)
+    if not set(key) <= set(existing.columns):
+        # Written before this key existed, so nothing in it can be matched
+        # against the fresh cells; replacing wholesale is the only honest
+        # option and the caller sees the row count change.
+        return report
+    fresh = {tuple(row) for row in report[key].astype(str).to_numpy().tolist()}
+    keep = [
+        tuple(row) not in fresh
+        for row in existing[key].astype(str).to_numpy().tolist()
+    ]
+    return pd.concat([existing[keep], report], ignore_index=True)
+
+
 def write_csv(frame, path, compress: bool | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if compress is None:
