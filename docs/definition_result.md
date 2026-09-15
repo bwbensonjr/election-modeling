@@ -1,5 +1,9 @@
 # The data-definition decision
 
+*Rescored under the date-based fold schedule; figures computed on the
+year-based schedule are superseded, not reproduced. Every verdict on this page
+survived the refold unchanged. See [`scoring.md`](scoring.md).*
+
 Questions 1 through 3 from the README — the two-party response, the write-in
 threshold, and races with no Democratic candidate — settled together, because
 each one rebuilds the training table and invalidates the scorecard. Deciding
@@ -26,12 +30,12 @@ measured against the same denominator.**
 
 | Definition | Races | Holdout | Specials | Smallest fold | Own RMSE |
 |---|---|---|---|---|---|
-| `current` | 623 | 424 | 24 | 199 | 15.611 |
-| `two_party` | 517 | 346 | 22 | 171 | 12.734 |
-| `two_party_or_strongest` | 610 | 413 | 24 | 197 | 15.012 |
-| `write_in_5pct` | 625 | 426 | 24 | 199 | 16.184 |
-| `no_dem_excluded` | 610 | 413 | 24 | 197 | 15.029 |
-| `no_dem_train_only` | 623 | 413 | 24 | 199 | 15.117 |
+| `current` | 623 | 424 | 24 | 199 | 15.612 |
+| `two_party` | 517 | 346 | 22 | 171 | 12.761 |
+| `two_party_or_strongest` | 610 | 413 | 24 | 197 | 15.008 |
+| `write_in_5pct` | 625 | 426 | 24 | 199 | 16.161 |
+| `no_dem_excluded` | 610 | 413 | 24 | 197 | 15.031 |
+| `no_dem_train_only` | 623 | 413 | 24 | 199 | 15.113 |
 
 These RMSEs are **not comparable to each other.** Each is computed over that
 definition's own holdout, against its own response. The next table is the one
@@ -44,11 +48,11 @@ with a paired bootstrap interval over those races.
 
 | Against | Shared | `current` | Other | Difference | 90% interval | Verdict |
 |---|---|---|---|---|---|---|
-| `two_party` | 346 | 12.423 | 12.734 | -0.311 | [-0.828, +0.380] | undecided |
-| `two_party_or_strongest` | 413 | 15.123 | 15.012 | +0.111 | [-0.236, +0.589] | undecided |
-| `write_in_5pct` | 424 | 15.611 | 15.631 | -0.020 | [-0.050, +0.007] | undecided |
-| `no_dem_excluded` | 413 | 15.123 | 15.029 | +0.094 | [+0.049, +0.143] | **`no_dem_excluded` lower** |
-| `no_dem_train_only` | 413 | 15.123 | 15.117 | +0.006 | [-0.011, +0.024] | undecided |
+| `two_party` | 346 | 12.447 | 12.761 | -0.314 | [-0.837, +0.384] | undecided |
+| `two_party_or_strongest` | 413 | 15.123 | 15.008 | +0.115 | [-0.237, +0.601] | undecided |
+| `write_in_5pct` | 424 | 15.612 | 15.607 | +0.006 | [-0.021, +0.029] | undecided |
+| `no_dem_excluded` | 413 | 15.123 | 15.031 | +0.092 | [+0.048, +0.138] | **`no_dem_excluded` lower** |
+| `no_dem_train_only` | 413 | 15.123 | 15.113 | +0.010 | [-0.008, +0.029] | undecided |
 
 In every case both models also trained on different race sets, so a difference
 isolates neither the response nor the eligibility rule on its own.
@@ -57,9 +61,9 @@ isolates neither the response nor the eligibility rule on its own.
 
 **Undecided, and the pooled figure is a trap.**
 
-On its own holdout `two_party` posts 12.734 against `current`'s 15.611 — a
+On its own holdout `two_party` posts 12.761 against `current`'s 15.612 — a
 2.9-point improvement that looks decisive. On the 346 races the two actually
-share, the difference is **-0.311 with an interval of [-0.828, +0.380]**.
+share, the difference is **-0.314 with an interval of [-0.837, +0.384]**.
 
 The gap is not accuracy. It is the **78 holdout races `two_party` drops, which
 `current` scores at an RMSE of 25.30**. Restricting to Democrat-versus-Republican
@@ -77,7 +81,7 @@ as the README anticipated.
 it — answers itself.** `two_party_or_strongest` recovers 93 of them by
 comparing the Democrat against the strongest non-Democrat where no Republican
 ran, keeps **24 holdout specials instead of 22**, and costs nothing measurable
-(+0.111, undecided). Specials are the scarce segment and the `is_special`
+(+0.115, undecided). Specials are the scarce segment and the `is_special`
 result already rests on only 24 of them. There is no case for paying 67
 holdout races and two specials for a restriction the data does not reward.
 
@@ -98,7 +102,7 @@ These are publishable races. The raw contested counts the README tabulates
 (+16, +10, +3, +1, +1, 0) run higher because six all-Democratic fields are
 contested but carry no non-Democratic candidate to measure a margin against.
 
-`current` against `write_in_5pct` is **-0.020 [-0.050, +0.007]**, undecided —
+`current` against `write_in_5pct` is **+0.006 [-0.021, +0.029]**, undecided —
 and because both name the same response, this comparison isolates the
 eligibility rule cleanly, with a response shift of exactly zero on all but one
 shared race.
@@ -122,14 +126,14 @@ race.
 **Decided: exclude them, from training as well as scoring.**
 
 This is the only definition comparison the data settles. `no_dem_excluded`
-against `current` is **+0.094 with an interval of [+0.049, +0.143]**, which
+against `current` is **+0.092 with an interval of [+0.048, +0.138]**, which
 excludes zero.
 
 The distinction between the two exclusion treatments is what makes this
 informative:
 
 - `no_dem_train_only` keeps the 13 races in training and withholds them from
-  scoring. Against `current` it is **+0.006 [-0.011, +0.024]** — undecided, as
+  scoring. Against `current` it is **+0.010 [-0.008, +0.029]** — undecided, as
   it must be, since both models trained on the same races and the comparison
   runs over the same 413. This is the control.
 - `no_dem_excluded` also removes them from training, and *that* is what
@@ -143,7 +147,7 @@ PVI-to-margin relationship across both.
 **Stated plainly, because the scorecard makes it easy to overstate:** most of
 the apparent improvement from dropping these races is removal, not accuracy.
 They are 11 holdout races scored at an RMSE of 28.41 against a pooled 15.12,
-and taking them out lowers the pooled figure mechanically. The +0.094 above is
+and taking them out lowers the pooled figure mechanically. The +0.092 above is
 the part that is *not* removal — measured on the 413 races that stay, it is the
 benefit of not training on them.
 
@@ -167,11 +171,14 @@ was separately decided a real improvement.
 ## What this supersedes
 
 The published baseline scorecard is recomputed. Under the adopted definition
-the baseline scores **15.012 over 413 races** rather than 15.611 over 424. The
+the baseline scores **15.008 over 413 races** rather than 15.612 over 424. The
 two are not the same measurement: different races, different response.
 
 `current` remains registered and scorable, so the old figures stay reproducible
-rather than merely archived. Its baseline now reads 15.611 against the
-committed 15.608 — the residual is MCMC noise, because the random seed now
-keys on the definition as well as the variant and fold. The holdout race set
-and every observed response are bit-identical.
+rather than merely archived. Its baseline now reads 15.612 against the 15.608
+committed before the definition machinery existed. That residual was MCMC
+noise from the seed gaining a definition component; it is now also a refold,
+since the seed keys on the fold and folds are election dates. The holdout race
+set and every observed response remain bit-identical — 424 races either way —
+which is the check that matters: the refold redistributed those races across
+23 folds rather than 10, and did not change which races are scored.

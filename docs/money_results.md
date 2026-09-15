@@ -2,9 +2,16 @@
 
 **Yes, and by more than any variable tested so far.** Under the adopted
 definition the log ratio of Democratic to opponent receipts, measured 14 days
-before each race's own election, lowers pooled RMSE from 15.070 to 13.370 --- a
-difference of **+1.700 points [+1.128, +2.255]**, decided. For comparison, the
-best previous variant, a hierarchical year intercept, was worth +0.804.
+before each race's own election, lowers pooled RMSE from 15.067 to 13.342 --- a
+difference of **+1.725 points [+1.156, +2.283]**, decided. For comparison, the
+best previous variant, a hierarchical election-date intercept, is worth
++0.663.
+
+*Rescored under the date-based fold schedule; the earlier figures were
+computed on year folds and are superseded, not reproduced. Every conclusion
+here survived the refold unchanged --- pooled RMSE moved by less than 0.03 for
+every money and spend variant, and the ordering is identical. See
+[`scoring.md`](scoring.md).*
 
 The effect is concentrated exactly where the prior said it would be: **+3.686
 [+2.481, +4.872] in open seats**, +1.501 [+0.872, +2.110] against a Republican
@@ -184,20 +191,20 @@ races, compared against `baseline` scored on those same races:
 
 | Variant | Predictor | RMSE | vs baseline | 90% interval | Verdict |
 |---|---|---|---|---|---|
-| `baseline_money_logratio` | `log((dem+1)/(opp+1))` | **13.370** | **+1.700** | [+1.128, +2.255] | decided |
-| `baseline_money_both` | `log1p(dem)`, `log1p(opp)` separately | 13.380 | +1.690 | [+1.123, +2.244] | decided |
-| `baseline_money_share` | dem / (dem + opp) | 13.524 | +1.546 | [+0.866, +2.191] | decided |
-| `baseline_money_diff` | (dem - opp) / 1000 | 14.744 | +0.327 | [+0.047, +0.596] | decided |
-| `baseline` | --- | 15.070 | --- | --- | --- |
+| `baseline_money_logratio` | `log((dem+1)/(opp+1))` | **13.342** | **+1.725** | [+1.156, +2.283] | decided |
+| `baseline_money_both` | `log1p(dem)`, `log1p(opp)` separately | 13.369 | +1.698 | [+1.128, +2.255] | decided |
+| `baseline_money_share` | dem / (dem + opp) | 13.512 | +1.555 | [+0.878, +2.199] | decided |
+| `baseline_money_diff` | (dem - opp) / 1000 | 14.744 | +0.322 | [+0.048, +0.588] | decided |
+| `baseline` | --- | 15.067 | --- | --- | --- |
 
 The ordering is stable across all four registered definitions. RMSE difference
 against `baseline` on each definition's own shared races:
 
 | Variant | `current` | `two_party` | `two_party_or_strongest` | `write_in_5pct` |
 |---|---|---|---|---|
-| `baseline_money_logratio` | +2.041 | +1.026 | +1.700 | +1.876 |
-| `baseline_money_both` | +2.000 | +0.990 | +1.690 | +1.863 |
-| `baseline_money_share` | +2.001 | +0.976 | +1.546 | +1.812 |
+| `baseline_money_logratio` | +2.060 | +1.115 | +1.725 | +1.863 |
+| `baseline_money_both` | +2.030 | +1.050 | +1.698 | +1.868 |
+| `baseline_money_share` | +2.025 | +1.025 | +1.555 | +1.818 |
 | `baseline_money_diff` | +0.378 | +0.348 | +0.327 | +0.383 |
 
 Every one of these is decided; none of the intervals spans zero. Log ratio and
@@ -216,8 +223,8 @@ numerically indistinguishable from no advantage at all. The log forms say that
 what matters is the *ratio* of resources, which is what a relative measure like
 a margin should be paired with.
 
-**Why `logratio` rather than `both`.** They cannot be separated: +1.700 against
-+1.690 on identical races. `logratio` is adopted because it is one term rather
+**Why `logratio` rather than `both`.** They cannot be separated: +1.725 against
++1.698 on identical races. `logratio` is adopted because it is one term rather
 than two and is already a contrast, so it cannot accidentally fit race salience
 the way two free coefficients on the two sides could. Nothing in the data
 decides between them, and this page says so rather than implying the numbers
@@ -229,7 +236,7 @@ chose.
 
 | Segment | Races | baseline | money | Difference | 90% interval | Verdict |
 |---|---|---|---|---|---|---|
-| Pooled | 398 | 15.070 | 13.370 | +1.700 | [+1.128, +2.255] | decided |
+| Pooled | 398 | 15.067 | 13.342 | +1.725 | [+1.156, +2.283] | decided |
 | **No incumbent** | 109 | 17.983 | 14.297 | **+3.686** | [+2.481, +4.872] | decided |
 | Republican incumbent | 87 | 12.609 | 11.108 | +1.501 | [+0.872, +2.110] | decided |
 | **Democratic incumbent** | 202 | 14.300 | 13.739 | +0.561 | [-0.186, +1.277] | **undecided** |
@@ -253,7 +260,7 @@ The same contrast at the second window, 60 days out instead of 14:
 
 | Window | As-of | RMSE | vs baseline | 90% interval |
 |---|---|---|---|---|
-| `primary` | 14 days before the election | 13.370 | +1.700 | [+1.128, +2.255] |
+| `primary` | 14 days before the election | 13.342 | +1.725 | [+1.156, +2.283] |
 | `wide` | 60 days before the election | 13.536 | +1.534 | [+0.982, +2.094] |
 
 **The result is not an artifact of the cutoff.** Moving the measurement six
@@ -266,10 +273,10 @@ point. Against `baseline` on each definition's shared races:
 
 | Definition | 14 days | 60 days |
 |---|---|---|
-| `current` | +2.041 | +1.832 |
-| `two_party` | +1.026 | **+1.126** |
-| `two_party_or_strongest` | +1.700 | +1.534 |
-| `write_in_5pct` | +1.876 | +1.820 |
+| `current` | +2.060 | +1.830 |
+| `two_party` | +1.115 | **+1.170** |
+| `two_party_or_strongest` | +1.725 | +1.547 |
+| `write_in_5pct` | +1.863 | +1.812 |
 
 The earlier window wins under `two_party` and loses under the other three, by
 margins far smaller than either variant's interval. The data does not separate
@@ -311,11 +318,11 @@ Against `baseline`, under the adopted definition, on the same 398 races:
 
 | Variant | RMSE | vs baseline | 90% interval |
 |---|---|---|---|
-| `baseline_spend_both` | **13.018** | **+2.052** | [+1.420, +2.696] |
-| `baseline_spend_logratio` | 13.048 | +2.022 | [+1.414, +2.636] |
-| `baseline_money_logratio` (receipts) | 13.370 | +1.700 | [+1.128, +2.255] |
-| `baseline_spend_share` | 13.573 | +1.497 | [+0.905, +2.071] |
-| `baseline_spend_diff` | 14.843 | +0.227 | [+0.039, +0.416] |
+| `baseline_spend_both` | **12.995** | **+2.071** | [+1.437, +2.719] |
+| `baseline_spend_logratio` | 13.049 | +2.017 | [+1.408, +2.637] |
+| `baseline_money_logratio` (receipts) | 13.342 | +1.725 | [+1.156, +2.283] |
+| `baseline_spend_share` | 13.561 | +1.506 | [+0.914, +2.079] |
+| `baseline_spend_diff` | 14.825 | +0.242 | [+0.054, +0.428] |
 
 **Spending reproduces the receipts ordering exactly**: log ratio and the
 two-term form tied and best, the share behind them, the raw difference far
@@ -352,7 +359,7 @@ breakdown. `baseline_spend_logratio` against `baseline`:
 
 | Segment | Races | Difference | 90% interval | Receipts, same segment |
 |---|---|---|---|---|
-| Pooled | 398 | +2.022 | [+1.414, +2.636] | +1.700 |
+| Pooled | 398 | +2.071 | [+1.437, +2.719] | +1.725 |
 | No incumbent | 109 | **+3.956** | [+2.489, +5.356] | +3.686 |
 | Republican incumbent | 87 | +1.454 | [+0.836, +2.029] | +1.501 |
 | **Democratic incumbent** | 202 | **+1.046** | [+0.368, +1.768] | **+0.561, undecided** |

@@ -175,7 +175,7 @@ for _measure, _spec in MONEY_MEASURES.items():
         )
 del _measure, _spec, _p, _noun, _verb, _window, _when, _dem, _opp
 
-# A predictor computed from the fold year's own results would leak the outcome
+# A predictor computed from the fold's own results would leak the outcome
 # into the fit. None of the derived predictors may be built from these.
 OUTCOME_COLUMNS = frozenset(
     {
@@ -208,26 +208,26 @@ class LeakingPredictorError(ValueError):
 
 
 def check_knowable(predictor: str) -> None:
-    """Refuse a predictor built from the fold year's own outcome.
+    """Refuse a predictor built from the fold's own outcome.
 
-    Every predictor must be derivable before its fold year begins. A predictor
+    Every predictor must be derivable before its fold's election date. A predictor
     built from vote counts is knowable only once the election has happened, so
     a fit using it would be reading the answer (margin-model spec, "A predictor
-    must be knowable before its fold year").
+    must be knowable before its fold's election date").
     """
     spec = DERIVED.get(predictor)
     if spec is None:
         if predictor in OUTCOME_COLUMNS:
             raise LeakingPredictorError(
                 f"predictor {predictor!r} is an outcome of the race being "
-                "predicted, so it is not knowable before the fold year"
+                "predicted, so it is not knowable before its election date"
             )
         return
     leaking = sorted(set(spec["from"]) & OUTCOME_COLUMNS)
     if leaking:
         raise LeakingPredictorError(
             f"derived predictor {predictor!r} is computed from {leaking}, which "
-            "is only known once the fold year's elections have happened"
+            "is only known once the fold's election has happened"
         )
 
 
@@ -298,7 +298,7 @@ def prepare(races: "pd.DataFrame") -> "pd.DataFrame":
     for column in BOOLEAN_PREDICTORS:
         if column in prepared.columns:
             prepared[column] = prepared[column].astype(int)
-    return derive(prepared)
+    return derive(with_flags(prepared))
 
 
 # The scale of the half-normal prior on a group effect's standard deviation,
@@ -427,6 +427,54 @@ class UnknownVariantError(KeyError):
     """A variant name is not registered."""
 
 
+class CoarseGroupingError(ValueError):
+    """A grouping factor's levels span more than one fold.
+
+    A fold is one election date, so a factor coarser than that -- a calendar
+    year, say -- has levels holding races from several folds. The holdout's own
+    level is then partially observed: predicting a November general, the year
+    effect would be estimated from the specials held earlier that year and
+    applied to the whole chamber. That is not a modelling trade-off, it is an
+    effect estimated from the wrong population, so it is refused rather than
+    disclosed (margin-model spec, "A group effect groups no coarser than the
+    fold").
+    """
+
+
+# The column a fold is keyed on. A grouping factor must be determined by it:
+# each level of the factor must lie inside a single election date.
+FOLD_GRAIN = "election_date"
+
+
+def check_grouping_grain(variant: "Variant", races: "pd.DataFrame") -> None:
+    """Refuse a grouping factor coarser than the fold.
+
+    Unlike `check_grouping`, which genuinely depends on which races a fold
+    trains on, this is a property of the table: whether a factor's levels can
+    span two election dates does not change fold by fold. So it is checked once
+    against the whole table, and a variant declaring `election_year` fails at
+    registration rather than 23 times over.
+    """
+    if FOLD_GRAIN not in races.columns:
+        return
+    for group in variant.group_effects:
+        if group not in races.columns or group == FOLD_GRAIN:
+            continue
+        spanning = races.groupby(group)[FOLD_GRAIN].nunique()
+        offenders = spanning[spanning > 1]
+        if not offenders.empty:
+            example = offenders.index[0]
+            raise CoarseGroupingError(
+                f"variant {variant.name!r} groups on {group!r}, whose levels "
+                f"span more than one election date ({len(offenders)} of "
+                f"{len(spanning)} do; {example!r} spans "
+                f"{int(offenders.iloc[0])}). A fold is one election date, so "
+                f"the holdout's own {group!r} level would be partially "
+                f"observed from races the fold trains on. Group on "
+                f"{FOLD_GRAIN!r} instead."
+            )
+
+
 class GroupedPredictorError(ValueError):
     """A predictor is spanned by the variant's own grouping factor.
 
@@ -530,6 +578,10 @@ class Variant:
     requires: tuple[str, ...] = ()
 
     @property
+    def is_composite(self) -> bool:
+        return False
+
+    @property
     def formula(self) -> str:
         terms = [column for p in self.predictors for column in expand(p)]
         terms += [f"(1|{group})" for group in self.group_effects]
@@ -555,8 +607,15 @@ class Variant:
             f"{term} ~ {self.priors[term]}" for term in sorted(self.priors)
         )
 
-    def validate(self, columns) -> None:
-        """Fail loudly on a predictor the table does not carry."""
+    def validate(self, columns, races: "pd.DataFrame | None" = None) -> None:
+        """Fail loudly on a predictor the table does not carry.
+
+        `races` is optional because the per-fold validation in `fit.py` has
+        only the training columns to hand. When a caller does have the frame,
+        the grouping factor's grain is checked against it too -- a property of
+        the table rather than of a fold, so checking it once at the top of a
+        scoring run beats failing identically on every fold.
+        """
         for predictor in self.predictors:
             check_knowable(predictor)
         dated = [p for p in self.predictors if p in DATED_PREDICTORS]
@@ -578,9 +637,10 @@ class Variant:
                     "the spread of the effect being estimated"
                 )
         available = set(columns) | set(DERIVED)
+        requirable = set(columns) | set(DERIVED_FLAGS)
         missing = [p for p in self.predictors if p not in available]
         missing += [g for g in self.group_effects if g not in set(columns)]
-        missing += [c for c in self.requires if c not in set(columns)]
+        missing += [c for c in self.requires if c not in requirable]
         if missing:
             raise UnknownPredictorError(
                 f"variant {self.name!r} names {missing} which the race table "
@@ -591,9 +651,152 @@ class Variant:
                 f"variant {self.name!r} has response {self.response!r} which the "
                 "race table does not carry"
             )
+        if races is not None:
+            check_grouping_grain(self, races)
 
 
 BASELINE_PREDICTORS = ("PVI_N", "incumbent_status", "pres_elec")
+
+class CompositeRoutingError(ValueError):
+    """A race matched no component of a composite variant, or more than one."""
+
+
+@dataclass(frozen=True)
+class CompositeVariant:
+    """Two component variants plus a predicate saying which predicts what.
+
+    The components are ordinary `Variant`s, so priors, sampler settings,
+    diagnostics, the knowability checks and the confounding refusal are all
+    the machinery a single-fit variant already uses. What a composite adds is
+    only the routing: each holdout race is predicted by exactly one component,
+    chosen by its own value of `route_on`.
+
+    This exists for `special_split`, where the question is not which term to
+    add but whether special elections belong in the general-election fit at
+    all. A component may be fit on a subset of the fold's training races, which
+    it declares through its own `requires` (margin-model spec, "A variant may
+    be composite").
+    """
+
+    name: str
+    # Keyed by the value of `route_on` the component predicts. Boolean keys,
+    # since the predicate is a boolean column.
+    components: dict
+    route_on: str
+    description: str = ""
+
+    @property
+    def is_composite(self) -> bool:
+        return True
+
+    @property
+    def declared(self) -> str:
+        parts = [
+            f"{value}: {component.declared}"
+            for value, component in sorted(self.components.items())
+        ]
+        return f"route on {self.route_on} -- " + "; ".join(parts)
+
+    @property
+    def prior_declaration(self) -> str:
+        return "; ".join(
+            f"{value}: {component.prior_declaration}"
+            for value, component in sorted(self.components.items())
+            if component.prior_declaration
+        )
+
+    @property
+    def requires(self) -> tuple:
+        """What the composite as a whole needs on every race it scores.
+
+        The intersection of its components' requirements, not the union: a
+        column one component needs is not needed by races the other predicts.
+        Each component's own `requires` still restricts its own fit.
+        """
+        sets = [set(c.requires) for c in self.components.values()]
+        common = set.intersection(*sets) if sets else set()
+        return tuple(sorted(common))
+
+    @property
+    def as_of(self) -> str:
+        declared = {c.as_of for c in self.components.values() if c.as_of}
+        return sorted(declared)[0] if len(declared) == 1 else ""
+
+    @property
+    def target_accept(self):
+        return None
+
+    @property
+    def tune(self):
+        return None
+
+    @property
+    def group_effects(self) -> tuple:
+        return ()
+
+    @property
+    def predictors(self) -> tuple:
+        """Every predictor either component declares, for reporting only.
+
+        A composite has no single design matrix, so this is the union rather
+        than a formula. Nothing fits against it.
+        """
+        seen = []
+        for component in self.components.values():
+            for predictor in component.predictors:
+                if predictor not in seen:
+                    seen.append(predictor)
+        return tuple(seen)
+
+    def validate(self, columns, races: "pd.DataFrame | None" = None) -> None:
+        if self.route_on not in set(columns):
+            raise UnknownPredictorError(
+                f"composite variant {self.name!r} routes on {self.route_on!r}, "
+                f"which the race table does not carry; available columns are "
+                f"{sorted(set(columns))}"
+            )
+        if len(self.components) < 2:
+            raise UnknownPredictorError(
+                f"composite variant {self.name!r} declares "
+                f"{len(self.components)} component(s); a composite is two or "
+                "more, or it is just a variant"
+            )
+        for component in self.components.values():
+            component.validate(columns, races)
+
+    def route(self, races: "pd.DataFrame") -> dict:
+        """Split races by the routing predicate, one group per component.
+
+        Every race must match exactly one component. A race matching none is
+        named rather than dropped, and an overlap is impossible by
+        construction here but checked anyway, because a silently doubled
+        prediction would corrupt the pooled score rather than fail
+        (margin-model spec, "Every holdout race is routed to exactly one
+        component").
+        """
+        if self.route_on not in races.columns:
+            raise CompositeRoutingError(
+                f"composite variant {self.name!r} routes on "
+                f"{self.route_on!r}, absent from the frame being routed"
+            )
+        values = races[self.route_on].astype(bool)
+        groups, assigned = {}, pd.Series(0, index=races.index)
+        for value, component in self.components.items():
+            mask = values == bool(value)
+            assigned += mask.astype(int)
+            groups[value] = races[mask]
+        unmatched = races[assigned == 0]
+        doubled = races[assigned > 1]
+        if len(unmatched) or len(doubled):
+            bad = pd.concat([unmatched, doubled])
+            names = ", ".join(str(v) for v in bad["election_id"].head(5))
+            raise CompositeRoutingError(
+                f"composite variant {self.name!r} routed {len(unmatched)} "
+                f"race(s) to no component and {len(doubled)} to more than "
+                f"one, on {self.route_on!r}; first affected: {names}"
+            )
+        return groups
+
 
 REGISTRY: dict[str, Variant] = {}
 
@@ -610,11 +813,60 @@ register(
         description="the established model in mapoli/model/ma_leg_model.R",
     )
 )
+# The three special-election handling arms. Every special election in the
+# record carries `pres_elec = False` -- none has ever fallen on a presidential
+# general date -- so specials sit inside the `pres_elec` segment and inside
+# the identification of `pres_elec` itself. Whether they belong in the
+# general-election fit at all is therefore a question, not an assumption, and
+# it is settled by comparing three arms rather than by adding one term
+# (margin-model spec, "The three special-election handling arms are
+# registered").
+#
+# Arm A: specials in training and holdout, distinguished by a term. This is
+# the former `baseline_special`, renamed.
 register(
     Variant(
-        name="baseline_special",
+        name="special_pooled_term",
         predictors=BASELINE_PREDICTORS + ("is_special",),
-        description="the baseline plus a special-election term",
+        description="specials pooled into one fit, with an is_special term",
+    )
+)
+# Arm B: specials in training and holdout, undistinguished. Identical in
+# substance to `baseline`; registered under its own name so the three arms
+# read as a set, and asserted equal to `baseline` as a regression test on the
+# composite plumbing (tasks 3.6).
+register(
+    Variant(
+        name="special_pooled_plain",
+        predictors=BASELINE_PREDICTORS,
+        description="specials pooled into one fit, with no is_special term",
+    )
+)
+# Arm C: two fits. The general component never sees a special election, in
+# training or in holdout. The special component trains on everything -- the
+# general races are the prior information its handful of specials cannot
+# supply alone -- and is only ever asked about specials.
+register(
+    CompositeVariant(
+        name="special_split",
+        components={
+            False: Variant(
+                name="special_split_general",
+                predictors=BASELINE_PREDICTORS,
+                requires=("not_special",),
+                description="general elections only, fit without specials",
+            ),
+            True: Variant(
+                name="special_split_special",
+                predictors=BASELINE_PREDICTORS + ("is_special",),
+                description="all races, with an is_special term, predicting specials",
+            ),
+        },
+        route_on="is_special",
+        description=(
+            "a general-election model excluding specials entirely, and a "
+            "special-election model fit on all races, each predicting its own"
+        ),
     )
 )
 # Question 5: deferred from the baseline change, one registry entry.
@@ -636,39 +888,49 @@ register(
         description="the baseline plus presidential-year by incumbency interaction",
     )
 )
-# `pres_elec` is a property of the calendar year, so a per-year intercept
-# already contains it: across the adopted definition's 610 races it varies
-# within a year only in 2016 and 2020, on 8 races, and within an early fold's
-# training window not at all. Carrying both asks the sampler to split one
-# column between two parameters, which is the ridge the original fits diverged
-# along. The year variant therefore drops it, which also stops it being nested
-# in `baseline` -- a fact its comparison has to state (design.md, D3).
+# A hierarchical intercept per election date. It groups on the date rather
+# than the calendar year because a fold is one election date: a year-level
+# effect would leave the holdout's own level partially observed from races the
+# fold trains on -- predicting the 2016 general, the 2016 effect would come
+# from three specials held six months earlier and apply to 59 general races.
+# Grouping at the fold's own grain keeps the holdout level unobserved and drawn
+# from the hyperprior, which is the forward-prediction posture the variant
+# claims anyway (margin-model spec, "A group effect groups no coarser than the
+# fold").
+#
+# It drops `pres_elec`, which is a property of the election date and so is
+# constant within every level of this grouping by construction. That is checked
+# per fold from the training races rather than asserted here; the contrast arm
+# below is what makes the removal a measurement. Dropping it also stops the
+# variant being nested in `baseline` -- a fact its comparison has to state.
 register(
     Variant(
         name="baseline_year",
         predictors=("PVI_N", "incumbent_status"),
-        group_effects=("election_year",),
-        priors={group_term("election_year"): group_intercept_prior()},
+        group_effects=("election_date",),
+        priors={group_term("election_date"): group_intercept_prior()},
         target_accept=0.95,
         description=(
-            "the baseline plus a hierarchical year intercept, minus the "
-            "pres_elec term the year effect contains"
+            "the baseline plus a hierarchical election-date intercept, minus "
+            "the pres_elec term that intercept contains"
         ),
     )
 )
 # The contrast arm: the same variant keeping `pres_elec`, under the same prior
 # and the same sampler setting, so that dropping the term is evidence rather
-# than assertion. It is refused outright on the folds where the confounding is
-# exact, which is itself the evidence (design.md, D3).
+# than assertion. Under a date grouping the confounding is exact on every fold
+# rather than only the early ones, so this arm is expected to be refused
+# throughout -- which is the same evidence the year-grouped arm gave, stated
+# more sharply.
 register(
     Variant(
         name="baseline_year_pres",
         predictors=BASELINE_PREDICTORS,
-        group_effects=("election_year",),
-        priors={group_term("election_year"): group_intercept_prior()},
+        group_effects=("election_date",),
+        priors={group_term("election_date"): group_intercept_prior()},
         target_accept=0.95,
         description=(
-            "the year-intercept variant retaining pres_elec, as the contrast "
+            "the date-intercept variant retaining pres_elec, as the contrast "
             "arm for dropping it"
         ),
     )
@@ -761,6 +1023,40 @@ def resolve(names=None) -> list[Variant]:
     return [get(name) for name in names]
 
 
+# Boolean flags a variant may name in `requires` that the race table does not
+# carry directly. They exist so a component of a composite variant can say
+# which population it is fit on through the mechanism that already restricts
+# the money variants, rather than through a second one: the general-election
+# component of `special_split` declares `requires=("not_special",)` and is
+# thereby excluded from special elections in training and holdout alike.
+DERIVED_FLAGS = {
+    "not_special": {
+        "from": ("is_special",),
+        "compute": lambda frame: ~frame["is_special"].astype(bool),
+        "description": "the race is a general election, not a special",
+    },
+}
+
+
+def with_flags(races: "pd.DataFrame") -> "pd.DataFrame":
+    """Add the derived boolean flags a variant may require.
+
+    Computed before `restrict` rather than in `prepare`, because a variant's
+    `requires` is applied to the race table ahead of fold construction and so
+    runs before anything has been prepared.
+    """
+    frame = races
+    for name, spec in DERIVED_FLAGS.items():
+        if name in frame.columns:
+            continue
+        if not set(spec["from"]) <= set(frame.columns):
+            continue
+        if frame is races:
+            frame = races.copy()
+        frame[name] = spec["compute"](frame)
+    return frame
+
+
 def restrict(variant: "Variant", races: "pd.DataFrame") -> "pd.DataFrame":
     """The races a variant's declared requirements admit.
 
@@ -770,6 +1066,7 @@ def restrict(variant: "Variant", races: "pd.DataFrame") -> "pd.DataFrame":
     """
     if not variant.requires:
         return races
+    races = with_flags(races)
     keep = pd.Series(True, index=races.index)
     for column in variant.requires:
         if column not in races.columns:

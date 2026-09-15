@@ -29,6 +29,7 @@ INTERVAL_PERCENTILES = (5, 95)
 # reported per incumbency segment").
 COMPARISON_SEGMENTS = [
     "is_special",
+    "ballot_timing",
     "office",
     "pres_elec",
     "no_dem_candidate",
@@ -55,9 +56,34 @@ def term_difference(left: str, right: str) -> tuple[list, list]:
     return sorted(right_terms - left_terms), sorted(left_terms - right_terms)
 
 
+def _components(name: str) -> str:
+    """A composite's components and the population each predicts, or ""."""
+    variant = variants_module.get(name)
+    if not getattr(variant, "is_composite", False):
+        return ""
+    return "; ".join(
+        f"{variant.route_on}={value}: {component.name}"
+        + (f" (requires {','.join(component.requires)})" if component.requires else "")
+        for value, component in sorted(variant.components.items())
+    )
+
+
 def nesting_label(left: str, right: str) -> tuple[str, str, str]:
-    """How the two variants are related, as (label, added, removed)."""
+    """How the two variants are related, as (label, added, removed).
+
+    A composite is never nested in a single-fit variant, whatever their
+    predictor sets look like: it is two fits over two populations, so the
+    difference cannot be read as the effect of a term either of them carries
+    (margin-model spec, "A composite variant is compared race by race").
+    """
     added, removed = term_difference(left, right)
+    composites = [name for name in (left, right) if _components(name)]
+    if composites:
+        return (
+            "non-nested",
+            ",".join(added),
+            ",".join(removed),
+        )
     if not added and not removed:
         label = "identical"
     elif added and removed:
@@ -79,6 +105,11 @@ def paired_frame(
     operation with different hazards (compare_definitions.py).
     """
     predictions = predictions[predictions["definition"] == definition]
+    # Derived rather than read: the published predictions carry `pres_elec` and
+    # `is_special`, and the three-way split is a function of the two.
+    predictions = predictions.assign(
+        ballot_timing=score.ballot_timing(predictions)
+    )
     columns = ["election_id", "fold", "squared_error", "observed", "prediction"]
     segments = score.SEGMENTS + [
         s for s in COMPARISON_SEGMENTS if s not in score.SEGMENTS
@@ -136,7 +167,9 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
         "races_favouring_right": int((paired["squared_error_difference"] > 0).sum()),
         # Marked rather than omitted: a segment too small to carry weight is
         # still evidence about where a variant helps, and suppressing it would
-        # hide the odd-year folds, which are the special-election evidence.
+        # hide the special-date folds, which are the special-election
+        # evidence. Under a date schedule most folds are one of those: 17 of
+        # the 23 hold a single special election apiece.
         "small_sample": len(paired) < score.SMALL_SAMPLE,
     }
 
@@ -175,6 +208,10 @@ def run(
     )
 
     nesting, added, removed = nesting_label(left, right)
+    for name in (left, right):
+        detail = _components(name)
+        if detail:
+            print(f"  COMPOSITE {name!r}: {detail}")
     if nesting == "non-nested":
         # Said before the numbers, because the numbers are what invite the
         # misreading: this difference is not the effect of a single term.
@@ -195,6 +232,8 @@ def run(
     report["nesting"] = nesting
     report["terms_added"] = added
     report["terms_removed"] = removed
+    report["left_components"] = _components(left)
+    report["right_components"] = _components(right)
     report["bootstrap_resamples"] = BOOTSTRAP_RESAMPLES
     report["bootstrap_seed"] = BOOTSTRAP_SEED
     if write:

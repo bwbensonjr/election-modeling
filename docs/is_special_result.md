@@ -1,5 +1,21 @@
 # Does `is_special` improve the baseline?
 
+> **Superseded.** Every figure on this page was computed under the
+> **year-based** fold schedule, before folds became one per election date, and
+> names `baseline_special`, which is now registered as `special_pooled_term`.
+> The figures are superseded rather than reproduced: the fit seed is derived
+> from the fold, so refolding reseeds every fit.
+>
+> The question itself has also widened. Asking whether to *add a term*
+> presumes special elections belong in the general-election fit, which is the
+> assumption now under test. For the current answer see
+> [`special_handling_result.md`](special_handling_result.md), which scores
+> three arms rather than two.
+>
+> This page is kept because its reasoning still holds --- a pooled null that
+> hides two real and opposite segment effects --- and because the three-arm
+> result reaches the same conclusion by a wider route.
+
 The first question put to the scoring harness in
 [`scoring.md`](scoring.md): does adding a special-election term to the
 baseline model lower holdout error?

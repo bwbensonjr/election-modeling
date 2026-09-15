@@ -1,6 +1,6 @@
 definition,variant,predictor,parameter,coefficient,eti89_lb,eti89_ub,fold_min,fold_max,contribution_sd,contribution_iqr,predictor_sd,drop_one_rmse,drop_one_cost,ci_low,ci_high,decided
-two_party_or_strongest,baseline_money_logratio,PVI_N,PVI_N,1.445171,1.339608,1.550957,1.403945,1.653508,13.082858,15.729684,9.052808,17.264011,3.894071,2.70228,5.084001,True
-two_party_or_strongest,baseline_money_logratio,incumbent_status,incumbent_dem,7.708198,5.635752,9.811014,7.708198,10.78973,9.464683,7.708198,0.498147,15.878931,2.508991,1.84204,3.175307,True
-two_party_or_strongest,baseline_money_logratio,incumbent_status,incumbent_gop,-18.049858,-20.834498,-15.243735,-18.881189,-16.625389,9.464683,7.708198,0.383145,15.878931,2.508991,1.84204,3.175307,True
-two_party_or_strongest,baseline_money_logratio,money_logratio_primary,money_logratio_primary,3.862513,3.377866,4.341861,3.282489,4.126598,8.00954,7.98047,2.07366,15.026332,1.656393,1.07752,2.22826,True
-two_party_or_strongest,baseline_money_logratio,pres_elec,pres_elec,7.085337,5.188576,8.938164,7.085337,13.504338,3.449644,7.085337,0.486871,12.647795,-0.722144,-1.115712,-0.319513,True
+two_party_or_strongest,baseline_money_logratio,PVI_N,PVI_N,1.446069,1.343323,1.550609,1.402494,1.653338,13.090987,15.739458,9.052808,17.272506,3.931006,2.736169,5.116493,True
+two_party_or_strongest,baseline_money_logratio,incumbent_status,incumbent_dem,7.703696,5.639719,9.734893,7.393795,10.768281,9.464845,7.703696,0.498147,15.881748,2.540248,1.873345,3.204792,True
+two_party_or_strongest,baseline_money_logratio,incumbent_status,incumbent_gop,-18.055165,-20.917457,-15.288281,-18.962324,-16.63661,9.464845,7.703696,0.383145,15.881748,2.540248,1.873345,3.204792,True
+two_party_or_strongest,baseline_money_logratio,money_logratio_primary,money_logratio_primary,3.863251,3.393655,4.341025,3.272415,4.136044,8.011071,7.981995,2.07366,15.010493,1.668993,1.095543,2.231715,True
+two_party_or_strongest,baseline_money_logratio,pres_elec,pres_elec,7.086662,5.237376,8.971599,7.086662,13.543981,3.450289,7.086662,0.486871,12.636997,-0.704503,-1.099787,-0.298918,True

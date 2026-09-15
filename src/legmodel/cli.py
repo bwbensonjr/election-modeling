@@ -2,7 +2,7 @@
 
     uv run legmodel score
     uv run legmodel score --variants baseline
-    uv run legmodel compare baseline baseline_special
+    uv run legmodel compare special_pooled_plain special_pooled_term special_split
     uv run legmodel importance
     uv run legmodel parity
 """
@@ -38,6 +38,14 @@ def main(argv: list[str] | None = None) -> int:
         "--no-write",
         action="store_true",
         help="print results without writing the committed outputs",
+    )
+    score_cmd.add_argument(
+        "--schedule-change",
+        action="store_true",
+        help=(
+            "declare that the fold schedule changed, so every figure is "
+            "superseded rather than compared against the committed ones"
+        ),
     )
 
     compare_cmd = sub.add_parser("compare", help="paired comparison of two variants")
@@ -85,6 +93,9 @@ def main(argv: list[str] | None = None) -> int:
         help="print results without writing the committed report",
     )
 
+    folds_cmd = sub.add_parser("folds", help="print the rolling-origin fold schedule")
+    folds_cmd.add_argument("--definition", default=None)
+
     sub.add_parser("parity", help="check baseline coefficients against mapoli")
     sub.add_parser("variants", help="list registered variants")
     sub.add_parser("definitions", help="list registered data definitions")
@@ -99,6 +110,7 @@ def main(argv: list[str] | None = None) -> int:
             args.definitions,
             write=not args.no_write,
             append=args.append,
+            schedule_change=args.schedule_change,
         )
     elif args.command == "compare":
         from . import compare
@@ -152,6 +164,38 @@ def main(argv: list[str] | None = None) -> int:
         from . import parity
 
         parity.run()
+    elif args.command == "folds":
+        from . import config, definitions, folds
+
+        definition = (
+            definitions.get(args.definition)
+            if args.definition
+            else definitions.adopted()
+        )
+        races, roster = config.load_races(), config.load_roster()
+        admitted, _ = definitions.apply(definition, races, roster)
+        # Measured against every date in the record, not only the dates this
+        # definition admits races on, so a date it empties is reported rather
+        # than absent.
+        eligible = folds.fold_dates(races)
+        summary = folds.summary(admitted, eligible)
+        print(f"definition: {definition.name}")
+        print(folds.schedule(admitted, eligible).to_string(index=False))
+        print()
+        print(
+            f"{summary['n_folds']} folds: "
+            f"{summary['n_general_dates']} general dates carrying "
+            f"{summary['general_races']} races, "
+            f"{summary['n_special_dates']} special dates carrying "
+            f"{summary['special_races']} races"
+        )
+        print(
+            f"{summary['holdout_races']} holdout races, "
+            f"{summary['seed_races']} seed races before {folds.SEED_CUTOFF}, "
+            f"smallest training fold {summary['smallest_training_fold']}"
+        )
+        if summary["skipped_dates"]:
+            print(f"skipped dates: {', '.join(summary['skipped_dates'])}")
     elif args.command == "variants":
         from . import variants
 
@@ -170,6 +214,18 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{'':<24}   as of: {spec.as_of}")
             if spec.requires:
                 print(f"{'':<24}   requires: {', '.join(spec.requires)}")
+            # A composite's own `requires` is the intersection of its
+            # components', so a restriction only one component carries would
+            # not appear above. Each component states its own (margin-model
+            # spec, "A component's restriction is disclosed").
+            for value, component in sorted(getattr(spec, "components", {}).items()):
+                restriction = (
+                    ", ".join(component.requires) if component.requires else "none"
+                )
+                print(
+                    f"{'':<24}   component {value} ({component.name}): "
+                    f"restriction: {restriction}"
+                )
     elif args.command == "definitions":
         from . import definitions
 

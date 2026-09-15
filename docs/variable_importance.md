@@ -14,7 +14,7 @@ uv run legmodel importance --definition current --no-write
 
 Writes `data/models/variable_importance.csv`. The model analysed here is
 `baseline_money_logratio` under the adopted `two_party_or_strongest`
-definition: 593 races fit, 398 pooled holdout over nine folds, **13.370 RMSE**.
+definition: 593 races fit, 398 pooled holdout over 21 folds, **13.342 RMSE**.
 
 ## The three measures
 
@@ -32,7 +32,7 @@ of interest is what `incumbent_status` moves, not what `incumbent_gop` moves
 alone.
 
 **The drop-one cost** is the change in pooled holdout RMSE when the predictor
-is removed and the rest refit over the same nine folds and the same 593 races,
+is removed and the rest refit over the same folds and the same 593 races,
 with the same paired bootstrap the variant comparisons use. Every arm keeps the
 full variant's `requires`, so all of them score identical races and the
 comparison is genuinely paired; the build fails rather than reporting an
@@ -46,10 +46,10 @@ without touching a published number.
 
 | Predictor | Drop-one cost | 90% interval | RMSE without it | Contribution SD |
 |---|---|---|---|---|
-| `PVI_N` | **+3.894** | [+2.702, +5.084] | 17.264 | 13.08 |
-| `incumbent_status` | **+2.509** | [+1.842, +3.175] | 15.879 | 9.46 |
-| `money_logratio_primary` | **+1.656** | [+1.078, +2.228] | 15.026 | 8.01 |
-| `pres_elec` | **−0.722** | [−1.116, −0.320] | 12.648 | 3.45 |
+| `PVI_N` | **+3.931** | [+2.736, +5.116] | 17.273 | 13.09 |
+| `incumbent_status` | **+2.540** | [+1.873, +3.205] | 15.882 | 9.46 |
+| `money_logratio_primary` | **+1.669** | [+1.096, +2.232] | 15.010 | 8.01 |
+| `pres_elec` | **−0.705** | [−1.100, −0.299] | 12.637 | 3.45 |
 
 Positive means the model needs it. Every interval here clears zero, including
 the negative one.
@@ -66,7 +66,7 @@ rather than a continuous range, which is why its contribution spread sits below
 PVI's.
 
 **Money ranks third, close behind incumbency.** For a predictor added in the
-most recent change, +1.656 against incumbency's +2.509 is a strong showing.
+most recent change, +1.669 against incumbency's +2.540 is a strong showing.
 
 ## What each variable is worth
 
@@ -113,7 +113,7 @@ the same 2× advantage and all worth the same +2.68 points. A flat dollar gap is
 not — $20,000 is a rout in a quiet district and a rounding error in a targeted
 one. See [`money_results.md`](money_results.md).
 
-### `pres_elec` — +7.085 for a presidential-year ballot [5.189, 8.938]
+### `pres_elec` — +7.087 for a presidential-date ballot [5.237, 8.972]
 
 Quote this one with the caveat below. The interval is nowhere near zero, and
 the holdout still says the term does more harm than good.
@@ -123,14 +123,16 @@ the holdout still says the term does more harm than good.
 Both of these are true, and the second is the one that counts:
 
 - its coefficient is large and tight — **+7.09** margin points,
-  [+5.19, +8.94];
-- removing it **improves** the holdout by **0.722** RMSE, [−1.116, −0.320].
+  [+5.24, +8.97];
+- removing it **improves** the holdout by **0.705** RMSE, [−1.100, −0.299].
 
-The reason is the fold structure. `pres_elec` is a property of the calendar
-year, and folds *are* years, so its value is constant across every race in a
-holdout — a wrong year-level shift lands on all of them in the same direction.
-Across the nine folds its coefficient ranges from **7.09 to 13.50**, while
-`PVI_N` holds between 1.40 and 1.65 and the money term between 3.28 and 4.13.
+The reason is the fold structure. `pres_elec` is a property of a race's
+election date — a special election held in a presidential year but on its own
+date carries `False` — and a fold is one election date, so its value is
+constant across every race in a holdout by construction: a wrong shift lands
+on all of them in the same direction rather than averaging out.
+Across the folds its coefficient ranges from **7.09 to 13.54**, while `PVI_N`
+holds between 1.40 and 1.65 and the money term between 3.27 and 4.14.
 
 There is no stable presidential-year effect to estimate. Mean Democratic margin
 by year, presidential years marked:
@@ -199,13 +201,13 @@ earn a candidate 2.68 more points. See
 |---|---|
 | `predictor`, `parameter` | The declared predictor and the design column it expands to. A categorical contributes several parameters and shares one drop-one cost |
 | `coefficient`, `eti89_lb`, `eti89_ub` | Final-fold posterior mean and 89% equal-tailed interval |
-| `fold_min`, `fold_max` | Spread of the posterior mean across all nine folds. A wide spread here is instability, not precision |
+| `fold_min`, `fold_max` | Spread of the posterior mean across all folds. A wide spread here is instability, not precision |
 | `contribution_sd`, `contribution_iqr` | Spread of the term's contribution to the fitted margin |
 | `predictor_sd` | Spread of the predictor itself, over the fitted races |
 | `drop_one_rmse`, `drop_one_cost` | Pooled holdout RMSE without the predictor, and the change from the full model |
 | `ci_low`, `ci_high`, `decided` | 90% paired-bootstrap interval on the cost, and whether it clears zero |
 
 Reproducibility follows the rest of the harness: each arm's seed derives from
-its variant name and fold year, so the report regenerates exactly. All 45 fits
+its variant name, definition and fold date, so the report regenerates exactly. All 45 fits
 behind this page passed their sampling diagnostics — worst R-hat 1.0037, zero
 divergent transitions.

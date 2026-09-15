@@ -1,7 +1,7 @@
-threshold,contested_at_threshold,contested_added_over_ballot_line_rule,races_admitted,added_over_ballot_line_rule,races_dropped,pooled_holdout,holdout_specials,smallest_training_fold,same_races_as_previous,admissions_settle_at
-0.0,633,10,633,10,0,434,26,199,False,0.1
-0.02,629,6,629,6,4,430,25,199,False,0.1
-0.05,625,2,625,2,8,426,24,199,False,0.1
-0.08,624,1,624,1,9,425,24,199,False,0.1
-0.1,624,1,624,1,9,425,24,199,True,0.1
-0.15,623,0,623,0,10,424,24,199,False,0.1
+threshold,races_admitted,added_over_ballot_line_rule,races_dropped,pooled_holdout,holdout_specials,smallest_training_fold,same_races_as_previous,admissions_settle_at
+0.0,633,10,0,434,26,199,False,0.1
+0.02,629,6,4,430,25,199,False,0.1
+0.05,625,2,8,426,24,199,False,0.1
+0.08,624,1,9,425,24,199,False,0.1
+0.1,624,1,9,425,24,199,True,0.1
+0.15,623,0,10,424,24,199,False,0.1

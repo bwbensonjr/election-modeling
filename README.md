@@ -183,9 +183,11 @@ against an unmoved yardstick.
   likelihood, fit at race grain with Bambi/PyMC. Coefficients agree with the
   same fit on the existing district-level table to within 0.07 posterior
   standard deviations once one documented PVI baseline offset is removed.
-- **Scoring.** Rolling-origin holdout: each fold trains on every race strictly
-  before its year and predicts that year's races, over every election year
-  from 2014 through 2024. Pooled holdout of 424 races, 24 of them special.
+- **Scoring.** Rolling-origin holdout: each fold trains on every race held
+  strictly before its election date and predicts the races held on that date,
+  over every election date from 2014 onward --- 23 folds, 6 general-election
+  dates and 17 special-election dates. Pooled holdout of 424 races, 24 of them
+  special.
   RMSE in margin points is the primary score, reported with calibration and
   win-side metrics and broken out per fold and per segment. See
   [`docs/scoring.md`](docs/scoring.md).
@@ -204,7 +206,8 @@ against an unmoved yardstick.
 ```bash
 uv run legmodel definitions                        # list the data definitions
 uv run legmodel score                              # score under the adopted definition
-uv run legmodel compare baseline baseline_special  # paired comparison of variants
+uv run legmodel folds                              # print the fold schedule
+uv run legmodel compare baseline baseline_year      # paired comparison of variants
 uv run legmodel compare-definitions current two_party_or_strongest
 uv run legmodel importance                         # variable importance and effect sizes
 ```
@@ -217,10 +220,10 @@ definition; both remain reproducible.
 
 | Segment | Races | RMSE | Coverage (90%) | Win accuracy |
 |---|---|---|---|---|
-| Pooled | 424 | 15.61 | 0.892 | 0.918 |
-| General elections | 400 | 14.96 | 0.902 | 0.922 |
-| Special elections | 24 | 23.99 | 0.708 | 0.833 |
-| No Democratic candidate | 11 | 28.35 | 0.364 | 0.818 |
+| Pooled | 424 | 15.61 | 0.889 | 0.920 |
+| General elections | 400 | 14.96 | 0.900 | 0.925 |
+| Special elections | 24 | 23.98 | 0.708 | 0.833 |
+| No Democratic candidate | 11 | 28.43 | 0.364 | 0.818 |
 
 ### First result: does `is_special` help?
 
@@ -232,10 +235,11 @@ opposite effects. The term lowers RMSE on the 24 holdout special elections by
 specials are 5.7% of the holdout the second outweighs the first.
 
 On specials it does cut the baseline's large pessimism about Democrats, from
--11.56 points of bias to -8.46. The recommendation is to keep `baseline` as
-the reference model and use `baseline_special` when the question is about a
-special election. Full writeup in
-[`docs/is_special_result.md`](docs/is_special_result.md).
+-11.41 points of bias to -7.91. The recommendation is to keep the pooled model
+as the reference and use `special_pooled_term` --- or equivalently
+`special_split` --- when the question is about a special election. That
+question has since widened into a three-arm comparison; full writeup in
+[`docs/special_handling_result.md`](docs/special_handling_result.md).
 
 The comparison also surfaced larger failures than the one under test: races
 with no Democratic candidate (36% interval coverage) and an unabsorbed
@@ -308,9 +312,9 @@ predictor should be measured against the same denominator.** `PVI_N` is a
 two-party quantity, so the response should be too.
 
 **1. A two-party response — undecided, and the pooled figure is a trap.** On
-its own holdout the strict `two_party` definition posts 12.73 RMSE against
+its own holdout the strict `two_party` definition posts 12.76 RMSE against
 `current`'s 15.61, which looks decisive. On the 346 races the two share, the
-difference is -0.31 [-0.83, +0.38]. The gap is not accuracy: it is the 78 races
+difference is -0.31 [-0.84, +0.38]. The gap is not accuracy: it is the 78 races
 `two_party` drops, which `current` scores at an RMSE of 25.3. Restricting to
 Democrat-versus-Republican races removes the hard ones, and comparing pooled
 figures would have credited the model for declining to predict them.
@@ -343,24 +347,30 @@ says so.
 
 ### The variants
 
-**4. Presidential-year bias — a real fix.** The baseline runs +2.7 points too
-Democratic in presidential years and -6.4 too Republican in non-presidential
-ones, a gap of 9.1 that one binary term cannot correct.
+**4. Presidential-date bias — partly fixed.** The baseline runs +3.0 points
+too Democratic on presidential-date general elections and -6.0 too Republican
+on midterm-date ones, a gap of 9.0 that one binary term cannot correct. (Both
+figures are over general elections only; every special carries
+`pres_elec = False`, so the old blended "non-presidential" figure mixed 237
+midterm generals with 24 specials.)
+
+`baseline_year`, a hierarchical **election-date** intercept, is the adopted
+variant: RMSE 14.34, a difference of +0.663 [+0.283, +1.026], coverage 0.935 ---
+the best of any variant scored --- and a bias gap of -0.56. It is decided under
+three definitions of four. It cannot shift a forward date's mean, because that
+date's effect is unobserved and drawn from the hyperprior.
 
 `baseline_national_env` adds a term signed by the party holding the presidency:
--1 in a non-presidential year under a Democratic president, +1 under a
-Republican one, 0 in a presidential year. It lowers RMSE by 0.775
-[+0.201, +1.363] and cuts pooled bias from -2.91 to **-0.41**. Unlike a year
-effect it is known before the election, so it can shift a holdout year's mean
-and carries forward to 2026, where it takes the value +1.
-
-`baseline_year`, a hierarchical year intercept, is the other adopted
-variant: RMSE 14.209, a difference of +0.804 [+0.410, +1.179], coverage 0.927,
-and a presidential-year bias gap of -0.34. Its fits originally diverged on
-every fold; that was a specification defect and is
-[fixed](#baseline_year-fits-do-not-converge----resolved). It cannot shift a
-forward year's mean, so it complements `baseline_national_env` rather than
-replacing it. `baseline_pres_incumbent` is undecided.
+-1 off-cycle under a Democratic president, +1 under a Republican one, 0 on a
+presidential ballot. It still cuts pooled bias from -2.90 to **-0.56** and is
+the only variant that can shift a forward year's mean --- it carries to 2026,
+where it takes the value +1. But it is **undecided under three definitions of
+four** (+0.488 [-0.311, +1.221] under the adopted one), and it is exactly
+collinear with `pres_elec` across the first nine folds, because every midterm
+before 2017 had a Democratic president. It is not adopted on the current
+evidence; the forward-prediction argument for it is structural rather than
+measured. See [`docs/variant_results.md`](docs/variant_results.md).
+`baseline_pres_incumbent` is undecided.
 
 **5. `num_candidates` — undecided; it does not belong in the baseline.** A wash
 under `current` (+0.026) and under the adopted definition (-0.033), and
@@ -387,16 +397,16 @@ spending changes outcomes**; see
 
 | Variant | Segment | Races | RMSE | Coverage (90%) | Win accuracy |
 |---|---|---|---|---|---|
-| `baseline` | Pooled | 413 | 15.01 | 0.898 | 0.910 |
+| `baseline` | Pooled | 413 | 15.01 | 0.896 | 0.915 |
 | `baseline` | General elections | 389 | 14.19 | 0.910 | 0.915 |
 | `baseline` | Special elections | 24 | 24.76 | 0.708 | 0.833 |
-| `baseline_national_env` | Pooled | 413 | 14.24 | 0.923 | 0.915 |
+| `baseline_national_env` | Pooled | 413 | 14.52 | 0.915 | 0.915 |
 | `baseline_national_env` | General elections | 389 | 13.55 | 0.931 | 0.915 |
 | `baseline_national_env` | Special elections | 24 | 22.68 | 0.792 | **0.917** |
-| `baseline_year` | Pooled | 413 | 14.21 | **0.927** | **0.927** |
+| `baseline_year` | Pooled | 413 | 14.34 | **0.935** | **0.927** |
 | `baseline_year` | General elections | 389 | 13.45 | **0.938** | **0.933** |
 | `baseline_year` | Special elections | 24 | 23.25 | 0.750 | 0.833 |
-| `baseline_money_logratio` | Pooled | 398 | 13.37 | 0.895 | 0.920 |
+| `baseline_money_logratio` | Pooled | 398 | 13.34 | 0.894 | 0.920 |
 | `baseline_money_logratio` | General elections | 376 | 12.81 | 0.904 | 0.928 |
 | `baseline_money_logratio` | Special elections | 22 | 20.73 | 0.727 | 0.773 |
 | `baseline_spend_logratio` | Pooled | 398 | **13.05** | 0.895 | 0.920 |
@@ -438,18 +448,77 @@ work in [Model Enhancements](#model-enhancements) and [Plan](#plan).
 ### `pres_elec` costs accuracy in the money model
 
 Dropping `pres_elec` from `baseline_money_logratio` **improves** pooled holdout
-RMSE by 0.722 [−1.116, −0.320] — decided — even though its coefficient is
-+7.09 [+5.19, +8.94] and nowhere near zero. `pres_elec` is a property of the
-calendar year and folds are years, so a wrong year-level shift lands on every
-race in a holdout at once; across the nine folds the coefficient ranges from
-7.09 to 13.50, and the presidential years themselves disagree (2012 +27.5 mean
-margin, 2020 +13.9).
+RMSE by 0.705 [−1.100, −0.299] — decided — even though its coefficient is
++7.09 [+5.24, +8.97] and nowhere near zero. The finding survived the refold
+essentially unchanged: it was 0.722 [−1.116, −0.320] on year folds.
 
-This extends the presidential-year bias already recorded under question 4
+`pres_elec` is a property of a race's **election date**, and a fold is one
+election date, so its value is constant across every race in a holdout by
+construction — a wrong shift lands on all of them in the same direction rather
+than averaging out. Across the folds its coefficient ranges from 7.09 to 13.54
+while `PVI_N` holds between 1.40 and 1.65, and the presidential years
+themselves disagree (2012 +27.5 mean margin, 2020 +13.9).
+
+This extends the presidential-date bias already recorded under question 4
 rather than contradicting it. Not yet acted on: a variant dropping the term is
 a registry entry and a rescore, and no alternative is adopted until that is
-compared under every scored definition. See
+compared under every scored definition.
+
+**What the special-election work added to this.** `special_split`'s general
+component excludes special elections from training, which changes what
+`pres_elec` is estimated from, since every special carries
+`pres_elec = False`. It beats both pooled arms on presidential-date general
+elections under all four definitions, and loses to them on midterm-date ones.
+So part of what looks like a special-election question is really a question
+about the timing term. See
+[`docs/special_handling_result.md`](docs/special_handling_result.md) and
 [`docs/variable_importance.md`](docs/variable_importance.md).
+
+### `national_env` is collinear with `pres_elec` for nine folds
+
+`baseline_national_env` carries both `pres_elec` and `national_env` as fixed
+effects. Every midterm in the record before 2017 had a Democratic president, so
+`national_env = -(1 - pres_elec)` identically across the first nine folds'
+training windows --- two parameters, one column. It becomes identified on
+2017-10-17, when a Trump-era special first enters the training window, and
+genuinely identified only from 2018-11-06, at which point its basis for
+distinguishing a Republican from a Democratic president is the single 2018
+election.
+
+Nothing refuses it: the harness checks a predictor against a *grouping factor*,
+never against another predictor. `baseline_year_pres` is refused for exactly
+this shape of collinearity.
+
+Compounding it, `national_env` is computed as `midterm = ~pres_elec`, and every
+special election carries `pres_elec = False` --- so a March 2016 special is
+labelled a midterm-backlash electorate, as is a July 2017 one. For the five
+folds where the term is identified but 2018 has not happened, those miscoded
+specials are what identifies it.
+
+This is the most likely explanation for the variant losing its verdict in the
+refold. Not yet acted on. The fix is a predictor-versus-predictor collinearity
+check, plus a timing variable that does not have to be reconstructed from two
+booleans.
+
+### Special elections are entangled with the timing terms
+
+Every special election in the record carries `pres_elec = False`, because none
+has ever fallen on a presidential general date. Three consequences, none
+deliberate:
+
+- any "non-presidential" figure blends 237 midterm generals with 24 specials
+  --- which is why bias is now reported over general elections only, with a
+  three-level `ballot_timing` segment alongside;
+- specials are the only races separating `pres_elec` from a per-date effect;
+- specials receive a `national_env` value describing an electorate they are
+  not.
+
+Restricted to general elections, `~pres_elec` simply *means* midterm, and the
+three timing groups --- presidential ballot, midterm under a Democratic
+president, midterm under a Republican one --- are exactly saturated by
+`pres_elec` plus `national_env`. One three-level variable would say the same
+thing without the reconstruction, and would make the identification
+requirement visible.
 
 ### ~~`baseline_year` fits do not converge~~ --- resolved
 
@@ -470,24 +539,37 @@ The two real causes were:
   against a response whose own standard deviation is 25.2 points, and asked it
   to inform a between-year SD estimated from as few as four year groups. The
   variant now declares `HalfNormal(5)`.
-- **`pres_elec` collinear with the year grouping.** A per-year intercept spans
-  a term that is a property of the calendar year. Across 610 races `pres_elec`
-  varies within a year only in 2016 and 2020, on 8 races; in the 2010-2013
-  training window, not at all. The variant now drops it.
+- **`pres_elec` collinear with the year grouping.** `pres_elec` is a property
+  of a race's *election date*, not of its calendar year: it is computed as
+  `election_date in PRESIDENTIAL_ELECTION_DATES`, and a special election held
+  in a presidential year but on its own date carries `False`. What made it
+  collinear with a per-year intercept is narrower --- every special election
+  in the record falls off the presidential general date, so specials are the
+  only races that separate the two. Across 610 races `pres_elec` varies within
+  a year only in 2016 and 2020, on 8 races, all of them specials; in the
+  2010-2013 training window, not at all. The variant now drops it. The
+  refusal rests on that count measured per fold, not on the calendar.
 
 The improvement grew rather than shrank once the fits were clean: RMSE 14.209
 against the superseded 14.503, a paired difference of +0.804 [+0.410, +1.179]
-against the superseded +0.510, and coverage holding at 0.927. The
-presidential-year bias gap closes from 9.46 to **-0.34**, further than
-`baseline_national_env` manages --- driven by the term removed rather than the
-one added, since the baseline's fitted `pres_elec` coefficient was applying a
-four-point shift that miscalibrated out of sample.
+against the superseded +0.510, and coverage holding at 0.927.
 
-`baseline_national_env` is still the variant to use for a **forward**
-prediction. A year intercept cannot move a future year's mean, because that
-year's effect is unobserved and is drawn from the hyperprior; the national
-environment is known before the votes are cast. The two answer different
-questions and are reported together rather than ranked.
+Those figures are themselves now superseded. Under the date schedule the
+variant groups on `election_date` rather than `election_year` --- a calendar
+year spans several fold dates, so a year-level effect would leave the holdout's
+own level partially observed --- and posts **14.34, +0.663 [+0.283, +1.026],
+coverage 0.935**, still the best-calibrated variant scored. The bias gap
+closes from 8.99 to **-0.56**, driven by the term removed rather than the one
+added, since the baseline's fitted `pres_elec` coefficient was applying a
+shift that miscalibrated out of sample.
+
+`baseline_national_env` remains the only variant that can move a **forward**
+prediction: a date intercept cannot shift a future date's mean, because that
+date's effect is unobserved and drawn from the hyperprior, whereas the national
+environment is known before the votes are cast. That argument is structural
+and stands. Its *measured* advantage does not --- it is undecided under three
+definitions of four, for reasons recorded in Open Issues above. The two answer
+different questions and are reported together rather than ranked.
 
 Three things carried forward from the fix:
 
@@ -496,8 +578,10 @@ Three things carried forward from the fix:
   obtained at a raised `target_accept` is distinguishable from one obtained at
   the default.
 - A predictor constant within every level of a variant's own grouping factor
-  is refused per fold, with the refusal published. `national_env` has the same
-  defect as `pres_elec` if combined with a year effect, and would be caught.
+  is refused per fold, with the refusal published. This catches a predictor
+  against a *grouping factor* only — it does not catch two collinear fixed
+  effects, which is how `baseline_national_env` carries `national_env`
+  alongside `pres_elec` for nine folds without complaint (see Open Issues).
 - `baseline_year` is no longer nested in `baseline`, and its comparison is
   labelled non-nested, naming the term added and the term removed.
 
@@ -505,16 +589,28 @@ Full writeup: [`docs/variant_results.md`](docs/variant_results.md).
 
 ### Special elections remain the worst segment
 
-24 holdout races at 24.76 RMSE against a pooled 15.01, with 0.708 interval
-coverage against a nominal 0.90. The model is overconfident about them, and
-`is_special` does not fix it -- that term is undecided under every definition
-tested.
+24 holdout races at 24.77 RMSE against a pooled 15.01, with 0.708 interval
+coverage against a nominal 0.90. The model is overconfident about them, and no
+arm tested fixes it.
 
-`baseline_national_env` improves the segment more than `is_special` does
-(22.68 RMSE, 0.792 coverage), which suggests part of what `is_special` was
-reaching for is national environment rather than anything intrinsic to special
-elections. Whatever is left is a thin-data problem: 24 holdout races is not
-much to diagnose from.
+Three arms were scored --- specials pooled with an `is_special` term, pooled
+without one, and split into a general model that never sees a special plus a
+special model fit on everything. **Pooled, the three are indistinguishable**
+under three definitions of four. The segments disagree consistently: both
+distinguishing arms beat the plain one on specials and lose to it on midterm
+generals, and the split arm beats both on presidential-date generals under
+every definition.
+
+Under the date schedule `baseline_year` is the only variant here that improves
+the segment (23.68 RMSE, 0.792 coverage). `baseline_national_env` reverses ---
+best of the four on the year schedule, worst now at 26.40 --- which is
+consistent with the entanglement recorded above: every special gets a nonzero
+`national_env`, describing an electorate it is not.
+
+Whatever is left is a thin-data problem: 24 holdout races spread over 17 fold
+dates is not much to diagnose from, and the arms differ by less than the Monte
+Carlo noise between two fits of the same model. Full writeup:
+[`docs/special_handling_result.md`](docs/special_handling_result.md).
 
 ### The adopted definition rests on a principle, not on a measurement
 

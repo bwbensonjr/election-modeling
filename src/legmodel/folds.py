@@ -1,9 +1,17 @@
-"""Rolling-origin fold construction.
+"""Rolling-origin fold construction, one fold per election date.
 
-Each fold trains on every race strictly before its year and predicts that
-year's races, so the training window expands and never contains the future
-(model-scoring spec). Splitting by year rather than at random is what keeps a
-district that recurs across cycles out of both sides of the same split.
+Each fold trains on every race held strictly before its election date and
+predicts the races held on that date, so the training window expands and never
+contains the future (model-scoring spec). A fold is an election, not a
+calendar year: a special election held in March is in the training set of the
+November general that follows it, because its result was known before that
+general was decided.
+
+Splitting by date rather than at random is what keeps a district that recurs
+across cycles out of both sides of the same split. Splitting by date rather
+than by year is what stops several unrelated elections being scored as one
+event, and what stops a result a real forecaster would have had being
+discarded because it shares a calendar year with the race being predicted.
 """
 
 from __future__ import annotations
@@ -12,19 +20,27 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-# Every election year from 2014 through 2024. 2019 is listed as eligible and
-# drops out because the table holds no contested races for it; recording that
-# is the point, since a silently absent year would be indistinguishable from a
-# year nobody thought to score.
-ELIGIBLE_FOLD_YEARS = tuple(range(2014, 2025))
+# Races held before this date form the seed training window and are never
+# scored. It is the start of 2014 rather than the first general election of
+# 2014 so that the seed window is exactly the 2010-2013 races the year-based
+# schedule used, leaving the holdout population unchanged by the refold.
+SEED_CUTOFF = "2014-01-01"
 
-# Races before the first fold train the first model and are never scored.
-SEED_YEARS_END = 2013
+# Identifies the fold schedule that produced a set of outputs. Stamped into
+# every published file so figures computed under two different schedules
+# cannot be silently mixed by an appending run -- the failure mode the
+# supersession notice exists to prevent, made checkable rather than asserted.
+SCHEDULE_ID = f"election_date>={SEED_CUTOFF}"
 
 
 @dataclass(frozen=True)
 class Fold:
-    year: int
+    # The election date this fold predicts, as an ISO-8601 string. A string
+    # rather than a timestamp because that is what the race table holds, it
+    # sorts correctly, it round-trips through CSV without a parsing step, and
+    # it hashes stably into `fit.seed_for` -- a Timestamp's repr has changed
+    # across pandas versions and would silently reseed every fit.
+    key: str
     train: pd.DataFrame
     holdout: pd.DataFrame
 
@@ -36,57 +52,113 @@ class Fold:
     def n_holdout(self) -> int:
         return len(self.holdout)
 
+    @property
+    def is_special_date(self) -> bool:
+        """Whether this date carried only special elections."""
+        return bool(self.holdout["is_special"].astype(bool).all())
 
-def build(races: pd.DataFrame) -> tuple[list[Fold], list[int]]:
-    """The fold schedule, and the eligible years that produced no fold.
+
+def fold_dates(races: pd.DataFrame) -> list[str]:
+    """Every election date eligible to be a fold, in order.
+
+    Derived from the table rather than enumerated, so adding an election year
+    adds folds without a code change, and a year the table holds no races for
+    contributes no dates rather than needing a stated exception.
+    """
+    dates = races.loc[races["election_date"] >= SEED_CUTOFF, "election_date"]
+    return sorted(dates.unique().tolist())
+
+
+def build(
+    races: pd.DataFrame, eligible: list[str] | None = None
+) -> tuple[list[Fold], list[str]]:
+    """The fold schedule, and the eligible dates that produced no fold.
 
     A race a definition marks unscoreable still trains -- that is what the
     train-only no-Democrat treatment means -- but never enters a holdout, so
     the `scoreable` flag is applied to the holdout side only.
+
+    `eligible` is the date list the schedule is measured against, normally
+    derived from the unfiltered race table. Passing it is what lets a date a
+    definition or a variant's `requires` empties be reported as skipped rather
+    than vanish: a date absent from `races` is invisible to a schedule derived
+    from `races` alone, and "this definition admitted nobody that day" must not
+    look like "no election was held that day" (model-scoring spec, "A fold date
+    the definition empties is recorded as skipped").
     """
     scoreable = (
         races["scoreable"].astype(bool)
         if "scoreable" in races.columns
         else pd.Series(True, index=races.index)
     )
+    dates = fold_dates(races) if eligible is None else sorted(eligible)
     folds, skipped = [], []
-    for year in ELIGIBLE_FOLD_YEARS:
-        holdout = races[(races["election_year"] == year) & scoreable]
+    for date in dates:
+        holdout = races[(races["election_date"] == date) & scoreable]
         if holdout.empty:
-            skipped.append(year)
+            skipped.append(date)
             continue
-        train = races[races["election_year"] < year]
+        train = races[races["election_date"] < date]
         if train.empty:
-            skipped.append(year)
+            skipped.append(date)
             continue
-        folds.append(Fold(year=year, train=train, holdout=holdout))
+        folds.append(Fold(key=date, train=train, holdout=holdout))
     return folds, skipped
 
 
-def schedule(races: pd.DataFrame) -> pd.DataFrame:
+def schedule(
+    races: pd.DataFrame, eligible: list[str] | None = None
+) -> pd.DataFrame:
     """A printable summary of the fold schedule."""
-    folds, skipped = build(races)
+    folds, skipped = build(races, eligible)
     rows = [
         {
-            "fold": fold.year,
-            "train_years": f"{int(fold.train['election_year'].min())}-"
-            f"{int(fold.train['election_year'].max())}",
+            "fold": fold.key,
+            "train_dates": f"{fold.train['election_date'].min()}-"
+            f"{fold.train['election_date'].max()}",
             "n_train": fold.n_train,
             "n_holdout": fold.n_holdout,
-            "n_specials": int(fold.holdout["is_special"].sum()),
+            "n_specials": int(fold.holdout["is_special"].astype(bool).sum()),
+            "date_type": "special" if fold.is_special_date else "general",
             "skipped": False,
         }
         for fold in folds
     ]
     rows.extend(
         {
-            "fold": year,
-            "train_years": "",
+            "fold": date,
+            "train_dates": "",
             "n_train": 0,
             "n_holdout": 0,
             "n_specials": 0,
+            "date_type": "",
             "skipped": True,
         }
-        for year in skipped
+        for date in skipped
     )
     return pd.DataFrame(rows).sort_values("fold", ignore_index=True)
+
+
+def summary(races: pd.DataFrame, eligible: list[str] | None = None) -> dict:
+    """Schedule size, so a missing election is visible as an absent date.
+
+    A derived schedule has no constant list to check itself against, so the
+    shape of what was built is published instead: how many folds, how they
+    split between general and special dates, and how many races sit on each
+    side. Combined with `eligible`, which names the dates the schedule was
+    measured against, that is what the enumerated year list used to provide.
+    """
+    built, skipped = build(races, eligible)
+    general = [fold for fold in built if not fold.is_special_date]
+    special = [fold for fold in built if fold.is_special_date]
+    return {
+        "n_folds": len(built),
+        "n_general_dates": len(general),
+        "n_special_dates": len(special),
+        "general_races": sum(fold.n_holdout for fold in general),
+        "special_races": sum(fold.n_holdout for fold in special),
+        "holdout_races": sum(fold.n_holdout for fold in built),
+        "seed_races": int((races["election_date"] < SEED_CUTOFF).sum()),
+        "smallest_training_fold": min((fold.n_train for fold in built), default=0),
+        "skipped_dates": skipped,
+    }

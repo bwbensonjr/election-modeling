@@ -240,11 +240,11 @@ class Fit:
         """
         extra = {}
         if self.variant.group_effects:
-            # The fold year is by construction absent from training, so it has
-            # no fitted group effect. Drawing it from the group-level
-            # hyperprior is what makes the year term predictive rather than
-            # undefined: the point estimate stays near the pooled one and the
-            # interval widens to admit that the year is unobserved
+            # The fold's own grouping level is by construction absent from
+            # training, so it has no fitted group effect. Drawing it from the
+            # group-level hyperprior is what makes the term predictive rather
+            # than undefined: the point estimate stays near the pooled one and
+            # the interval widens to admit that the level is unobserved
             # (design.md, D9).
             extra["sample_new_groups"] = True
         with warnings.catch_warnings():

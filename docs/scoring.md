@@ -11,7 +11,7 @@ Run it with:
 ```bash
 uv run legmodel score                              # score every variant
 uv run legmodel score --variants baseline          # rescore one
-uv run legmodel compare baseline baseline_special  # paired comparison
+uv run legmodel compare baseline baseline_year     # paired comparison
 uv run legmodel parity                             # coefficients vs mapoli
 uv run legmodel variants                           # list registered variants
 uv run legmodel importance                         # variable importance and effect sizes
@@ -53,43 +53,92 @@ comparable to the ones below.
 
 ## Rolling-origin folds
 
-Each fold trains on every race strictly before its year and predicts that
-year's races. The training window expands; it never contains the future.
+**A fold is one election date, not one calendar year.** Each fold trains on
+every race held strictly before its date and predicts the races held on that
+date. The training window expands; it never contains the future.
 
-| Fold | Train years | Train races | Holdout races | Specials |
-|---|---|---|---|---|
-| 2014 | 2010-2013 | 199 | 95 | 4 |
-| 2015 | 2010-2014 | 294 | 3 | 3 |
-| 2016 | 2010-2015 | 297 | 62 | 3 |
-| 2017 | 2010-2016 | 359 | 5 | 5 |
-| 2018 | 2010-2017 | 364 | 73 | 1 |
-| 2020 | 2010-2018 | 437 | 55 | 5 |
-| 2021 | 2010-2020 | 492 | 2 | 2 |
-| 2022 | 2010-2021 | 494 | 74 | 0 |
-| 2023 | 2010-2022 | 568 | 1 | 1 |
-| 2024 | 2010-2023 | 569 | 54 | 0 |
+Under the `current` definition that is **23 folds over 424 races** --- 6
+general-election dates carrying 400 races, and 17 special-election dates
+carrying 24 between them. The schedule is derived from the `election_date`
+values in the race table rather than enumerated in code, so a new election
+year adds folds without a code change.
 
-**Pooled holdout: 424 races, 24 of them special.** Races from 2010 through
-2013 are the seed training window and are never scored.
+| Fold | Train window | Train | Holdout | Specials | Date |
+|---|---|---|---|---|---|
+| 2014-01-07 | 2010-05-11 - 2013-11-05 | 199 | 1 | 1 | special |
+| 2014-04-01 | 2010-05-11 - 2014-01-07 | 200 | 3 | 3 | special |
+| 2014-11-04 | 2010-05-11 - 2014-04-01 | 203 | 91 | 0 | general |
+| 2015-03-31 | 2010-05-11 - 2014-11-04 | 294 | 2 | 2 | special |
+| 2015-11-03 | 2010-05-11 - 2015-03-31 | 296 | 1 | 1 | special |
+| 2016-03-01 | 2010-05-11 - 2015-11-03 | 297 | 2 | 2 | special |
+| 2016-05-10 | 2010-05-11 - 2016-03-01 | 299 | 1 | 1 | special |
+| 2016-11-08 | 2010-05-11 - 2016-05-10 | 300 | 59 | 0 | general |
+| 2017-07-25 | 2010-05-11 - 2016-11-08 | 359 | 1 | 1 | special |
+| 2017-10-17 | 2010-05-11 - 2017-07-25 | 360 | 1 | 1 | special |
+| 2017-11-07 | 2010-05-11 - 2017-10-17 | 361 | 2 | 2 | special |
+| 2017-12-05 | 2010-05-11 - 2017-11-07 | 363 | 1 | 1 | special |
+| 2018-04-03 | 2010-05-11 - 2017-12-05 | 364 | 1 | 1 | special |
+| 2018-11-06 | 2010-05-11 - 2018-04-03 | 365 | 72 | 0 | general |
+| 2020-03-03 | 2010-05-11 - 2018-11-06 | 437 | 1 | 1 | special |
+| 2020-05-19 | 2010-05-11 - 2020-03-03 | 438 | 2 | 2 | special |
+| 2020-06-02 | 2010-05-11 - 2020-05-19 | 440 | 2 | 2 | special |
+| 2020-11-03 | 2010-05-11 - 2020-06-02 | 442 | 50 | 0 | general |
+| 2021-03-30 | 2010-05-11 - 2020-11-03 | 492 | 1 | 1 | special |
+| 2021-11-30 | 2010-05-11 - 2021-03-30 | 493 | 1 | 1 | special |
+| 2022-11-08 | 2010-05-11 - 2021-11-30 | 494 | 74 | 0 | general |
+| 2023-11-07 | 2010-05-11 - 2022-11-08 | 568 | 1 | 1 | special |
+| 2024-11-05 | 2010-05-11 - 2023-11-07 | 569 | 54 | 0 | general |
 
-2019 is an eligible fold year that produced no fold, because the table holds
-no contested races for it. It is recorded as skipped in the scorecard rather
-than passing unremarked.
+Races held before **2014-01-01** are the seed training window --- the same 199
+races of 2010 through 2013 the previous year-based schedule seeded on --- and
+are never scored. Keeping the cutoff at the start of 2014 rather than at the
+first general election of 2014 is what leaves the holdout population
+unchanged by the refold: the same races are scored, redistributed across 23
+folds instead of 10.
 
-Three choices are worth stating plainly.
+`2023-05-30` and `2024-03-05` are election dates the `current` definition
+admits no races on. They are reported as skipped rather than omitted, which
+requires measuring the schedule against the dates in the record rather than
+only the dates the definition admits --- otherwise "this definition admitted
+nobody that day" and "no election was held that day" look identical.
 
-**Why split by year rather than at random.** Districts recur across cycles, so
+Run `uv run legmodel folds` to print the schedule under any definition.
+
+Four choices are worth stating plainly.
+
+**Why an earlier election in the same year trains the fold.** Predicting the
+2016-11-08 general, a real forecaster had the 2016-03-01 and 2016-05-10
+special results in hand. A year-based split discarded them because they shared
+a calendar year with the race being predicted. That was information loss
+rather than leakage --- strictly conservative --- but it was not the
+forecasting task either. Under a date schedule those two specials are in the
+training set, as the `Train window` column shows.
+
+**Why several dates are never scored as one event.** The old fold 2017 blended
+four dates from July through December, and fold 2020 blended five. Their
+metrics mixed races decided on different days, months apart, with different
+information available before each. One date, one fold.
+
+**Why split by date rather than at random.** Districts recur across cycles, so
 a random split puts one cycle of a district in training and another in test.
 The existing `mapoli/model/margin_model_cv.py` splits 80/20 at random and
 leaks in exactly this way.
 
-**Why odd years are folds.** Restricting folds to even years would put only 9
-of the 37 specials in the holdout, none of them in 2022 or 2024. Odd-year
-folds are entirely special elections, which is where a special-election term
-has to earn its place. Including them raises the holdout specials to 24.
-
 **Why the training window expands rather than slides.** It matches how the
 model is used: every past cycle is available when forecasting the next one.
+
+### Special-election dates are folds
+
+17 of the 23 folds are special-election dates holding one to three races each.
+They are scored on the same footing as a general election, and their fold rows
+are marked as small samples rather than suppressed.
+
+Pooling is **by race, not by fold**, so those 24 races cannot outweigh the 400
+on general-election dates merely by occupying more folds. Restricting folds to
+general elections would put no special election in the holdout at all, which
+is where a special-election term --- or the decision to fit specials
+separately --- has to earn its place. See
+[`special_handling_result.md`](special_handling_result.md).
 
 ## Metrics
 
@@ -159,12 +208,17 @@ comparison would have read a refusal to predict hard races as accuracy.
 
 ## Dated predictors and the as-of date
 
-Most predictors here are knowable before their fold year even begins: a
-district's PVI, who the incumbent is, whether the year carries a presidential
-race. Campaign finance is not. The rule a variant must satisfy is therefore
-that its predictors are knowable **before its fold year's election**, and a
-predictor that becomes knowable only during the year has to declare an as-of
-date that is published with every fit using it.
+Most predictors here are knowable before their fold's election year even
+begins: a district's PVI, who the incumbent is, whether the ballot carries a
+presidential race. Campaign finance is not. The rule a variant must satisfy is
+therefore that its predictors are knowable **before its fold's election
+date**, and a predictor that becomes knowable only during that year has to
+declare an as-of date that is published with every fit using it.
+
+The date, not the year, is the boundary. A special election held in March is
+knowable before a general election that November, so its result is available
+to that fold — both as a training race and to any predictor derived from
+prior results.
 
 A money figure without the date it was measured on is not interpretable, and
 the difference between two dates is the difference between a forecast and a
@@ -214,14 +268,36 @@ recorded rather than merely missing.
 ## Segments
 
 Metrics are broken out per fold and by `office`, `is_special`, `pres_elec`,
-`redistricting_cycle`, `no_dem_candidate` and `admitted_by_write_in`. A segment
-a definition empties is reported with a count of zero rather than dropped —
-"`two_party` admits no no-Democrat races" and "nobody broke that segment out"
-must not look the same.
+`ballot_timing`, `redistricting_cycle`, `no_dem_candidate` and
+`admitted_by_write_in`. A segment a definition empties is reported with a
+count of zero rather than dropped — "`two_party` admits no no-Democrat races"
+and "nobody broke that segment out" must not look the same.
 
-The pooled row additionally carries `bias_presidential_years`,
-`bias_non_presidential_years` and `pres_bias_gap`. The gap is the quantity the
-presidential-year variants set out to close, and a variant can narrow it
+### Why `ballot_timing` exists alongside `pres_elec`
+
+**Every special election in the record carries `pres_elec = False`**, because
+none has ever fallen on a presidential general date. So the `pres_elec` False
+level is not "midterm general elections" — it is a mixture of midterm
+generals and specials, and specials are the model's worst-calibrated
+population by a wide margin. A bias figure read off that level silently
+carries a group the reader is not thinking about.
+
+`ballot_timing` splits the three apart:
+
+| Level | What it holds |
+|---|---|
+| `presidential_general` | general elections on a presidential ballot |
+| `midterm_general` | general elections on a non-presidential ballot |
+| `special` | special elections, whatever year they fell in |
+
+It sits alongside the `pres_elec` and `is_special` breakouts rather than
+replacing them, so nothing that read the scorecard before loses a row.
+
+The pooled row additionally carries `bias_presidential_general`,
+`bias_midterm_general` and `pres_bias_gap`. **All three are computed over
+general elections only**, so the special-election segment cannot move a figure
+that is supposed to measure ballot timing. The gap is the quantity the
+presidential-date variants set out to close, and a variant can narrow it
 without moving pooled RMSE at all.
 
 ## Comparing two variants
@@ -246,10 +322,17 @@ structure this design exists to respect.
 
 ## Reproducibility
 
-Each fit's seed is derived from its variant name and fold year and published
-with its results, so a single fold can be reproduced in isolation rather than
-only as part of a full run. Reruns from the committed race table reproduce the
-scorecard and every per-race prediction exactly.
+Each fit's seed is derived from its variant name, its definition and its fold
+— the fold's election date — and published with its results, so a single fold
+can be reproduced in isolation rather than only as part of a full run. Reruns
+from the committed race table reproduce the scorecard and every per-race
+prediction exactly.
+
+Because the seed is derived from the fold, **changing the fold schedule
+reseeds every fit**, and figures computed under two schedules are not
+comparable race by race. Every published output therefore carries a
+`fold_schedule` stamp, and a run appending to outputs carrying a different
+stamp — or none — is refused by name rather than quietly mixing the two.
 
 A fit is flagged when any parameter's R-hat exceeds 1.01, any bulk or tail ESS
 falls below 400, or the sampler reports a divergent transition. A flagged fold
