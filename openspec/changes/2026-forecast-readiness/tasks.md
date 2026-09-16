@@ -61,4 +61,4 @@
 - [x] 8.1 Document target construction, outcome-blind matchup selection, finance horizons, fallback routing, support warnings, snapshot immutability, and prospective scoring, and verify every published field and command is described.
 - [x] 8.2 Document that aggregate draws preserve represented posterior dependence but do not add a shared election shock, and verify no chamber interval is described as accounting for an unmodeled statewide environment.
 - [x] 8.3 Run `uv run --group dev pytest`, `openspec validate --specs`, and `openspec validate 2026-forecast-readiness --type change --strict`, and resolve every failure before marking the implementation ready.
-- [ ] 8.4 From a committed clean revision, generate the 60-day 2026 forecast snapshot and verify its target coverage, component counts, warnings, manifest digests, and byte-for-byte reproducibility before publication.
+- [x] 8.4 From a committed clean revision, generate the 60-day 2026 forecast snapshot and verify its target coverage, component counts, warnings, manifest digests, and byte-for-byte reproducibility before publication.
