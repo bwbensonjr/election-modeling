@@ -36,7 +36,14 @@ def paired_across(
     predictions: pd.DataFrame, left: str, right: str, variant: str
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Shared holdout races, and each definition's exclusive ones."""
-    columns = ["election_id", "fold", "squared_error", "observed", "prediction"]
+    columns = [
+        "election_id",
+        "fold",
+        "squared_error",
+        "observed",
+        "prediction",
+        "is_special",
+    ]
     a = predictions[
         (predictions["definition"] == left) & (predictions["variant"] == variant)
     ]
@@ -56,17 +63,18 @@ def paired_across(
     # part of any error difference is the target moving rather than the model
     # improving.
     shared["response_shift"] = shared["observed_right"] - shared["observed_left"]
+    if not (shared["fold_left"].astype(str) == shared["fold_right"].astype(str)).all():
+        raise RuntimeError("shared race has conflicting holdout folds")
+    shared["fold"] = shared["fold_left"].astype(str)
+    if not (
+        shared["is_special_left"].astype(bool)
+        == shared["is_special_right"].astype(bool)
+    ).all():
+        raise RuntimeError("shared race has conflicting special-election status")
+    shared["is_special"] = shared["is_special_left"].astype(bool)
     only_left = a[~a["election_id"].isin(shared["election_id"])]
     only_right = b[~b["election_id"].isin(shared["election_id"])]
     return shared, only_left, only_right
-
-
-def _bootstrap(shared: pd.DataFrame, rng: np.random.Generator) -> np.ndarray:
-    left = shared["squared_error_left"].to_numpy()
-    right = shared["squared_error_right"].to_numpy()
-    n = len(shared)
-    index = rng.integers(0, n, size=(compare.BOOTSTRAP_RESAMPLES, n))
-    return np.sqrt(left[index].mean(axis=1)) - np.sqrt(right[index].mean(axis=1))
 
 
 def run(
@@ -91,9 +99,15 @@ def run(
     left_rmse = float(np.sqrt(shared["squared_error_left"].mean()))
     right_rmse = float(np.sqrt(shared["squared_error_right"].mean()))
     difference = left_rmse - right_rmse
-    draws = _bootstrap(shared, rng)
-    low, high = np.percentile(draws, compare.INTERVAL_PERCENTILES)
-    spans_zero = bool(low <= 0 <= high)
+    draws = compare.bootstrap_difference(shared, rng)
+    n_clusters = int(shared["fold"].nunique())
+    interval_available = len(draws) > 0
+    if interval_available:
+        low, high = np.percentile(draws, compare.INTERVAL_PERCENTILES)
+        spans_zero = bool(low <= 0 <= high)
+    else:
+        low, high = float("nan"), float("nan")
+        spans_zero = pd.NA
 
     shift = shared["response_shift"].abs()
     same_response = left_def.response == right_def.response
@@ -111,9 +125,10 @@ def run(
             "ci_low": float(low),
             "ci_high": float(high),
             "interval_spans_zero": spans_zero,
+            "interval_available": interval_available,
             "verdict": (
                 "undecided"
-                if spans_zero
+                if not interval_available or spans_zero
                 else (f"{left} lower" if difference < 0 else f"{right} lower")
             ),
             "races_favouring_left": int((shared["squared_error_difference"] < 0).sum()),
@@ -194,15 +209,29 @@ def run(
         )
 
     report = pd.DataFrame(rows)
+    report["resampling_unit"] = "election_date"
+    report["n_clusters"] = n_clusters
     report["bootstrap_resamples"] = compare.BOOTSTRAP_RESAMPLES
     report["bootstrap_seed"] = compare.BOOTSTRAP_SEED
+    sensitivity = compare.leave_one_general_date_out(shared)
+    if not sensitivity.empty:
+        sensitivity.insert(0, "left_definition", left)
+        sensitivity.insert(1, "right_definition", right)
+        sensitivity.insert(2, "variant", variant)
+    report.attrs["sensitivity"] = sensitivity
 
     print(
         f"definition comparison: {left!r} against {right!r} using variant "
         f"{variant!r}\n"
         f"  shared holdout races: {len(shared)}\n"
         f"  {left} {left_rmse:.3f} vs {right} {right_rmse:.3f}; difference "
-        f"{difference:+.3f} [{float(low):+.3f}, {float(high):+.3f}] -> "
+        f"{difference:+.3f} "
+        + (
+            f"[{float(low):+.3f}, {float(high):+.3f}]"
+            if interval_available
+            else "[not estimable]"
+        )
+        + " -> "
         f"{rows[0]['verdict'].upper()}\n"
         f"  response shift on shared races: median {shift.median():.3f}, "
         f"{int((shift > SHIFT_THRESHOLD).sum())} beyond {SHIFT_THRESHOLD:.0f} point, "

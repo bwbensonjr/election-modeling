@@ -1,5 +1,10 @@
 # The data-definition decision
 
+> Supersession note: numeric intervals and verdicts below document the earlier
+> race-bootstrap analysis. They are superseded by the election-date-clustered
+> rows in `data/models/definition_comparison.csv` and its leave-one-date
+> sensitivity table. Point estimates still describe the paired race sets.
+
 *Rescored under the date-based fold schedule; figures computed on the
 year-based schedule are superseded, not reproduced. Every verdict on this page
 survived the refold unchanged. See [`scoring.md`](scoring.md).*
@@ -45,7 +50,7 @@ that compares.
 ## Paired on shared races
 
 Each row is `current` against the named definition, on the races both hold out,
-with a paired bootstrap interval over those races.
+with a paired election-date-cluster interval over those races.
 
 | Against | Shared | `current` | Other | Difference | 90% interval | Verdict |
 |---|---|---|---|---|---|---|

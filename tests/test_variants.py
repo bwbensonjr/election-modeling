@@ -10,7 +10,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from legmodel import variants
+from legmodel import definitions, score, variants
 
 
 def races() -> pd.DataFrame:
@@ -188,6 +188,69 @@ def test_the_pooled_arms_differ_by_exactly_one_term():
 def test_the_plain_arm_matches_the_baseline():
     assert variants.get("special_pooled_plain").predictors == (
         variants.get("baseline").predictors
+    )
+
+
+def test_forecast_candidates_are_horizon_matched_and_no_timing_is_explicit():
+    timing_60 = variants.get("baseline_timing_money_wide")
+    no_timing_60 = variants.get("baseline_money_logratio_no_timing_wide")
+    no_timing_14 = variants.get("baseline_money_logratio_no_timing")
+    fallback = variants.get("baseline_no_timing")
+
+    assert timing_60.as_of == variants.RELATIVE_AS_OF["wide"]
+    assert "money_logratio_wide" in timing_60.predictors
+    assert timing_60.priors == variants.timing_priors()
+    for candidate in (no_timing_60, no_timing_14, fallback):
+        assert "pres_elec" not in candidate.predictors
+        assert "ballot_timing" not in candidate.predictors
+    assert no_timing_60.as_of == variants.RELATIVE_AS_OF["wide"]
+    assert no_timing_14.as_of == variants.RELATIVE_AS_OF["primary"]
+
+
+def test_operational_forecast_composites_route_complete_and_fallback_once():
+    frame = pd.DataFrame(
+        {
+            "election_id": ["complete", "incomplete"],
+            "money_complete": [True, False],
+        }
+    )
+    for name, money_name in (
+        ("forecast_60d", "baseline_money_logratio_no_timing_wide"),
+        ("forecast_14d", "baseline_money_logratio_no_timing"),
+    ):
+        composite = variants.get(name)
+        routed = composite.route(frame)
+        assert routed[True]["election_id"].tolist() == ["complete"]
+        assert routed[False]["election_id"].tolist() == ["incomplete"]
+        assert composite.components[True].name == money_name
+        assert composite.components[False].name == "baseline_no_timing"
+        assert sum(len(group) for group in routed.values()) == len(frame)
+
+
+def test_composite_compatibility_checks_each_components_training_population():
+    frame = pd.DataFrame(
+        {
+            "election_id": ["a", "b", "c", "d"],
+            "election_date": ["2020-11-03"] * 4,
+            "election_year": [2020] * 4,
+            "is_special": [False] * 4,
+            "pres_elec": [True] * 4,
+            "PVI_N": [-1.0, 1.0, -2.0, 2.0],
+            "incumbent_status": [
+                "Dem_Incumbent",
+                "GOP_Incumbent",
+                "No_Incumbent",
+                "Dem_Incumbent",
+            ],
+            "money_complete": [True, True, False, False],
+            "money_logratio_primary": [-0.5, 0.5, float("nan"), float("nan")],
+            "money_logratio_wide": [-0.4, 0.4, float("nan"), float("nan")],
+            "response": [-1.0, 1.0, -2.0, 2.0],
+        }
+    )
+
+    score.check_compatible(
+        variants.get("forecast_14d"), definitions.adopted(), frame
     )
 
 

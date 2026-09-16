@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -115,6 +116,31 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("variants", help="list registered variants")
     sub.add_parser("definitions", help="list registered data definitions")
 
+    finance_cmd = sub.add_parser(
+        "target-finance", help="collect or verify future-target OCPF finance"
+    )
+    finance_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    finance_cmd.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="resolve candidates and report the exact cutoff without collecting",
+    )
+    finance_cmd.add_argument(
+        "--cache-only",
+        action="store_true",
+        help="refuse any OCPF request that is not already cached",
+    )
+    forecast_cmd = sub.add_parser(
+        "forecast", help="fit and publish an immutable election forecast snapshot"
+    )
+    forecast_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    forecast_score_cmd = sub.add_parser(
+        "forecast-score", help="score a locked forecast against certified results"
+    )
+    forecast_score_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    forecast_score_cmd.add_argument("--results", type=Path, required=True)
+    forecast_score_cmd.add_argument("--result-source", required=True)
+
     args = parser.parse_args(argv)
 
     if args.command == "score":
@@ -128,19 +154,22 @@ def main(argv: list[str] | None = None) -> int:
             schedule_change=args.schedule_change,
         )
     elif args.command == "compare":
-        from . import compare
-
         import pandas as pd
 
+        from . import compare
         from . import config as config_module
 
         reference, *others = args.variants
         if not others:
             compare_cmd.error("name at least two variants")
         reports = []
+        sensitivities = []
         for definition in args.definition:
             for other in others:
-                reports.append(compare.run(reference, other, definition, write=False))
+                result = compare.run(reference, other, definition, write=False)
+                reports.append(result)
+                sensitivities.append(result.attrs["sensitivity"])
+                result.attrs = {}
                 print()
         report = pd.concat(reports, ignore_index=True).round(6)
         if args.append:
@@ -150,19 +179,31 @@ def main(argv: list[str] | None = None) -> int:
                 ["definition", "left_variant", "right_variant"],
             )
         config_module.write_csv(report, config_module.VARIANT_COMPARISON)
+        sensitivity = pd.concat(sensitivities, ignore_index=True).round(6)
+        if args.append:
+            sensitivity = config_module.merge_cells(
+                sensitivity,
+                config_module.VARIANT_COMPARISON_SENSITIVITY,
+                ["definition", "left_variant", "right_variant"],
+            )
+        config_module.write_csv(
+            sensitivity, config_module.VARIANT_COMPARISON_SENSITIVITY
+        )
     elif args.command == "compare-definitions":
-        from . import compare_definitions, config
-
         import pandas as pd
+
+        from . import compare_definitions, config
 
         reference, *others = args.definitions
         if not others:
             cd_cmd.error("name at least two definitions")
         reports = []
+        sensitivities = []
         for other in others:
-            reports.append(
-                compare_definitions.run(reference, other, args.variant)
-            )
+            result = compare_definitions.run(reference, other, args.variant)
+            reports.append(result)
+            sensitivities.append(result.attrs["sensitivity"])
+            result.attrs = {}
             print()
         report = pd.concat(reports, ignore_index=True).round(6)
         if args.append:
@@ -172,6 +213,14 @@ def main(argv: list[str] | None = None) -> int:
                 ["left_definition", "right_definition", "variant"],
             )
         config.write_csv(report, config.DEFINITION_COMPARISON)
+        sensitivity = pd.concat(sensitivities, ignore_index=True).round(6)
+        if args.append:
+            sensitivity = config.merge_cells(
+                sensitivity,
+                config.DEFINITION_COMPARISON_SENSITIVITY,
+                ["left_definition", "right_definition", "variant"],
+            )
+        config.write_csv(sensitivity, config.DEFINITION_COMPARISON_SENSITIVITY)
     elif args.command == "sweep":
         from . import config, sweep
 
@@ -255,9 +304,9 @@ def main(argv: list[str] | None = None) -> int:
                     f"restriction: {restriction}"
                 )
     elif args.command == "definitions":
-        from . import definitions
-
         import pandas as pd
+
+        from . import definitions
 
         races, roster = None, None
         rows = []
@@ -295,6 +344,20 @@ def main(argv: list[str] | None = None) -> int:
                 ]
             ].to_string(index=False)
         )
+    elif args.command == "target-finance":
+        from . import forecast_finance
+
+        forecast_finance.run(
+            args.horizon, dry_run=args.dry_run, cache_only=args.cache_only
+        )
+    elif args.command == "forecast":
+        from . import forecast_run
+
+        forecast_run.run(args.horizon)
+    elif args.command == "forecast-score":
+        from . import forecast_score
+
+        forecast_score.run(args.horizon, args.results, args.result_source)
     else:
         parser.error(f"unknown command {args.command}")
     return 0

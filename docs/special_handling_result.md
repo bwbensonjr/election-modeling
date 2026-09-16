@@ -1,5 +1,10 @@
 # Where do special elections belong?
 
+> Supersession note: numeric intervals and verdicts below document the earlier
+> race-bootstrap analysis. Current election-date-clustered results are in
+> `data/models/variant_comparison.csv`; leave-one-general-date results are in
+> `data/models/variant_comparison_sensitivity.csv`.
+
 Special elections are 24 of the 424 races in the holdout and the model's worst
 segment by a wide margin. The question this answers is not which term to add
 but whether they belong in the general-election fit at all.

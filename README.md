@@ -202,6 +202,10 @@ against an unmoved yardstick.
   a stated pre-election date. Rolled up into the race table's money columns.
   Collected by `uv run maprecinct finance`; see
   [`docs/money_results.md`](docs/money_results.md).
+- **Forward forecasts.** A response-free 2026 target, exact 60-day and 14-day
+  finance snapshots, immutable prediction directories, and read-only
+  prospective scoring are described in
+  [`docs/forecasting.md`](docs/forecasting.md).
 
 ```bash
 uv run legmodel definitions                        # list the data definitions
@@ -210,6 +214,8 @@ uv run legmodel folds                              # print the fold schedule
 uv run legmodel compare baseline baseline_year      # paired comparison of variants
 uv run legmodel compare-definitions current two_party_or_strongest
 uv run legmodel importance                         # variable importance and effect sizes
+uv run legmodel target-finance --horizon 60d --dry-run
+uv run legmodel forecast --horizon 60d
 ```
 
 ### Baseline accuracy

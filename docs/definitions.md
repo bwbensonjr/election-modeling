@@ -139,7 +139,7 @@ trained on, and what the response measures.
 `legmodel compare-definitions` reports all three:
 
 1. **Paired difference on shared races** — the races both definitions hold out,
-   with a bootstrap interval and a decided/undecided label.
+   with an election-date-clustered interval and a decided/undecided label.
 2. **Exclusive races** — what each admits that the other does not, with counts,
    reasons, and each side's score over its own exclusive races.
 3. **Response shift** — over the shared races, how far the two responses differ.

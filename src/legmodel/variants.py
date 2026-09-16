@@ -1204,6 +1204,80 @@ register(
         ),
     )
 )
+register(
+    Variant(
+        name="baseline_timing_money_wide",
+        predictors=TIMING_PREDICTORS + ("money_logratio_wide",),
+        requires=("money_complete",),
+        as_of=RELATIVE_AS_OF["wide"],
+        priors=timing_priors(),
+        description=(
+            "the timing categorical plus the log ratio of Democratic to "
+            "opponent receipts, measured 60 days before the election"
+        ),
+    )
+)
+register(
+    Variant(
+        name="baseline_no_timing",
+        predictors=("PVI_N", "incumbent_status"),
+        description="the baseline without an election-level timing term",
+    )
+)
+register(
+    Variant(
+        name="baseline_money_logratio_no_timing",
+        predictors=("PVI_N", "incumbent_status", "money_logratio_primary"),
+        requires=("money_complete",),
+        as_of=RELATIVE_AS_OF["primary"],
+        description=(
+            "PVI, incumbency, and the 14-day receipts log ratio, without "
+            "ballot timing or pres_elec"
+        ),
+    )
+)
+register(
+    Variant(
+        name="baseline_money_logratio_no_timing_wide",
+        predictors=("PVI_N", "incumbent_status", "money_logratio_wide"),
+        requires=("money_complete",),
+        as_of=RELATIVE_AS_OF["wide"],
+        description=(
+            "PVI, incumbency, and the 60-day receipts log ratio, without "
+            "ballot timing or pres_elec"
+        ),
+    )
+)
+register(
+    CompositeVariant(
+        name="forecast_60d",
+        components={
+            False: REGISTRY["baseline_no_timing"],
+            True: REGISTRY["baseline_money_logratio_no_timing_wide"],
+        },
+        route_on="money_complete",
+        description=(
+            "the 60-day operational composite selected by the clustered "
+            "timing comparison and the predeclared no-timing simplicity "
+            "tie-break; incomplete finance uses baseline_no_timing"
+        ),
+    )
+)
+register(
+    CompositeVariant(
+        name="forecast_14d",
+        components={
+            False: REGISTRY["baseline_no_timing"],
+            True: REGISTRY["baseline_money_logratio_no_timing"],
+        },
+        route_on="money_complete",
+        description=(
+            "the 14-day operational composite selected by the clustered "
+            "timing comparison and the predeclared no-timing simplicity "
+            "tie-break; incomplete finance uses baseline_no_timing"
+        ),
+    )
+)
 
 
 # The money sweep. Four contrasts over the same two columns, registered rather

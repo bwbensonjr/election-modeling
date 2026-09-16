@@ -128,16 +128,67 @@ def paired_frame(
 
 
 def bootstrap_difference(paired: pd.DataFrame, rng: np.random.Generator) -> np.ndarray:
-    """RMSE differences over resampled races.
+    """Race-weighted RMSE differences over resampled election-date clusters.
 
-    Each resample draws races, then scores both variants on that same draw, so
-    the pairing survives the resampling.
+    A bootstrap draw samples the observed fold keys with replacement and
+    carries every paired race from each selected fold. Cluster sizes therefore
+    continue to determine the weight of their races in each resampled RMSE.
     """
-    left = paired["squared_error_left"].to_numpy()
-    right = paired["squared_error_right"].to_numpy()
-    n = len(paired)
-    index = rng.integers(0, n, size=(BOOTSTRAP_RESAMPLES, n))
-    return np.sqrt(left[index].mean(axis=1)) - np.sqrt(right[index].mean(axis=1))
+    clusters = (
+        paired.groupby("fold", sort=True)
+        .agg(
+            n_races=("fold", "size"),
+            left_sum=("squared_error_left", "sum"),
+            right_sum=("squared_error_right", "sum"),
+        )
+        .reset_index(drop=True)
+    )
+    n_clusters = len(clusters)
+    if n_clusters < 2:
+        return np.array([], dtype=float)
+    index = rng.integers(
+        0, n_clusters, size=(BOOTSTRAP_RESAMPLES, n_clusters)
+    )
+    counts = clusters["n_races"].to_numpy(dtype=float)[index].sum(axis=1)
+    left = clusters["left_sum"].to_numpy(dtype=float)[index].sum(axis=1)
+    right = clusters["right_sum"].to_numpy(dtype=float)[index].sum(axis=1)
+    return np.sqrt(left / counts) - np.sqrt(right / counts)
+
+
+def point_difference(paired: pd.DataFrame) -> float:
+    """Race-weighted left-minus-right RMSE difference."""
+    left = float(np.sqrt(paired["squared_error_left"].mean()))
+    right = float(np.sqrt(paired["squared_error_right"].mean()))
+    return left - right
+
+
+def leave_one_general_date_out(paired: pd.DataFrame) -> pd.DataFrame:
+    """Sensitivity of a paired comparison to each general-election date."""
+    required = {"fold", "is_special", "squared_error_left", "squared_error_right"}
+    missing = required - set(paired.columns)
+    if missing:
+        raise ValueError(
+            "leave-one-general-date-out requires " + ", ".join(sorted(missing))
+        )
+    general_dates = sorted(
+        paired.loc[~paired["is_special"].astype(bool), "fold"].astype(str).unique()
+    )
+    full = point_difference(paired)
+    rows = []
+    for omitted in general_dates:
+        remaining = paired[paired["fold"].astype(str) != omitted]
+        difference = point_difference(remaining)
+        rows.append(
+            {
+                "omitted_date": omitted,
+                "remaining_races": len(remaining),
+                "remaining_clusters": int(remaining["fold"].nunique()),
+                "rmse_difference": difference,
+                "full_rmse_difference": full,
+                "sign_change": bool(np.sign(difference) != np.sign(full)),
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
@@ -146,9 +197,15 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
     right_rmse = float(np.sqrt(paired["squared_error_right"].mean()))
     difference = left_rmse - right_rmse
     draws = bootstrap_difference(paired, rng)
-    low, high = np.percentile(draws, INTERVAL_PERCENTILES)
-    spans_zero = bool(low <= 0 <= high)
-    if spans_zero:
+    n_clusters = int(paired["fold"].nunique())
+    interval_available = len(draws) > 0
+    if interval_available:
+        low, high = np.percentile(draws, INTERVAL_PERCENTILES)
+        spans_zero = bool(low <= 0 <= high)
+    else:
+        low, high = float("nan"), float("nan")
+        spans_zero = pd.NA
+    if not interval_available or spans_zero:
         verdict = "undecided"
     else:
         verdict = f"{left} lower" if difference < 0 else f"{right} lower"
@@ -164,6 +221,7 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
         "ci_low": float(low),
         "ci_high": float(high),
         "interval_spans_zero": spans_zero,
+        "interval_available": interval_available,
         "verdict": verdict,
         "races_favouring_left": int((paired["squared_error_difference"] < 0).sum()),
         "races_favouring_right": int((paired["squared_error_difference"] > 0).sum()),
@@ -173,6 +231,10 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
         # evidence. Under a date schedule most folds are one of those: 17 of
         # the 23 hold a single special election apiece.
         "small_sample": len(paired) < score.SMALL_SAMPLE,
+        "resampling_unit": "election_date",
+        "n_clusters": n_clusters,
+        "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
+        "bootstrap_seed": BOOTSTRAP_SEED,
     }
 
 
@@ -223,11 +285,28 @@ def run(
             "effect of both, not of one term"
         )
 
-    rng = np.random.default_rng(BOOTSTRAP_SEED)
-    rows = [_row(paired, left, right, "pooled", "all", rng)]
+    rows = [
+        _row(
+            paired,
+            left,
+            right,
+            "pooled",
+            "all",
+            np.random.default_rng(BOOTSTRAP_SEED),
+        )
+    ]
     for segment in COMPARISON_SEGMENTS:
         for value, group in paired.groupby(segment, sort=True):
-            rows.append(_row(group, left, right, segment, str(value), rng))
+            rows.append(
+                _row(
+                    group,
+                    left,
+                    right,
+                    segment,
+                    str(value),
+                    np.random.default_rng(BOOTSTRAP_SEED),
+                )
+            )
 
     report = pd.DataFrame(rows)
     report.insert(0, "definition", definition)
@@ -236,10 +315,17 @@ def run(
     report["terms_removed"] = removed
     report["left_components"] = _components(left)
     report["right_components"] = _components(right)
-    report["bootstrap_resamples"] = BOOTSTRAP_RESAMPLES
-    report["bootstrap_seed"] = BOOTSTRAP_SEED
+    sensitivity = leave_one_general_date_out(paired)
+    if not sensitivity.empty:
+        sensitivity.insert(0, "definition", definition)
+        sensitivity.insert(1, "left_variant", left)
+        sensitivity.insert(2, "right_variant", right)
+    report.attrs["sensitivity"] = sensitivity
     if write:
         config.write_csv(report.round(6), config.VARIANT_COMPARISON)
+        config.write_csv(
+            sensitivity.round(6), config.VARIANT_COMPARISON_SENSITIVITY
+        )
 
     print()
     print(
@@ -264,7 +350,12 @@ def run(
     print(
         f"\npooled: {left} {pooled['left_rmse']:.3f} vs {right} "
         f"{pooled['right_rmse']:.3f}; difference {pooled['rmse_difference']:+.3f} "
-        f"[{pooled['ci_low']:+.3f}, {pooled['ci_high']:+.3f}] -> {pooled['verdict'].upper()}"
+        + (
+            f"[{pooled['ci_low']:+.3f}, {pooled['ci_high']:+.3f}]"
+            if pooled["interval_available"]
+            else "[not estimable]"
+        )
+        + f" -> {pooled['verdict'].upper()}"
     )
     if nesting == "non-nested":
         print(

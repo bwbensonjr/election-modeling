@@ -15,7 +15,7 @@ import hashlib
 import json
 import subprocess
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import requests
@@ -74,6 +74,7 @@ class Stats:
 
 
 STATS = Stats()
+CACHE_ONLY = False
 
 
 def _cache_path(path: str, params: dict | None):
@@ -98,6 +99,8 @@ def get_json(path: str, params: dict | None = None, *, refresh: bool = False):
     if cached.exists() and not refresh:
         STATS.hits += 1
         return json.loads(cached.read_text())
+    if CACHE_ONLY:
+        raise OcpfError(f"cache-only mode is missing {cached.name}")
 
     url = BASE_URL + path.lstrip("/")
     last_error = None
@@ -176,20 +179,8 @@ def dated_total(cpf_id, start, end, category: str = CATEGORY_RECEIPTS) -> DatedT
             "it is rejected here rather than sent"
         )
     start_text, end_text = as_ocpf_date(start), as_ocpf_date(end)
-    payload = get_json(
-        SEARCH_ITEMS_PATH,
-        {
-            "SearchTypeCategory": category,
-            "CpfId": int(cpf_id),
-            "StartDate": start_text,
-            "EndDate": end_text,
-            # StartIndex is 1-based; PageSize=1 because only the summary is
-            # wanted and the items themselves are not.
-            "PageSize": 1,
-            "StartIndex": 1,
-            "withSummary": "true",
-        },
-    )
+    params = dated_total_params(cpf_id, start, end, category)
+    payload = get_json(SEARCH_ITEMS_PATH, params)
     summary = (payload or {}).get("summary") or {}
     return DatedTotal(
         count=int(summary.get("count") or 0),
@@ -198,6 +189,27 @@ def dated_total(cpf_id, start, end, category: str = CATEGORY_RECEIPTS) -> DatedT
         end=end_text,
         category=category,
     )
+
+
+def dated_total_params(cpf_id, start, end, category: str) -> dict:
+    """Exact API parameters and cache identity inputs for a dated total."""
+    return {
+        "SearchTypeCategory": category,
+        "CpfId": int(cpf_id),
+        "StartDate": as_ocpf_date(start),
+        "EndDate": as_ocpf_date(end),
+        "PageSize": 1,
+        "StartIndex": 1,
+        "withSummary": "true",
+    }
+
+
+def dated_total_cache_identity(cpf_id, start, end, category: str) -> str:
+    """Repo-relative cache file backing a dated total."""
+    path = _cache_path(
+        SEARCH_ITEMS_PATH, dated_total_params(cpf_id, start, end, category)
+    )
+    return str(path.relative_to(config.ROOT))
 
 
 # The race table's office labels against OCPF's.
@@ -214,6 +226,26 @@ ORDINAL_WORDS = {
     "sixteenth": "16th", "seventeenth": "17th", "eighteenth": "18th",
     "nineteenth": "19th", "twentieth": "20th",
 }
+ORDINAL_TENS = {"twenty": 20, "thirty": 30, "forty": 40}
+ORDINAL_ONES = {
+    "first": 1,
+    "second": 2,
+    "third": 3,
+    "fourth": 4,
+    "fifth": 5,
+    "sixth": 6,
+    "seventh": 7,
+    "eighth": 8,
+    "ninth": 9,
+}
+
+
+def _ordinal(number: int) -> str:
+    if 10 <= number % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
 
 
 def normalize_district(text: str) -> str:
@@ -227,7 +259,23 @@ def normalize_district(text: str) -> str:
 
     lowered = str(text).lower().replace("&", " and ")
     words = re.sub(r"[^a-z0-9 ]", " ", lowered).split()
-    return " ".join(ORDINAL_WORDS.get(w, w) for w in words)
+    normalized = []
+    index = 0
+    while index < len(words):
+        word = words[index]
+        if (
+            word in ORDINAL_TENS
+            and index + 1 < len(words)
+            and words[index + 1] in ORDINAL_ONES
+        ):
+            normalized.append(
+                _ordinal(ORDINAL_TENS[word] + ORDINAL_ONES[words[index + 1]])
+            )
+            index += 2
+            continue
+        normalized.append(ORDINAL_WORDS.get(word, word))
+        index += 1
+    return " ".join(normalized)
 
 
 # Districts the election results and OCPF enumerate differently. Both name the
@@ -300,7 +348,7 @@ class RosterUnavailable(Exception):
     """The CLI could not resolve a race's roster, with its reason."""
 
 
-def _cli_cache_path(args: list) -> "Path":
+def _cli_cache_path(args: list) -> Path:
     payload = json.dumps(args, sort_keys=True)
     digest = hashlib.sha256(payload.encode()).hexdigest()[:20]
     return config.OCPF_CACHE / "cli" / f"race__{digest}.json"
@@ -318,11 +366,14 @@ def _run_cli(args: list) -> list:
         STATS.hits += 1
         payload = json.loads(cached.read_text())
     else:
+        if CACHE_ONLY:
+            raise RosterUnavailable(f"cache-only mode is missing {cached.name}")
         completed = subprocess.run(
             [CLI_COMMAND, *args, "--json"],
             capture_output=True,
             text=True,
             timeout=CLI_TIMEOUT_SECONDS,
+            check=False,
         )
         try:
             rows = json.loads(completed.stdout) if completed.stdout.strip() else None
@@ -446,8 +497,6 @@ def era_code(year: int, office: str, district_display: str):
     """
     if year < DEPOSITORY_FIRST_YEAR:
         return None
-    ocpf_office = OFFICE_TO_OCPF.get(office)
-    wanted = normalize_district(district_display)
     for row in _depository_rows(year, office, district_display):
         code = row.get("districtCodeSought")
         if code:

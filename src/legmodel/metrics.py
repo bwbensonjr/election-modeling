@@ -23,6 +23,7 @@ METRIC_COLUMNS = [
     "coverage_90",
     "crps",
     "win_accuracy",
+    "brier_score",
     "win_log_loss",
 ]
 
@@ -76,6 +77,7 @@ def per_race(draws: np.ndarray, observed: np.ndarray) -> pd.DataFrame:
             "win_probability": win_probability,
             "dem_win_observed": dem_win,
             "win_correct": (win_probability > 0.5) == dem_win,
+            "brier_score": (win_probability - dem_win.astype(float)) ** 2,
             "win_log_loss": -(
                 dem_win * np.log(clipped) + (~dem_win) * np.log(1 - clipped)
             ),
@@ -106,6 +108,7 @@ def aggregate(frame: pd.DataFrame) -> dict:
         "coverage_90": float(frame["within_interval_90"].mean()),
         "crps": float(frame["crps"].mean()),
         "win_accuracy": float(frame["win_correct"].mean()),
+        "brier_score": float(frame["brier_score"].mean()),
         "win_log_loss": float(frame["win_log_loss"].mean()),
     }
 

@@ -1,5 +1,9 @@
 # Does `is_special` improve the baseline?
 
+> Supersession note: numeric intervals and verdicts below document the earlier
+> race-bootstrap analysis. Current election-date-clustered results are in
+> `data/models/variant_comparison.csv`.
+
 > **Superseded.** Every figure on this page was computed under the
 > **year-based** fold schedule, before folds became one per election date, and
 > names `baseline_special`, which is now registered as `special_pooled_term`.

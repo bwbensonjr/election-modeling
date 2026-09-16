@@ -1,5 +1,10 @@
 # Ballot timing as one categorical
 
+> Current uncertainty note: all intervals and verdicts in this document use
+> election-date cluster resampling. The earlier race-bootstrap timing verdict
+> was superseded because it treated races from one statewide election as
+> independent evidence.
+
 Three findings from the date-based refold pointed at one defect: the model
 described ballot timing with two booleans, `pres_elec` and `national_env`,
 whose joint level set the reader had to reconstruct — and which are exactly
@@ -165,12 +170,18 @@ Pooled paired differences; a positive difference favours `baseline_timing`.
 
 | Definition | Against | n | Difference | 90% interval | Verdict |
 |---|---|---|---|---|---|
-| `two_party_or_strongest` | `baseline` | 413 | +0.771 | [+0.394, +1.163] | **`baseline_timing` lower** |
-| `two_party_or_strongest` | `baseline_year` | 413 | +0.108 | [−0.287, +0.501] | undecided |
-| `two_party_or_strongest` | `baseline_national_env` | 253 | +0.671 | [−0.133, +1.709] | undecided |
-| `generals_only` | `baseline` | 389 | +0.754 | [+0.343, +1.169] | **`baseline_timing` lower** |
-| `generals_only` | `baseline_year` | 389 | +0.138 | [−0.314, +0.571] | undecided |
-| `generals_only` | `baseline_national_env` | 240 | −0.077 | [−0.319, +0.167] | undecided |
+| `two_party_or_strongest` | `baseline` | 413 | +0.771 | [-0.300, +2.102] | undecided |
+| `two_party_or_strongest` | `baseline_year` | 413 | +0.108 | [-0.667, +0.870] | undecided |
+| `two_party_or_strongest` | `baseline_national_env` | 253 | +0.671 | [-0.097, +2.708] | undecided |
+| `generals_only` | `baseline` | 389 | +0.754 | [-0.437, +2.215] | undecided |
+| `generals_only` | `baseline_year` | 389 | +0.138 | [-0.649, +0.936] | undecided |
+| `generals_only` | `baseline_national_env` | 240 | -0.077 | [-0.178, +0.052] | undecided |
+
+The point gains are unchanged, but no timing comparison is separated by the
+historical election dates. Under `two_party_or_strongest`, omitting 2018-11-06
+reverses the pooled `baseline` comparison from +0.771 to -0.071. The earlier
+race-bootstrap conclusion that `baseline_timing` was lower is superseded; the
+timing structure is not robust across election cycles.
 
 The `baseline_national_env` comparisons run on the races both arms still hold
 out, which is 253 and 240 rather than 413 and 389, because that variant is
@@ -209,18 +220,21 @@ to buy its bias reduction with.
 ### The `pres_elec` drop-one cost, re-measured
 
 The standing open issue is that dropping `pres_elec` from
-`baseline_money_logratio` *improves* RMSE by 0.705 [−1.100, −0.299] — decided.
+`baseline_money_logratio` has a point improvement of 0.705, but its clustered
+interval is [-1.728, +0.399], so the drop-one comparison is undecided. The
+earlier race-bootstrap interval [-1.100, -0.299] and decided verdict are
+superseded.
 Re-measured under the timing categorical
 (`uv run legmodel importance --variant baseline_timing_money`), the drop-one
-cost of the whole `ballot_timing` term is **+0.273 [−0.185, +0.721] —
+cost of the whole `ballot_timing` term is **+0.273 [-0.828, +1.376] --
 undecided**:
 
 | Predictor | Drop-one cost | 90% interval | Decided |
 |---|---|---|---|
-| `PVI_N` | +4.411 | [+3.253, +5.570] | yes |
-| `incumbent_status` | +3.290 | [+2.631, +3.944] | yes |
-| `money_logratio_primary` | +1.737 | [+1.191, +2.292] | yes |
-| `ballot_timing` | +0.273 | [−0.185, +0.721] | no |
+| `PVI_N` | +4.411 | [+2.584, +5.719] | yes |
+| `incumbent_status` | +3.290 | [+1.971, +4.264] | yes |
+| `money_logratio_primary` | +1.737 | [+1.232, +2.421] | yes |
+| `ballot_timing` | +0.273 | [-0.828, +1.376] | no |
 
 So the term is no longer *actively harmful* — the point estimate has crossed
 from negative-and-decided to positive-and-undecided. **This is reported, not

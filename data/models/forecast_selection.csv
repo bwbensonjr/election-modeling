@@ -1,0 +1,5 @@
+horizon,definition,no_timing_variant,timing_variant,n_races,n_clusters,rmse_difference_no_timing_minus_timing,ci_low,ci_high,verdict,sign_change_dates,selected_structure,selection_rule
+14d,two_party_or_strongest,baseline_money_logratio_no_timing,baseline_timing_money,398,21,0.280295,-0.8411,1.3951,undecided,2018-11-06,no_timing,predeclared_simplicity_tie_break
+14d,generals_only,baseline_money_logratio_no_timing,baseline_timing_money,376,6,0.211199,-1.0150,1.4010,undecided,2016-11-08;2018-11-06,no_timing,predeclared_simplicity_tie_break
+60d,two_party_or_strongest,baseline_money_logratio_no_timing_wide,baseline_timing_money_wide,398,21,0.163713,-0.9263,1.2240,undecided,2016-11-08;2018-11-06,no_timing,predeclared_simplicity_tie_break
+60d,generals_only,baseline_money_logratio_no_timing_wide,baseline_timing_money_wide,376,6,0.142412,-1.0411,1.2783,undecided,2016-11-08;2018-11-06,no_timing,predeclared_simplicity_tie_break

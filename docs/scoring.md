@@ -188,7 +188,7 @@ uv run legmodel compare-definitions current two_party two_party_or_strongest
 Three sections are reported:
 
 1. **Paired difference on shared races.** Only races both definitions hold out,
-   with a paired bootstrap interval and a decided/undecided label.
+   with a paired election-date-cluster interval and a decided/undecided label.
 2. **Exclusive races.** What each definition admits that the other does not,
    with counts, the reason each race was dropped, and each definition's score
    over its own exclusive races.
@@ -335,12 +335,18 @@ Both variants are scored on the same folds and the same holdout races; a race
 missing from either side leaves the comparison entirely. The statistic is the
 difference in pooled RMSE.
 
-Its interval comes from resampling the holdout races with replacement 10,000
-times and recomputing both RMSEs on each resample. Each resample is shared
-between the two variants, which is what keeps the comparison paired. **When
-the interval contains zero the comparison is labelled `undecided`**, and the
-writeup says the data does not separate the two rather than naming whichever
-RMSE happened to be lower.
+Its interval comes from sampling election-date fold keys with replacement
+10,000 times, carrying every paired race from each sampled date, and
+recomputing both race-weighted RMSEs. The point estimate remains equally
+weighted by race; only the uncertainty unit changes. A comparison with fewer
+than two dates has no estimable interval and is `undecided`. Each row records
+`resampling_unit`, `n_clusters`, `bootstrap_resamples`, and `bootstrap_seed`.
+The separate sensitivity tables repeat the point comparison after omitting
+each general-election date.
+
+Race-bootstrap intervals published before the 2026 forecast-readiness change
+are superseded history. They are not interchangeable with the current
+election-date-clustered intervals.
 
 A paired t-test on per-race squared errors was rejected: squared errors of
 margins are heavily right-skewed -- the no-Democrat races alone sit 30 or more
@@ -414,7 +420,10 @@ record and nowhere inside an early fold's training window.
 | `data/models/holdout_predictions.csv.gz` | One row per definition per variant per holdout race: point prediction, 90% interval, win probability, observed response, the per-race error terms every metric is built from, and the `ballot_timing` level the race's own predictor carried |
 | `data/models/scorecard.csv` | One row per definition per variant per segment, with `n_races` and each metric |
 | `data/models/variant_comparison.csv` | Paired differences between variants, within one definition |
+| `data/models/variant_comparison_sensitivity.csv` | Variant comparisons after omitting each general-election date |
 | `data/models/definition_comparison.csv` | The three sections above, per definition pair |
+| `data/models/definition_comparison_sensitivity.csv` | Definition comparisons after omitting each general-election date |
+| `data/models/probability_calibration.csv` | Fixed Democratic-win probability bins with forecast means, outcomes, and counts |
 | `data/models/definition_summary.csv` | Holdout counts per definition |
 | `data/models/definition_dropped_races.csv` | Every race each definition drops, with the reason |
 | `data/models/threshold_sweep.csv` | Races admitted and scores at each write-in threshold |
@@ -422,6 +431,7 @@ record and nowhere inside an early fold's training window.
 | `data/models/fit_diagnostics.csv` | R-hat, ESS, divergences and seed per fit, with the sampler settings and prior declaration that produced them |
 | `data/models/coefficient_parity.csv` | Baseline coefficients against the same fit on mapoli's district table |
 | `data/models/variable_importance.csv` | Per-predictor marginal effect, contribution spread and drop-one holdout cost. See [`variable_importance.md`](variable_importance.md) |
+| `data/models/variable_importance_sensitivity.csv` | Drop-one costs after omitting each general-election date |
 
 Every figure in the scorecard is recomputable from
 `holdout_predictions.csv.gz` alone, which is verified as part of the run.

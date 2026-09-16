@@ -1,5 +1,9 @@
 # Variable importance in the margin model
 
+> Current uncertainty note: drop-one intervals now resample whole election
+> dates. Race-bootstrap intervals and verdicts quoted by earlier revisions are
+> superseded history.
+
 Which predictors carry the model, and what each one is worth in margin points.
 Three measures, because a coefficient alone does not answer the question: a
 large coefficient on a near-constant predictor moves nothing, and a
@@ -22,8 +26,9 @@ over 21 folds, **13.342 RMSE**.
 **The `pres_elec` finding has been re-measured under the ballot-timing
 categorical.** In `baseline_timing_money`, where the two timing booleans are
 replaced by one four-level `ballot_timing` term, the drop-one cost of the whole
-timing term is **+0.273 [-0.185, +0.721] — undecided**, against `pres_elec`'s
--0.705 [-1.100, -0.299] below. The term is no longer actively costing accuracy.
+timing term is **+0.273 [-0.828, +1.376] -- undecided**, against `pres_elec`'s
+-0.705 [-1.728, +0.399] below. Neither timing comparison is decided by the
+historical election dates.
 That is reported, not acted on: the open issue stays open until a variant
 dropping the timing term is registered and compared under every scored
 definition. Both variants' rows are in `variable_importance.csv`; see
@@ -46,7 +51,8 @@ alone.
 
 **The drop-one cost** is the change in pooled holdout RMSE when the predictor
 is removed and the rest refit over the same folds and the same 593 races,
-with the same paired bootstrap the variant comparisons use. Every arm keeps the
+with the same paired election-date cluster bootstrap the variant comparisons
+use. Every arm keeps the
 full variant's `requires`, so all of them score identical races and the
 comparison is genuinely paired; the build fails rather than reporting an
 unpaired one.
@@ -59,13 +65,13 @@ without touching a published number.
 
 | Predictor | Drop-one cost | 90% interval | RMSE without it | Contribution SD |
 |---|---|---|---|---|
-| `PVI_N` | **+3.931** | [+2.736, +5.116] | 17.273 | 13.09 |
-| `incumbent_status` | **+2.540** | [+1.873, +3.205] | 15.882 | 9.46 |
-| `money_logratio_primary` | **+1.669** | [+1.096, +2.232] | 15.010 | 8.01 |
-| `pres_elec` | **−0.705** | [−1.100, −0.299] | 12.637 | 3.45 |
+| `PVI_N` | **+3.931** | [+1.836, +5.671] | 17.273 | 13.09 |
+| `incumbent_status` | **+2.540** | [+1.304, +3.452] | 15.882 | 9.46 |
+| `money_logratio_primary` | **+1.669** | [+1.194, +2.254] | 15.010 | 8.01 |
+| `pres_elec` | **-0.705** | [-1.728, +0.399] | 12.637 | 3.45 |
 
-Positive means the model needs it. Every interval here clears zero, including
-the negative one.
+Positive means the model needs it. The first three clear zero; `pres_elec`
+does not under election-date clustering.
 
 **`PVI_N` is still the model.** It contributes half again as much fitted spread
 as anything else, and removing it costs almost four RMSE points — more than the
@@ -218,7 +224,7 @@ earn a candidate 2.68 more points. See
 | `contribution_sd`, `contribution_iqr` | Spread of the term's contribution to the fitted margin |
 | `predictor_sd` | Spread of the predictor itself, over the fitted races |
 | `drop_one_rmse`, `drop_one_cost` | Pooled holdout RMSE without the predictor, and the change from the full model |
-| `ci_low`, `ci_high`, `decided` | 90% paired-bootstrap interval on the cost, and whether it clears zero |
+| `ci_low`, `ci_high`, `decided` | 90% paired election-date-cluster interval on the cost, and whether it clears zero |
 
 Reproducibility follows the rest of the harness: each arm's seed derives from
 its variant name, definition and fold date, so the report regenerates exactly. All 45 fits

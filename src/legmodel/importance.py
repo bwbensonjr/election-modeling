@@ -50,7 +50,31 @@ COLUMNS = [
     "ci_low",
     "ci_high",
     "decided",
+    "resampling_unit",
+    "n_clusters",
+    "bootstrap_resamples",
+    "bootstrap_seed",
 ]
+
+
+def paired_predictions(
+    full_predictions: pd.DataFrame, arm_predictions: pd.DataFrame
+) -> pd.DataFrame:
+    """Pair a full and drop-one arm without changing the full race set."""
+    paired = full_predictions[
+        ["election_id", "fold", "squared_error", "is_special"]
+    ].merge(
+        arm_predictions[["election_id", "fold", "squared_error"]],
+        on=["election_id", "fold"],
+        suffixes=("_left", "_right"),
+    )
+    if len(paired) != len(full_predictions):
+        raise RuntimeError(
+            "drop-one arm changed the holdout from "
+            f"{len(full_predictions)} races to {len(paired)}; the comparison "
+            "would not be paired"
+        )
+    return paired
 
 
 def _arm(variant: variants.Variant, dropped: str) -> variants.Variant:
@@ -122,29 +146,34 @@ def run(
         f"rmse {full_rmse:.3f}; coefficients from the final fold ({folds[-1]})"
     )
 
-    rng = np.random.default_rng(compare.BOOTSTRAP_SEED)
     rows = []
+    sensitivity_rows = []
     for predictor in variant.predictors:
         print(f"\n=== without {predictor} ===")
         arm = _arm(variant, predictor)
         arm_predictions, _, _, _ = score.score_variant(arm, races, definition)
-        paired = full_predictions[["election_id", "fold", "squared_error"]].merge(
-            arm_predictions[["election_id", "fold", "squared_error"]],
-            on=["election_id", "fold"],
-            suffixes=("_left", "_right"),
-        )
-        if len(paired) != len(full_predictions):
-            raise RuntimeError(
-                f"dropping {predictor!r} changed the holdout from "
-                f"{len(full_predictions)} races to {len(paired)}; the comparison "
-                "would not be paired"
-            )
+        paired = paired_predictions(full_predictions, arm_predictions)
         without = float(np.sqrt(paired["squared_error_right"].mean()))
         cost = without - full_rmse
         # `bootstrap_difference` returns full-minus-arm; the cost of losing the
         # predictor is the other sign.
-        draws = -compare.bootstrap_difference(paired, rng)
-        low, high = np.percentile(draws, compare.INTERVAL_PERCENTILES)
+        draws = -compare.bootstrap_difference(
+            paired, np.random.default_rng(compare.BOOTSTRAP_SEED)
+        )
+        if len(draws):
+            low, high = np.percentile(draws, compare.INTERVAL_PERCENTILES)
+            decided = not (low <= 0 <= high)
+        else:
+            low, high = float("nan"), float("nan")
+            decided = False
+        sensitivity = compare.leave_one_general_date_out(paired)
+        if not sensitivity.empty:
+            sensitivity["rmse_difference"] *= -1
+            sensitivity["full_rmse_difference"] *= -1
+            sensitivity.insert(0, "definition", definition.name)
+            sensitivity.insert(1, "variant", variant.name)
+            sensitivity.insert(2, "predictor", predictor)
+            sensitivity_rows.append(sensitivity)
         sd, iqr = contribution(fitted_races, predictor, final["mean"])
 
         for parameter in variants.expand(predictor):
@@ -169,13 +198,23 @@ def run(
                     "drop_one_cost": cost,
                     "ci_low": float(low),
                     "ci_high": float(high),
-                    "decided": not (low <= 0 <= high),
+                    "decided": decided,
+                    "resampling_unit": "election_date",
+                    "n_clusters": int(paired["fold"].nunique()),
+                    "bootstrap_resamples": compare.BOOTSTRAP_RESAMPLES,
+                    "bootstrap_seed": compare.BOOTSTRAP_SEED,
                 }
             )
 
     report = pd.DataFrame(rows, columns=COLUMNS).sort_values(
         "drop_one_cost", ascending=False, ignore_index=True
     )
+    sensitivity_report = (
+        pd.concat(sensitivity_rows, ignore_index=True)
+        if sensitivity_rows
+        else pd.DataFrame()
+    )
+    report.attrs["sensitivity"] = sensitivity_report
     if write:
         rounded = report.round(6)
         if append:
@@ -183,6 +222,15 @@ def run(
             # published rows, the same posture `score --append` takes.
             rounded = config.merge_cells(rounded, REPORT, ["definition", "variant"])
         config.write_csv(rounded, REPORT)
+        if append:
+            sensitivity_report = config.merge_cells(
+                sensitivity_report,
+                config.VARIABLE_IMPORTANCE_SENSITIVITY,
+                ["definition", "variant"],
+            )
+        config.write_csv(
+            sensitivity_report.round(6), config.VARIABLE_IMPORTANCE_SENSITIVITY
+        )
 
     print(f"\nfull model rmse {full_rmse:.3f} on {len(full_predictions)} holdout races")
     print("\ndrop-one cost in pooled RMSE (positive means the model needs it):")

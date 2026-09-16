@@ -1,5 +1,10 @@
 # The variant sweep
 
+> Current uncertainty note: the comparison tables now resample whole election
+> dates. Numeric race-bootstrap intervals and verdicts retained elsewhere in
+> this historical survey are superseded; use `data/models/variant_comparison.csv`
+> for current intervals and the sensitivity table for leave-one-date results.
+
 Questions 4 and 5 from the README: the presidential-year bias that a single
 `pres_elec` term cannot absorb, and whether `num_candidates` belongs in the
 baseline. Both are variant declarations scored by the existing harness.
@@ -21,7 +26,7 @@ them changes a verdict. See [`scoring.md`](scoring.md) for the schedule.
 | Question | Variant | Verdict |
 |---|---|---|
 | 4 | `baseline_national_env` | **Now refused on nine of 23 folds**, where `national_env` and `pres_elec` are exactly collinear. Its published figures over 413 races are superseded by the refusal; it scores 14.069 over the 253 races that remain |
-| 4 | `baseline_timing` | **Adopt over `baseline`.** The same timing idea as one four-level categorical, so the collinearity cannot arise. Lowers RMSE by 0.771 [+0.394, +1.163] under the adopted definition and 0.754 [+0.343, +1.169] under `generals_only`, keeping every holdout race. Undecided against `baseline_year` |
+| 4 | `baseline_timing` | Historical candidate. The point gain is +0.771 under the adopted definition and +0.754 under `generals_only`, but clustered intervals span zero in both; the earlier race-bootstrap adoption verdict is superseded. |
 | 4 | `baseline_year` | **Adopt.** Lowers RMSE by 0.66 and closes the bias gap to -0.56; converges on every fold |
 | 4 | `baseline_year_pres` | The contrast arm. Now refused on **every** fold: the sharper evidence for dropping `pres_elec` |
 | 4 | `baseline_pres_incumbent` | Undecided |

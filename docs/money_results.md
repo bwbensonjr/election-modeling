@@ -1,5 +1,11 @@
 # Campaign finance: does money help the model?
 
+> Supersession note: numeric comparison intervals and verdicts below document
+> the earlier race-bootstrap analysis. Current election-date-clustered results
+> are in `data/models/variant_comparison.csv`, with leave-one-general-date
+> sensitivity in `data/models/variant_comparison_sensitivity.csv`. Point RMSEs
+> are unchanged by the resampling migration.
+
 **Yes, and by more than any variable tested so far.** Under the adopted
 definition the log ratio of Democratic to opponent receipts, measured 14 days
 before each race's own election, lowers pooled RMSE from 15.067 to 13.342 --- a

@@ -362,10 +362,11 @@ def fit(
     train: pd.DataFrame,
     fold: object = "full",
     definition: str = "current",
+    seed: int | None = None,
 ) -> Fit:
     """Fit one variant to one set of races, under one definition."""
     variant.validate(train.columns)
-    seed = seed_for(variant.name, fold, definition)
+    seed = seed_for(variant.name, fold, definition) if seed is None else seed
     prepared = variants.prepare(train)
 
     # A predictor with one value in training carries no information about its

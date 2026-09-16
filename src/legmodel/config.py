@@ -7,6 +7,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 DATA_DIR = ROOT / "data"
+FORECAST_DIR = DATA_DIR / "forecast"
+FORECAST_2026_DIR = FORECAST_DIR / "2026"
+FORECAST_2026_TARGET = FORECAST_2026_DIR / "target.csv"
+FORECAST_2026_FINANCE_60D = FORECAST_2026_DIR / "finance_60d.csv"
+FORECAST_2026_FINANCE_14D = FORECAST_2026_DIR / "finance_14d.csv"
+FORECAST_2026_SNAPSHOTS = FORECAST_2026_DIR / "snapshots"
 RACE_DIR = DATA_DIR / "race"
 MODEL_DIR = DATA_DIR / "models"
 REPORT_DIR = DATA_DIR / "reports"
@@ -16,13 +22,20 @@ RACE_CANDIDATE_ROSTER = RACE_DIR / "ma_race_candidates.csv.gz"
 
 HOLDOUT_PREDICTIONS = MODEL_DIR / "holdout_predictions.csv.gz"
 SCORECARD = MODEL_DIR / "scorecard.csv"
+PROBABILITY_CALIBRATION = MODEL_DIR / "probability_calibration.csv"
 VARIANT_COMPARISON = MODEL_DIR / "variant_comparison.csv"
+VARIANT_COMPARISON_SENSITIVITY = MODEL_DIR / "variant_comparison_sensitivity.csv"
 COEFFICIENTS = MODEL_DIR / "coefficients.csv"
 FIT_DIAGNOSTICS = MODEL_DIR / "fit_diagnostics.csv"
 DEFINITION_SUMMARY = MODEL_DIR / "definition_summary.csv"
 DEFINITION_DROPPED = MODEL_DIR / "definition_dropped_races.csv"
 DEFINITION_COMPARISON = MODEL_DIR / "definition_comparison.csv"
+DEFINITION_COMPARISON_SENSITIVITY = (
+    MODEL_DIR / "definition_comparison_sensitivity.csv"
+)
 THRESHOLD_SWEEP = MODEL_DIR / "threshold_sweep.csv"
+VARIABLE_IMPORTANCE_SENSITIVITY = MODEL_DIR / "variable_importance_sensitivity.csv"
+FORECAST_SELECTION = MODEL_DIR / "forecast_selection.csv"
 
 RESPONSE = "dem_margin"
 

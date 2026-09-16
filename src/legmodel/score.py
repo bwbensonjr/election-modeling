@@ -7,6 +7,7 @@ coefficients and the fit diagnostics (model-scoring spec).
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from . import config, definitions, fit as fitmod, folds, metrics, variants
@@ -20,6 +21,16 @@ SEGMENTS = [
     "redistricting_cycle",
     "no_dem_candidate",
     "admitted_by_write_in",
+    "incumbent_status",
+]
+
+PROBABILITY_BINS = np.linspace(0.0, 1.0, 11)
+PROBABILITY_BAND_LABELS = [
+    "0.0-0.2",
+    "0.2-0.4",
+    "0.4-0.6",
+    "0.6-0.8",
+    "0.8-1.0",
 ]
 
 # Every special election in the record carries `pres_elec = False`, because
@@ -72,6 +83,7 @@ REQUIRED_SEGMENT_VALUES = {
     "no_dem_candidate": ["True", "False"],
     "admitted_by_write_in": ["True", "False"],
     "office": ["State Representative", "State Senate"],
+    "incumbent_status": ["Dem_Incumbent", "GOP_Incumbent", "No_Incumbent"],
 }
 
 # Below this a segment's metrics rest on too few races to carry weight. They
@@ -108,6 +120,10 @@ def check_compatible(
     fail later on one fold with only the predictor named.
     """
     variant.validate(races.columns, races)
+    if getattr(variant, "is_composite", False):
+        for component in variant.components.values():
+            check_compatible(component, definition, races)
+        return
     # Expanded against the prepared frame: a categorical's indicator columns
     # only exist once `prepare` has built them, and a derived predictor only
     # exists once `derive` has computed it.
@@ -421,6 +437,63 @@ def scorecard(
                 "as_of": ",".join(variant_as_of),
             }
         )
+        general = group[~group["is_special"].astype(bool)]
+        rows.append(
+            {
+                "definition": definition_name,
+                "variant": variant_name,
+                "segment_type": "general_election",
+                "segment_value": "all",
+                **metrics.aggregate(general),
+                "folds_failing_diagnostics": "",
+            }
+        )
+        if len(general):
+            latest_general = str(general["fold"].max())
+            rows.append(
+                {
+                    "definition": definition_name,
+                    "variant": variant_name,
+                    "segment_type": "latest_general_fold",
+                    "segment_value": latest_general,
+                    **metrics.aggregate(general[general["fold"] == latest_general]),
+                    "folds_failing_diagnostics": (
+                        latest_general if latest_general in variant_failed else ""
+                    ),
+                }
+            )
+        probability_band = pd.cut(
+            group["win_probability"],
+            bins=np.linspace(0.0, 1.0, 6),
+            labels=PROBABILITY_BAND_LABELS,
+            include_lowest=True,
+        )
+        for value in PROBABILITY_BAND_LABELS:
+            band_group = group[probability_band == value]
+            rows.append(
+                {
+                    "definition": definition_name,
+                    "variant": variant_name,
+                    "segment_type": "cross_fitted_probability_band",
+                    "segment_value": value,
+                    **metrics.aggregate(band_group),
+                    "folds_failing_diagnostics": "",
+                }
+            )
+        if "component" in group.columns and group["component"].notna().any():
+            for component, component_group in group.dropna(
+                subset=["component"]
+            ).groupby("component", sort=True):
+                rows.append(
+                    {
+                        "definition": definition_name,
+                        "variant": variant_name,
+                        "segment_type": "finance_component",
+                        "segment_value": str(component),
+                        **metrics.aggregate(component_group),
+                        "folds_failing_diagnostics": "",
+                    }
+                )
         for fold, fold_group in group.groupby("fold", sort=True):
             rows.append(
                 {
@@ -493,6 +566,48 @@ def scorecard(
         "skipped_dates",
     ]
     return card[ordered]
+
+
+def probability_calibration(predictions: pd.DataFrame) -> pd.DataFrame:
+    """Fixed probability bins, retaining empty bins and their sample sizes."""
+    rows = []
+    labels = [
+        f"{low:.1f}-{high:.1f}"
+        for low, high in zip(PROBABILITY_BINS[:-1], PROBABILITY_BINS[1:])
+    ]
+    for (definition, variant), group in predictions.groupby(
+        ["definition", "variant"], sort=False
+    ):
+        assigned = pd.cut(
+            group["win_probability"],
+            bins=PROBABILITY_BINS,
+            labels=labels,
+            include_lowest=True,
+        )
+        for index, label in enumerate(labels):
+            selected = group[assigned == label]
+            rows.append(
+                {
+                    "definition": definition,
+                    "variant": variant,
+                    "bin": label,
+                    "bin_lower": float(PROBABILITY_BINS[index]),
+                    "bin_upper": float(PROBABILITY_BINS[index + 1]),
+                    "n_races": len(selected),
+                    "small_sample": len(selected) < SMALL_SAMPLE,
+                    "mean_forecast": (
+                        float(selected["win_probability"].mean())
+                        if len(selected)
+                        else float("nan")
+                    ),
+                    "observed_frequency": (
+                        float(selected["dem_win_observed"].astype(bool).mean())
+                        if len(selected)
+                        else float("nan")
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 # Outputs that do not depend on the fold schedule, and so are never stamped or
@@ -714,6 +829,7 @@ def run(
     coefficients = pd.concat(all_coefficients, ignore_index=True)
     diagnostics = pd.concat(all_diagnostics, ignore_index=True)
     card = scorecard(predictions, diagnostics, sorted(set(all_skipped)), eligible)
+    calibration = probability_calibration(predictions)
     summary_frame = pd.DataFrame(summaries)
     dropped_frame = pd.concat(all_dropped, ignore_index=True)
 
@@ -733,6 +849,7 @@ def run(
         card = scorecard(
             predictions, diagnostics, sorted(set(all_skipped)), eligible
         )
+        calibration = probability_calibration(predictions)
 
     if schedule_change:
         print(
@@ -748,6 +865,10 @@ def run(
         stamp = folds.SCHEDULE_ID
         config.write_csv(predictions.assign(fold_schedule=stamp), config.HOLDOUT_PREDICTIONS)
         config.write_csv(card.round(6).assign(fold_schedule=stamp), config.SCORECARD)
+        config.write_csv(
+            calibration.round(6).assign(fold_schedule=stamp),
+            config.PROBABILITY_CALIBRATION,
+        )
         config.write_csv(coefficients.round(6).assign(fold_schedule=stamp), config.COEFFICIENTS)
         config.write_csv(diagnostics.assign(fold_schedule=stamp), config.FIT_DIAGNOSTICS)
         config.write_csv(summary_frame.assign(fold_schedule=stamp), config.DEFINITION_SUMMARY)
