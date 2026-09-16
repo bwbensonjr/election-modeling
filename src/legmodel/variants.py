@@ -136,6 +136,93 @@ TENURE_VARIANT_ROLES = {
     "baseline_tenure_cap2": "sensitivity",
     "baseline_tenure_cap6": "sensitivity",
 }
+
+# Experiment roles for the operational replacement test. These are separate
+# from ``TENURE_VARIANT_ROLES`` because the older variants add tenure to the
+# historical baseline, while these variants replace incumbency in the selected
+# operational forecast. A variant can have only the role declared here; in
+# particular, the historical baseline can never be presented as the current
+# operational control.
+TENURE_REPLACEMENT_VARIANT_ROLES = {
+    "forecast_14d": "operational_control",
+    "forecast_tenure_replacement_14d": "primary_challenger",
+    "forecast_60d": "operational_control",
+    "forecast_tenure_replacement_60d": "horizon_sensitivity",
+    "baseline": "historical_benchmark",
+    "baseline_tenure_cap4": "historical_benchmark",
+    "baseline_tenure_cap2": "historical_benchmark",
+    "baseline_tenure_cap6": "historical_benchmark",
+}
+
+TENURE_REPLACEMENT_CONTROL_REVISION = (
+    "ece7e381febdaac64d5b9a30bf16a361cd1b9140"
+)
+TENURE_REPLACEMENT_DEFINITION = "two_party_or_strongest"
+TENURE_REPLACEMENT_DECISION_SEGMENT = "general_election"
+TENURE_REPLACEMENT_ROUTE = "money_complete"
+TENURE_REPLACEMENT_SYMMETRY_DISCLOSURE = (
+    "The signed tenure coefficient imposes equal-magnitude, opposite-party "
+    "effects; incumbent_status instead estimates separate Democratic and "
+    "Republican incumbent coefficients."
+)
+
+# This declaration was frozen before replacement scores were inspected. It
+# intentionally records concrete components rather than only composite names,
+# so a later registry edit cannot silently move the experiment's control.
+TENURE_REPLACEMENT_EXPERIMENT = {
+    "definition": TENURE_REPLACEMENT_DEFINITION,
+    "decision_segment": TENURE_REPLACEMENT_DECISION_SEGMENT,
+    "route_on": TENURE_REPLACEMENT_ROUTE,
+    "repository_revision": TENURE_REPLACEMENT_CONTROL_REVISION,
+    "comparisons": {
+        "primary": {
+            "control": "forecast_14d",
+            "challenger": "forecast_tenure_replacement_14d",
+            "information_horizon": "election-14d",
+            "control_components": {
+                False: {
+                    "name": "baseline_no_timing",
+                    "predictors": ("PVI_N", "incumbent_status"),
+                    "requires": (),
+                    "as_of": "",
+                },
+                True: {
+                    "name": "baseline_money_logratio_no_timing",
+                    "predictors": (
+                        "PVI_N",
+                        "incumbent_status",
+                        "money_logratio_primary",
+                    ),
+                    "requires": ("money_complete",),
+                    "as_of": "election-14d",
+                },
+            },
+        },
+        "horizon_sensitivity": {
+            "control": "forecast_60d",
+            "challenger": "forecast_tenure_replacement_60d",
+            "information_horizon": "election-60d",
+            "control_components": {
+                False: {
+                    "name": "baseline_no_timing",
+                    "predictors": ("PVI_N", "incumbent_status"),
+                    "requires": (),
+                    "as_of": "",
+                },
+                True: {
+                    "name": "baseline_money_logratio_no_timing_wide",
+                    "predictors": (
+                        "PVI_N",
+                        "incumbent_status",
+                        "money_logratio_wide",
+                    ),
+                    "requires": ("money_complete",),
+                    "as_of": "election-60d",
+                },
+            },
+        },
+    },
+}
 for _predictor, _cap in TENURE_CAPS.items():
     DERIVED[_predictor] = {
         "from": (
@@ -1332,6 +1419,73 @@ register(
     )
 )
 
+# The operational tenure test mirrors both selected forecast composites and
+# changes only their incumbency representation. Cap four was declared before
+# this replacement test; it is not selected by searching these holdouts.
+register(
+    Variant(
+        name="tenure_replacement_no_money",
+        predictors=("PVI_N", "tenure_cap4_signed"),
+        requires=("tenure_cap4_known",),
+        description=(
+            "PVI and signed tenure capped at four years, replacing categorical "
+            "incumbency in the operational fallback"
+        ),
+    )
+)
+register(
+    Variant(
+        name="tenure_replacement_money_14d",
+        predictors=("PVI_N", "tenure_cap4_signed", "money_logratio_primary"),
+        requires=("tenure_cap4_known", "money_complete"),
+        as_of=RELATIVE_AS_OF["primary"],
+        description=(
+            "the tenure-only incumbency replacement with the 14-day receipts "
+            "log ratio"
+        ),
+    )
+)
+register(
+    Variant(
+        name="tenure_replacement_money_60d",
+        predictors=("PVI_N", "tenure_cap4_signed", "money_logratio_wide"),
+        requires=("tenure_cap4_known", "money_complete"),
+        as_of=RELATIVE_AS_OF["wide"],
+        description=(
+            "the tenure-only incumbency replacement with the 60-day receipts "
+            "log ratio"
+        ),
+    )
+)
+register(
+    CompositeVariant(
+        name="forecast_tenure_replacement_14d",
+        components={
+            False: REGISTRY["tenure_replacement_no_money"],
+            True: REGISTRY["tenure_replacement_money_14d"],
+        },
+        route_on="money_complete",
+        description=(
+            "the 14-day operational routing with signed cap-four tenure in "
+            "place of categorical incumbency"
+        ),
+    )
+)
+register(
+    CompositeVariant(
+        name="forecast_tenure_replacement_60d",
+        components={
+            False: REGISTRY["tenure_replacement_no_money"],
+            True: REGISTRY["tenure_replacement_money_60d"],
+        },
+        route_on="money_complete",
+        description=(
+            "the 60-day operational routing with signed cap-four tenure in "
+            "place of categorical incumbency"
+        ),
+    )
+)
+
 
 # The money sweep. Four contrasts over the same two columns, registered rather
 # than reasoned down to one, because which of them the data separates is the
@@ -1564,3 +1718,46 @@ def check_as_of(variant: "Variant", holdout) -> None:
                 f"({first[column]} against {first['election_date']}); a "
                 "predictor measured then would be reading the result"
             )
+
+
+def validate_tenure_replacement_experiment() -> None:
+    """Verify that the live registry still matches the frozen controls."""
+    experiment = TENURE_REPLACEMENT_EXPERIMENT
+    if experiment["route_on"] != TENURE_REPLACEMENT_ROUTE:
+        raise ValueError("tenure replacement manifest changed its frozen route")
+    for comparison_name, declaration in experiment["comparisons"].items():
+        control = get(declaration["control"])
+        if not getattr(control, "is_composite", False):
+            raise ValueError(
+                f"frozen {comparison_name} control {control.name!r} is not composite"
+            )
+        if control.route_on != experiment["route_on"]:
+            raise ValueError(
+                f"frozen {comparison_name} control route is {experiment['route_on']!r}, "
+                f"but {control.name!r} now routes on {control.route_on!r}"
+            )
+        if control.as_of != declaration["information_horizon"]:
+            raise ValueError(
+                f"frozen {comparison_name} horizon is "
+                f"{declaration['information_horizon']!r}, but {control.name!r} now "
+                f"declares {control.as_of!r}"
+            )
+        expected_components = declaration["control_components"]
+        if set(control.components) != set(expected_components):
+            raise ValueError(
+                f"frozen {comparison_name} component routes no longer match the registry"
+            )
+        for route_value, expected in expected_components.items():
+            component = control.components[route_value]
+            actual = {
+                "name": component.name,
+                "predictors": component.predictors,
+                "requires": component.requires,
+                "as_of": component.as_of,
+            }
+            if actual != expected:
+                raise ValueError(
+                    f"frozen {comparison_name} component for "
+                    f"{experiment['route_on']}={route_value} disagrees with the "
+                    f"registry: expected {expected}, found {actual}"
+                )

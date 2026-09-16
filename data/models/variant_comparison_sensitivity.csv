@@ -779,3 +779,15 @@ write_in_5pct,baseline,baseline_tenure_cap6,2018-11-06,354,22,0.150403,0.122239,
 write_in_5pct,baseline,baseline_tenure_cap6,2020-11-03,376,22,0.125924,0.122239,False
 write_in_5pct,baseline,baseline_tenure_cap6,2022-11-08,351,22,0.151125,0.122239,False
 write_in_5pct,baseline,baseline_tenure_cap6,2024-11-05,371,22,0.138707,0.122239,False
+two_party_or_strongest,forecast_14d,forecast_tenure_replacement_14d,2014-11-04,322,22,-0.264012,-0.105787,False
+two_party_or_strongest,forecast_14d,forecast_tenure_replacement_14d,2016-11-08,355,22,-0.110148,-0.105787,False
+two_party_or_strongest,forecast_14d,forecast_tenure_replacement_14d,2018-11-06,342,22,-0.065001,-0.105787,False
+two_party_or_strongest,forecast_14d,forecast_tenure_replacement_14d,2020-11-03,364,22,-0.043357,-0.105787,False
+two_party_or_strongest,forecast_14d,forecast_tenure_replacement_14d,2022-11-08,343,22,-0.065634,-0.105787,False
+two_party_or_strongest,forecast_14d,forecast_tenure_replacement_14d,2024-11-05,363,22,-0.124116,-0.105787,False
+two_party_or_strongest,forecast_60d,forecast_tenure_replacement_60d,2014-11-04,322,22,-0.232265,-0.073593,False
+two_party_or_strongest,forecast_60d,forecast_tenure_replacement_60d,2016-11-08,355,22,-0.073862,-0.073593,False
+two_party_or_strongest,forecast_60d,forecast_tenure_replacement_60d,2018-11-06,342,22,-0.030457,-0.073593,False
+two_party_or_strongest,forecast_60d,forecast_tenure_replacement_60d,2020-11-03,364,22,-0.005103,-0.073593,False
+two_party_or_strongest,forecast_60d,forecast_tenure_replacement_60d,2022-11-08,343,22,-0.022591,-0.073593,False
+two_party_or_strongest,forecast_60d,forecast_tenure_replacement_60d,2024-11-05,363,22,-0.108539,-0.073593,False

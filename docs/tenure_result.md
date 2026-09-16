@@ -1,134 +1,143 @@
-# Incumbency tenure experiment
+# Incumbency tenure experiments
 
-The pre-declared four-year tenure variant is **undecided and is not adopted**.
-Under the adopted `two_party_or_strongest` definition it lowers pooled RMSE
-from 15.008 to 14.951, a difference of +0.056 margin points with a 90%
-election-date-clustered interval of [-0.052, +0.185]. Because that interval
-contains zero, the existing `baseline` remains the reference model and the
-operational forecast is unchanged.
+The operational tenure replacement is **undecided and is not adopted**. The
+pre-declared primary comparison replaces `incumbent_status` with signed
+four-year-capped tenure in the current 14-day forecast. On 389 general-election
+races, control RMSE is 12.039 and replacement RMSE is 12.122. The control-minus-
+replacement difference is -0.083 margin points with a 90% election-date-
+clustered interval of [-0.345, +0.181]. Because the interval contains zero,
+`forecast_14d` and `forecast_60d` remain selected.
 
-Every figure below comes from `data/models/variant_comparison.csv`,
-`data/models/variant_comparison_sensitivity.csv`, `data/models/scorecard.csv`,
-or `data/models/fit_diagnostics.csv`. Per-race results are reproducible from
-`data/models/holdout_predictions.csv.gz`.
+Every comparison figure below is in
+`data/models/variant_comparison.csv` or
+`data/models/variant_comparison_sensitivity.csv`. Scores, per-race predictions,
+coefficients, and sampler evidence are in `data/models/scorecard.csv`,
+`data/models/holdout_predictions.csv.gz`, `data/models/coefficients.csv`, and
+`data/models/fit_diagnostics.csv`.
 
-## Question and design
+## Operational replacement experiment
 
-The baseline distinguishes Democratic, Republican, and open-seat incumbency
-but gives a first-term incumbent the same value as one who has served for a
-decade. This experiment retains that status term and adds signed continuous
-service with diminishing returns:
+The frozen control revision is
+`ece7e381febdaac64d5b9a30bf16a361cd1b9140`, the definition is
+`two_party_or_strongest`, and the general-election row at 14 days is the sole
+adoption decision. Both sides use the same `money_complete` route:
+
+- 14-day money: control `PVI_N + incumbent_status + money_logratio_primary`;
+  replacement `PVI_N + tenure_cap4_signed + money_logratio_primary`.
+- 60-day money: control `PVI_N + incumbent_status + money_logratio_wide`;
+  replacement `PVI_N + tenure_cap4_signed + money_logratio_wide`.
+- Fallback: control `PVI_N + incumbent_status`; replacement
+  `PVI_N + tenure_cap4_signed`.
+
+The replacement therefore tests tenure *instead of* three-level incumbency. It
+does not add tenure alongside status and does not include `pres_elec` or
+`ballot_timing`. Its fixed shape is:
 
 ```text
 tenure_cap4_signed = party_sign * min(incumbent_tenure_years, 4)
 ```
 
-`party_sign` is +1 for a Democratic incumbent, -1 for a Republican incumbent,
-and 0 for an open seat. Thus one and four years remain distinct, while ten and
-twelve years are equivalent. The coefficient tests predictive change within
-incumbent races; it does not estimate a causal effect of remaining in office.
+Open seats are zero, Democratic incumbents are positive, Republican incumbents
+are negative, and service beyond four years is saturated. A single coefficient
+also imposes equal-magnitude, opposite-party effects, whereas
+`incumbent_status` estimates separate Democratic and Republican coefficients.
+The comparison tests predictive performance under that restriction; it does
+not estimate a causal effect of tenure.
 
-The four-year cap was declared primary before scoring. Two- and six-year caps
-were declared shape sensitivities, not candidates in a search for the best
-historical cap. All arms use identical rolling-origin folds and shared holdout
-races.
+### Primary and horizon sensitivity
 
-## Pooled result
+Differences are control RMSE minus replacement RMSE, so positive values favor
+replacement.
 
-Positive RMSE differences favor the tenure variant.
+| Role | Horizon | Segment | Races | Control RMSE | Replacement RMSE | Difference | 90% interval | Verdict |
+|---|---|---|---:|---:|---:|---:|---:|---|
+| Primary | 14d | General elections | 389 | 12.039 | 12.122 | -0.083 | [-0.345, +0.181] | Undecided |
+| Sensitivity | 60d | General elections | 389 | 12.192 | 12.247 | -0.055 | [-0.341, +0.226] | Undecided |
+| Context | 14d | All elections | 413 | 12.679 | 12.785 | -0.106 | [-0.359, +0.142] | Undecided |
+| Context | 60d | All elections | 413 | 12.822 | 12.896 | -0.074 | [-0.344, +0.191] | Undecided |
 
-| Arm | Role | Races | Baseline RMSE | Arm RMSE | Difference | 90% clustered interval | Verdict |
+The 60-day result is sensitivity evidence only. It cannot replace an undecided
+or losing 14-day primary decision.
+
+### Route, tenure-band, and party evidence
+
+The paired populations are identical at both horizons: 398 complete-finance
+races use the money route and 15 use fallback. At 14 days, the money-route
+difference is -0.132 [-0.406, +0.109]; fallback is +0.560
+[-0.379, +1.381]. Both are undecided.
+
+The 14-day tenure bands show where the pooled point estimate comes from:
+
+| Tenure band | Races | Control RMSE | Replacement RMSE | Difference | 90% interval |
+|---|---:|---:|---:|---:|---:|
+| Open | 113 | 13.815 | 14.173 | -0.358 | [-0.692, -0.001] |
+| More than 0, less than 2 years | 48 | 9.696 | 10.689 | -0.993 | [-4.196, +0.261] |
+| 2 to less than 4 years | 29 | 11.288 | 11.097 | +0.192 | [-0.157, +1.272] |
+| At least 4 years | 223 | 12.814 | 12.662 | +0.152 | [-0.202, +0.387] |
+
+The open-seat segment favors the control even though both tenure values are
+zero, because replacing status changes the fitted intercept and other
+coefficients. The two early-tenure bands are too sparse across election dates
+to settle their different point estimates. No additional tenure effect is
+assigned beyond four years.
+
+Among 211 Democratic-incumbent races the 14-day difference is +0.001
+[-0.318, +0.242]. Among 89 Republican-incumbent races it is +0.006
+[-0.598, +0.414]. Neither party segment separates the representations, and the
+result does not support a claim of party symmetry in the underlying data.
+
+Three left-censored races enter each paired holdout, all with lower bounds at
+or above four years, so the cap is known exactly. No holdout race is excluded
+for censoring and finance coverage is identical within each pair.
+
+### Stability and diagnostics
+
+Omitting each general-election date leaves the all-election point difference
+negative at both horizons. The 14-day values range from -0.264 to -0.043; the
+60-day values range from -0.232 to -0.005. None changes sign. These are
+sensitivity checks and do not replace the clustered primary interval.
+
+The two replacement composites published 54 component-fit diagnostic rows.
+All passed with zero divergences, maximum R-hat 1.0016, minimum bulk ESS
+6204.1, and minimum tail ESS 5348.2. Seeds, priors, draws, tuning, chains,
+horizons, and concrete components are published with the model outputs.
+
+Before challenger interpretation, the committed `forecast_14d` and
+`forecast_60d` rows were snapshotted and independently rescored. Race coverage,
+component routing, seeds, settings, and training counts matched, but the
+current Python/Numba backend produced small Monte Carlo drift (at most 0.125
+margin points in a control point prediction and 0.099 in a coefficient mean).
+Those resampled control summaries were rejected. The snapshotted control
+predictions, scores, coefficients, and diagnostics were restored exactly, with
+only additive route and horizon provenance, and the published comparisons were
+then recomputed against that frozen control.
+
+## Legacy incremental experiment
+
+The earlier experiment asked a different question: it retained the historical
+`baseline` specification `PVI_N + incumbent_status + pres_elec` and added a
+signed tenure term. It is retained as a historical benchmark, not as evidence
+choosing the incumbency representation in the operational money forecast.
+
+| Historical arm | Role at the time | Races | Baseline RMSE | Arm RMSE | Difference | 90% interval | Verdict |
 |---|---|---:|---:|---:|---:|---:|---|
-| `baseline_tenure_cap4` | Primary | 413 | 15.008 | 14.951 | +0.056 | [-0.052, +0.185] | Undecided |
-| `baseline_tenure_cap2` | Sensitivity | 413 | 15.008 | 15.023 | -0.015 | [-0.047, +0.032] | Undecided |
-| `baseline_tenure_cap6` | Sensitivity | 413 | 15.008 | 14.873 | +0.135 | [+0.007, +0.293] | Cap six lower |
+| `baseline_tenure_cap4` | Pre-declared primary | 413 | 15.008 | 14.951 | +0.056 | [-0.052, +0.185] | Undecided |
+| `baseline_tenure_cap2` | Shape sensitivity | 413 | 15.008 | 15.023 | -0.015 | [-0.047, +0.032] | Undecided |
+| `baseline_tenure_cap6` | Shape sensitivity | 413 | 15.008 | 14.873 | +0.135 | [+0.007, +0.293] | Cap six lower |
 
-The six-year arm is favorable, but it cannot replace the pre-declared primary
-arm after observing the holdout. The result supports further study of the
-shape; it does not support adding tenure to the baseline now.
-
-For the primary arm, MAE improves by 0.059 points, CRPS by 0.020, coverage
-rises from 0.896 to 0.906, and win accuracy rises from 0.915 to 0.920. Brier
-score and win log loss worsen slightly. These secondary metrics do not change
-the undecided primary RMSE verdict.
-
-## Where the point improvement comes from
-
-| Segment | Races | Baseline RMSE | Cap-four RMSE | Difference | 90% clustered interval | Verdict |
-|---|---:|---:|---:|---:|---:|---|
-| Open seat | 113 | 18.022 | 17.994 | +0.028 | [-0.020, +0.090] | Undecided |
-| More than 0, less than 2 years | 48 | 11.070 | 10.709 | +0.361 | [-0.405, +0.925] | Undecided |
-| 2 to less than 4 years | 29 | 12.267 | 11.873 | +0.394 | [-0.811, +0.871] | Undecided |
-| At least 4 years | 223 | 14.374 | 14.385 | -0.011 | [-0.207, +0.167] | Undecided |
-
-The point estimates match the motivating shape: the gains are concentrated
-below four years and disappear in the saturated group. The early-tenure bands
-are too sparse across election dates for their wide intervals to establish the
-effect. The cap-four predictor assigns no additional tenure effect after four
-years.
-
-The party split is asymmetric. Among 211 Democratic-incumbent races, cap four
-improves RMSE by +0.308 [+0.198, +0.414]. Among 89 Republican-incumbent races,
-it worsens the point estimate by -0.543, but the interval [-1.000, +0.021]
-still reaches zero. That limited and conflicting Republican evidence is
-another reason not to promote the primary variant.
-
-## Censoring coverage
-
-Tenure is derived locally from stable `ma-election-db` candidate identities,
-victories, and predecessor-district links. Eight of the 633 committed race
-rows reach the beginning of available upstream history before their true
-service start. They publish lower bounds and
-`incumbent_tenure_left_censored = true`; the smallest lower bound is 17.996
-years, above every tested cap.
-
-Three left-censored races enter the adopted holdout. No race is excluded for
-unknown capped tenure under any arm or scored definition. Their small segment
-is published but is not used for a standalone claim.
-
-## Robustness and diagnostics
-
-Leaving out each general-election date keeps the primary point difference
-positive: +0.002 to +0.114 across the six omissions. Cap six is also positive
-under every omission, from +0.057 to +0.172. Cap two is negative under five
-omissions and barely positive (+0.0003) when 2024 is omitted. These checks
-describe date sensitivity; they do not override the primary clustered
-interval.
-
-The experiment produced 429 tenure-variant fit diagnostics across seven data
-definitions. All passed: zero divergences, zero refused folds, maximum R-hat
-1.0038, minimum bulk ESS 2221.3, and minimum tail ESS 2931.4. All 21
-definition-by-arm comparisons and 126 leave-one-general-date-out rows were
-published. Rebuilt baseline score rows exactly reproduce the pre-experiment
-metrics; newly populated categorical level counts are diagnostic metadata, not
-a fitted-result change.
+The favorable six-year sensitivity cannot replace the pre-declared cap-four
+decision. This legacy result says only that incremental tenure was undecided
+against the historical baseline; it does not justify adding or replacing a
+term in the selected forecasts.
 
 ## Upstream field recommendation
 
-The experiment did not need an upstream schema change: fitting reads the
-committed race table and never reconstructs candidate history. The derivation
-nevertheless proved reusable across the full training record, so an issue for
-`ma-election-db` is warranted as a data-contract improvement, independently of
-whether this model adopts the predictor.
-
-A ready-to-file definition is:
-
-> Add `incumbent_tenure_years` and
-> `incumbent_tenure_left_censored` to legislative race output. For the selected
-> incumbent, measure elapsed days divided by 365.2425 from the victory that
-> began the current uninterrupted chain of service to the current election
-> date, excluding the current result. Follow stable `candidate_id` and
-> `district_id_prev` through regular elections, special elections, and
-> redistricting. Stop at a loss, absence, career gap, broken chain, or source
-> boundary. Open seats receive 0 years and false censoring. A chain reaching
-> the source boundary publishes its observed tenure as a lower bound and sets
-> censoring true. Missing identity, ambiguous predecessors, or disagreement
-> with the selected incumbent must fail with the election and candidate
-> identified; candidate-name matching is not a fallback.
-
-Validation should cover regular re-election, special-election starts, career
-gap resets, redistricting continuity, open seats, source-boundary censoring,
-missing identities, ambiguous predecessor chains, and agreement with upstream
-incumbent selection. Promotion upstream would centralize a generally useful
-historical attribute; it would not itself change this project's retained
-baseline or forecast selection.
+No upstream schema change was required because the committed race table
+already carries `incumbent_tenure_years` and
+`incumbent_tenure_left_censored`. An issue for `ma-election-db` remains useful
+as a data-contract improvement: publish elapsed service from the victory that
+began the incumbent's current uninterrupted chain, follow stable candidate and
+predecessor-district identities through special elections and redistricting,
+set open seats to zero, and mark chains reaching the source boundary as
+left-censored lower bounds. Promotion upstream would centralize a reusable
+historical attribute; it would not itself change this project's model.

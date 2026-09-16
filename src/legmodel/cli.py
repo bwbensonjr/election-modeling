@@ -123,6 +123,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="run without changing committed model outputs",
     )
+    tenure_cmd.add_argument(
+        "--legacy",
+        action="store_true",
+        help="reproduce the historical baseline-plus-tenure experiment",
+    )
 
     finance_cmd = sub.add_parser(
         "target-finance", help="collect or verify future-target OCPF finance"
@@ -355,7 +360,8 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "tenure":
         from . import tenure
 
-        tenure.run(write=not args.no_write)
+        runner = tenure.run_legacy if args.legacy else tenure.run
+        runner(write=not args.no_write)
     elif args.command == "target-finance":
         from . import forecast_finance
 

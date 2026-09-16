@@ -344,12 +344,27 @@ than two dates has no estimable interval and is `undecided`. Each row records
 The separate sensitivity tables repeat the point comparison after omitting
 each general-election date.
 
-Tenure comparisons additionally publish the pre-declared experiment role,
-signed-tenure bands (`open`, `gt0_lt2`, `2_to_lt4`, and `ge4`), incumbent-party
-segments, left-censored counts, and exclusions where a censored lower bound is
-below the tested cap. `uv run legmodel tenure` scores the unchanged baseline
-and the two-, four-, and six-year capped arms under every definition. The
-four-year arm is primary; the others are sensitivity checks. See
+An experiment that could change a live forecast freezes the selected
+operational variant at the matching horizon before scoring. The record names
+its components, predictor sets, route, definition, horizon, decision segment,
+and repository revision. That operational forecast is the primary control;
+`baseline` is a historical benchmark and a result against it cannot justify an
+operational change by itself. A later forecast selection does not move an
+experiment already in progress.
+
+Operational composite comparisons also require matching normalized `money` or
+`fallback` routes and matching information horizons for every paired election.
+A mismatch fails with the election identified. Reports publish each route as a
+fixed segment, including an empty fallback row, so pooled performance cannot
+hide fallback coverage.
+
+Tenure comparisons additionally publish the experiment role, signed-tenure
+bands (`open`, `gt0_lt2`, `2_to_lt4`, and `ge4`), incumbent-party segments,
+left-censored counts, and exclusions where a censored lower bound is below the
+tested cap. `uv run legmodel tenure` compares the 14-day operational control to
+the cap-four tenure replacement as the primary general-election decision and
+publishes the 60-day comparison as horizon sensitivity. `uv run legmodel
+tenure --legacy` reproduces the historical baseline-plus-tenure test. See
 [`tenure_result.md`](tenure_result.md).
 
 Race-bootstrap intervals published before the 2026 forecast-readiness change
@@ -425,9 +440,9 @@ record and nowhere inside an early fold's training window.
 
 | File | Contents |
 |---|---|
-| `data/models/holdout_predictions.csv.gz` | One row per definition per variant per holdout race: point prediction, 90% interval, win probability, observed response, the per-race error terms every metric is built from, and the `ballot_timing` level the race's own predictor carried |
+| `data/models/holdout_predictions.csv.gz` | One row per definition per variant per holdout race: point prediction, 90% interval, win probability, observed response, per-race error terms, predictor segments, and composite component, normalized route, and horizon provenance |
 | `data/models/scorecard.csv` | One row per definition per variant per segment, with `n_races` and each metric |
-| `data/models/variant_comparison.csv` | Paired differences between variants within one definition, including tenure experiment roles, censoring coverage, and tenure-band segments where applicable |
+| `data/models/variant_comparison.csv` | Paired differences between variants within one definition, including frozen-control metadata, experiment roles, component routes, censoring coverage, and tenure-band segments where applicable |
 | `data/models/variant_comparison_sensitivity.csv` | Variant comparisons after omitting each general-election date, including all pre-declared tenure arms |
 | `data/models/definition_comparison.csv` | The three sections above, per definition pair |
 | `data/models/definition_comparison_sensitivity.csv` | Definition comparisons after omitting each general-election date |

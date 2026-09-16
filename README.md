@@ -179,10 +179,11 @@ The baseline model is reproduced on the collected data and evaluated by a
 fixed scoring procedure, so later variables and algorithms are measured
 against an unmoved yardstick.
 
-- **Model.** `dem_margin ~ PVI_N + incumbent_status + pres_elec`, Gaussian
-  likelihood, fit at race grain with Bambi/PyMC. Coefficients agree with the
-  same fit on the existing district-level table to within 0.07 posterior
-  standard deviations once one documented PVI baseline offset is removed.
+- **Historical baseline.** `dem_margin ~ PVI_N + incumbent_status + pres_elec`,
+  Gaussian likelihood, fit at race grain with Bambi/PyMC. It remains the stable
+  reproduction and historical benchmark, but it is not the control for a
+  change proposed for the operational forecast. The selected horizon-specific
+  `forecast_14d` or `forecast_60d` composite is that experiment's control.
 - **Scoring.** Rolling-origin holdout: each fold trains on every race held
   strictly before its election date and predicts the races held on that date,
   over every election date from 2014 onward --- 23 folds, 6 general-election
@@ -213,7 +214,8 @@ uv run legmodel score                              # score under the adopted def
 uv run legmodel folds                              # print the fold schedule
 uv run legmodel compare baseline baseline_year      # paired comparison of variants
 uv run legmodel compare-definitions current two_party_or_strongest
-uv run legmodel tenure                            # run the incumbency-tenure experiment
+uv run legmodel tenure                            # run the operational tenure replacement
+uv run legmodel tenure --legacy                   # reproduce the historical incremental test
 uv run legmodel importance                         # variable importance and effect sizes
 uv run legmodel target-finance --horizon 60d --dry-run
 uv run legmodel forecast --horizon 60d
@@ -401,12 +403,14 @@ ending at a stated pre-election date. **The result is not evidence that
 spending changes outcomes**; see
 [`docs/money_results.md`](docs/money_results.md#endogeneity).
 
-**7. Incumbency tenure — primary result undecided; retain the baseline.** The
-pre-declared four-year capped term lowers adopted-definition RMSE by +0.056,
-but its election-date-clustered interval [-0.052, +0.185] contains zero. The
-six-year sensitivity is favorable, but it cannot replace the primary arm after
-scoring. Tenure remains experimental, and the operational forecast is
-unchanged. See [`docs/tenure_result.md`](docs/tenure_result.md).
+**7. Incumbency tenure — operational replacement undecided; retain the selected
+forecasts.** Replacing `incumbent_status` with signed cap-four tenure in the
+14-day operational composite changes general-election RMSE from 12.039 to
+12.122. The control-minus-replacement difference is -0.083 with an
+election-date-clustered interval of [-0.345, +0.181]. The 60-day sensitivity is
+also undecided. The earlier baseline-plus-tenure test remains a historical
+incremental experiment, not the operational selection result. See
+[`docs/tenure_result.md`](docs/tenure_result.md).
 
 ### Accuracy under the adopted definition
 

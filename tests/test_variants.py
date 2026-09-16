@@ -7,6 +7,8 @@ outputs, which is what makes them worth a test.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pandas as pd
 import pytest
 
@@ -292,6 +294,102 @@ def test_operational_forecast_composites_route_complete_and_fallback_once():
         assert composite.components[True].name == money_name
         assert composite.components[False].name == "baseline_no_timing"
         assert sum(len(group) for group in routed.values()) == len(frame)
+
+
+def test_tenure_replacement_components_replace_status_at_matching_horizons():
+    expected = {
+        "tenure_replacement_no_money": (
+            ("PVI_N", "tenure_cap4_signed"),
+            ("tenure_cap4_known",),
+            "",
+        ),
+        "tenure_replacement_money_14d": (
+            ("PVI_N", "tenure_cap4_signed", "money_logratio_primary"),
+            ("tenure_cap4_known", "money_complete"),
+            "election-14d",
+        ),
+        "tenure_replacement_money_60d": (
+            ("PVI_N", "tenure_cap4_signed", "money_logratio_wide"),
+            ("tenure_cap4_known", "money_complete"),
+            "election-60d",
+        ),
+    }
+    forbidden = {"incumbent_status", "pres_elec", "ballot_timing"}
+    for name, (predictors, requirements, horizon) in expected.items():
+        component = variants.get(name)
+        assert component.predictors == predictors
+        assert component.requires == requirements
+        assert component.as_of == horizon
+        assert "tenure_cap4_signed" in component.predictors
+        assert not (set(component.predictors) & forbidden)
+
+
+def test_tenure_replacement_composites_mirror_operational_routing():
+    frame = pd.DataFrame(
+        {
+            "election_id": ["complete", "fallback"],
+            "money_complete": [True, False],
+        }
+    )
+    expected = {
+        "forecast_tenure_replacement_14d": "tenure_replacement_money_14d",
+        "forecast_tenure_replacement_60d": "tenure_replacement_money_60d",
+    }
+    for name, money_component in expected.items():
+        composite = variants.get(name)
+        assert composite.route_on == "money_complete"
+        assert composite.components[True].name == money_component
+        assert composite.components[False].name == "tenure_replacement_no_money"
+        routed = composite.route(frame)
+        assert routed[True]["election_id"].tolist() == ["complete"]
+        assert routed[False]["election_id"].tolist() == ["fallback"]
+        assert sum(len(group) for group in routed.values()) == len(frame)
+
+
+def test_frozen_tenure_control_manifest_matches_and_detects_registry_drift(
+    monkeypatch,
+):
+    variants.validate_tenure_replacement_experiment()
+    current = variants.get("forecast_14d")
+    changed_fallback = replace(
+        current.components[False], predictors=("PVI_N",)
+    )
+    changed_money_horizon = replace(
+        current.components[True], as_of="election-60d"
+    )
+    drifts = [
+        replace(current, route_on="is_special"),
+        replace(
+            current,
+            components={False: changed_fallback, True: current.components[True]},
+        ),
+        replace(
+            current,
+            components={False: current.components[False], True: changed_money_horizon},
+        ),
+    ]
+    for drifted in drifts:
+        with monkeypatch.context() as drift:
+            drift.setitem(variants.REGISTRY, "forecast_14d", drifted)
+            with pytest.raises(ValueError):
+                variants.validate_tenure_replacement_experiment()
+
+
+def test_operational_tenure_roles_cannot_promote_historical_variants():
+    roles = variants.TENURE_REPLACEMENT_VARIANT_ROLES
+    assert roles["forecast_14d"] == "operational_control"
+    assert roles["forecast_tenure_replacement_14d"] == "primary_challenger"
+    assert roles["forecast_tenure_replacement_60d"] == "horizon_sensitivity"
+    for name in ("baseline", "baseline_tenure_cap4", "baseline_tenure_cap6"):
+        assert roles[name] == "historical_benchmark"
+
+
+def test_tenure_replacement_refuses_an_unknown_cap_four_value():
+    frame = tenure_races().iloc[[1, 2]].copy()
+    frame["incumbent_tenure_left_censored"] = True
+    frame["incumbent_tenure_years"] = [1.0, 4.0]
+    kept = variants.restrict(variants.get("tenure_replacement_no_money"), frame)
+    assert kept["incumbent_tenure_years"].tolist() == [4.0]
 
 
 def test_composite_compatibility_checks_each_components_training_population():

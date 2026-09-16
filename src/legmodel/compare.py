@@ -42,6 +42,7 @@ TENURE_COMPARISON_SEGMENTS = [
 TENURE_SEGMENT_VALUES = {
     "incumbent_tenure_band": ["open", "gt0_lt2", "2_to_lt4", "ge4"],
     "incumbent_tenure_left_censored": ["False", "True"],
+    "component_route": ["money", "fallback"],
 }
 
 PER_RACE_METRICS = [
@@ -56,7 +57,24 @@ PER_RACE_METRICS = [
 
 
 def is_tenure_comparison(left: str, right: str) -> bool:
-    return bool({left, right} & set(variants_module.TENURE_VARIANT_ROLES))
+    tenure_variants = set(variants_module.TENURE_VARIANT_ROLES) | {
+        declaration[key]
+        for declaration in variants_module.TENURE_REPLACEMENT_EXPERIMENT[
+            "comparisons"
+        ].values()
+        for key in ("control", "challenger")
+    }
+    return bool({left, right} & tenure_variants)
+
+
+def tenure_replacement_comparison(left: str, right: str) -> tuple[str, dict] | None:
+    """Return the frozen comparison role and declaration for an exact pair."""
+    for role, declaration in variants_module.TENURE_REPLACEMENT_EXPERIMENT[
+        "comparisons"
+    ].items():
+        if (left, right) == (declaration["control"], declaration["challenger"]):
+            return role, declaration
+    return None
 
 
 def tenure_band(frame: pd.DataFrame) -> pd.Series:
@@ -86,11 +104,28 @@ def _with_tenure(predictions: pd.DataFrame) -> pd.DataFrame:
         "incumbent_tenure_years",
         "incumbent_tenure_left_censored",
     }
-    if not required <= set(predictions.columns):
-        lookup = config.load_races()[["election_id", *sorted(required)]]
+    missing_columns = required - set(predictions.columns)
+    null_columns = {
+        column
+        for column in required & set(predictions.columns)
+        if predictions[column].isna().any()
+    }
+    if missing_columns or null_columns:
+        lookup_columns = sorted(missing_columns | null_columns)
+        lookup = config.load_races()[["election_id", *lookup_columns]]
         predictions = predictions.merge(
-            lookup, on="election_id", how="left", validate="many_to_one"
+            lookup,
+            on="election_id",
+            how="left",
+            validate="many_to_one",
+            suffixes=("", "_lookup"),
         )
+        for column in lookup_columns:
+            lookup_column = f"{column}_lookup"
+            if column in predictions.columns and lookup_column in predictions.columns:
+                predictions[column] = predictions[column].fillna(
+                    predictions.pop(lookup_column)
+                )
     if predictions[list(required)].isna().any().any():
         raise ValueError("tenure comparison has predictions without tenure provenance")
     predictions = predictions.copy()
@@ -185,11 +220,50 @@ def paired_frame(
     ]
     if is_tenure_comparison(left, right):
         segments += TENURE_COMPARISON_SEGMENTS
-    a = predictions[predictions["variant"] == left][columns + segments]
-    b = predictions[predictions["variant"] == right][columns]
+    replacement = tenure_replacement_comparison(left, right)
+    provenance = []
+    if replacement:
+        provenance = ["component", "component_route", "information_horizon"]
+        missing = set(provenance) - set(predictions.columns)
+        if missing:
+            raise ValueError(
+                "operational tenure comparison lacks prediction provenance: "
+                + ", ".join(sorted(missing))
+            )
+        segments += ["component_route"]
+    left_columns = list(dict.fromkeys(columns + segments + provenance))
+    a = predictions[predictions["variant"] == left][left_columns]
+    b = predictions[predictions["variant"] == right][columns + provenance]
     if a.empty or b.empty:
         raise ValueError(f"no holdout predictions for {left!r} or {right!r}")
     merged = a.merge(b, on=["election_id", "fold"], suffixes=("_left", "_right"))
+    if replacement:
+        role, declaration = replacement
+        for field in ("component_route", "information_horizon"):
+            left_field, right_field = f"{field}_left", f"{field}_right"
+            mismatch = merged[left_field].astype(str) != merged[right_field].astype(str)
+            if mismatch.any():
+                election = merged.loc[mismatch, "election_id"].iloc[0]
+                raise ValueError(
+                    f"operational tenure comparison {role!r} has mismatched "
+                    f"{field} for election {election}: "
+                    f"{merged.loc[mismatch, left_field].iloc[0]!r} versus "
+                    f"{merged.loc[mismatch, right_field].iloc[0]!r}"
+                )
+        wrong_horizon = (
+            merged["information_horizon_left"].astype(str)
+            != declaration["information_horizon"]
+        )
+        if wrong_horizon.any():
+            election = merged.loc[wrong_horizon, "election_id"].iloc[0]
+            raise ValueError(
+                f"operational tenure comparison {role!r} has horizon "
+                f"{merged.loc[wrong_horizon, 'information_horizon_left'].iloc[0]!r} "
+                f"for election {election}, expected "
+                f"{declaration['information_horizon']!r}"
+            )
+        merged["component_route"] = merged["component_route_left"]
+    merged["general_election"] = ~merged["is_special"].astype(bool)
     merged["squared_error_difference"] = (
         merged["squared_error_left"] - merged["squared_error_right"]
     )
@@ -456,9 +530,23 @@ def run(
             np.random.default_rng(BOOTSTRAP_SEED),
         )
     ]
+    general = paired[paired["general_election"]]
+    rows.append(
+        _row(
+            general,
+            left,
+            right,
+            "general_election",
+            "all",
+            np.random.default_rng(BOOTSTRAP_SEED),
+        )
+    )
     segments = list(COMPARISON_SEGMENTS)
     if is_tenure_comparison(left, right):
         segments += TENURE_COMPARISON_SEGMENTS
+    replacement = tenure_replacement_comparison(left, right)
+    if replacement:
+        segments += ["component_route"]
     for segment in segments:
         grouped = {str(value): group for value, group in paired.groupby(segment, sort=True)}
         values = TENURE_SEGMENT_VALUES.get(segment, sorted(grouped))
@@ -482,12 +570,54 @@ def run(
     report["terms_removed"] = removed
     report["left_components"] = _components(left)
     report["right_components"] = _components(right)
-    report["left_experiment_role"] = variants_module.TENURE_VARIANT_ROLES.get(
-        left, "reference" if is_tenure_comparison(left, right) else ""
+    replacement_roles = variants_module.TENURE_REPLACEMENT_VARIANT_ROLES
+    report["left_experiment_role"] = replacement_roles.get(
+        left,
+        "historical_benchmark"
+        if left in variants_module.TENURE_VARIANT_ROLES
+        else "",
     )
-    report["right_experiment_role"] = variants_module.TENURE_VARIANT_ROLES.get(
-        right, "reference" if is_tenure_comparison(left, right) else ""
+    report["right_experiment_role"] = replacement_roles.get(
+        right,
+        "historical_benchmark"
+        if right in variants_module.TENURE_VARIANT_ROLES
+        else "",
     )
+    if replacement:
+        comparison_role, declaration = replacement
+        experiment = variants_module.TENURE_REPLACEMENT_EXPERIMENT
+        report["experiment"] = "operational_tenure_replacement"
+        report["comparison_role"] = comparison_role
+        report["decision_segment"] = experiment["decision_segment"]
+        report["decision_row"] = (
+            (report["segment_type"] == experiment["decision_segment"])
+            & (report["segment_value"] == "all")
+            & (comparison_role == "primary")
+        )
+        report["adoption_decision"] = "not_decision_row"
+        decision = report["decision_row"]
+        if decision.any():
+            row = report.loc[decision].iloc[0]
+            if row["verdict"] == "undecided":
+                outcome = "retain_operational_forecasts_undecided"
+            elif row["verdict"] == declaration["challenger"] + " lower":
+                outcome = "recommend_separate_follow_up_change"
+            else:
+                outcome = "retain_operational_forecasts_rejected"
+            report.loc[decision, "adoption_decision"] = outcome
+        report["frozen_control_variant"] = declaration["control"]
+        report["frozen_control_revision"] = experiment["repository_revision"]
+        report["frozen_definition"] = experiment["definition"]
+        report["frozen_route_on"] = experiment["route_on"]
+        report["information_horizon"] = declaration["information_horizon"]
+        report["symmetry_disclosure"] = (
+            variants_module.TENURE_REPLACEMENT_SYMMETRY_DISCLOSURE
+        )
+    elif is_tenure_comparison(left, right):
+        report["experiment"] = "legacy_baseline_tenure"
+        report["comparison_role"] = "historical_benchmark"
+        report["decision_row"] = False
+        report["adoption_decision"] = "historical_not_operational_decision"
     if is_tenure_comparison(left, right):
         report["left_censored_races"] = int(
             paired["incumbent_tenure_left_censored"].astype(bool).sum()

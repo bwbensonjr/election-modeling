@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from legmodel import compare, compare_definitions, config, importance, score, variants
 
@@ -245,3 +246,119 @@ def test_comparison_row_includes_secondary_metrics():
         "brier_score", "win_log_loss",
     ):
         assert f"{metric}_difference" in row
+
+
+def operational_predictions(horizon="election-14d"):
+    ids = [
+        ("money", "2020-11-03", False),
+        ("fallback", "2022-11-08", False),
+    ]
+    left = prediction_rows("two_party_or_strongest", "forecast_14d", ids)
+    right = prediction_rows(
+        "two_party_or_strongest", "forecast_tenure_replacement_14d", ids
+    )
+    frame = pd.DataFrame(left + right)
+    frame["incumbent_status"] = "Dem_Incumbent"
+    frame["incumbent_tenure_years"] = 4.0
+    frame["incumbent_tenure_left_censored"] = False
+    frame["component_route"] = ["money", "fallback"] * 2
+    frame["component"] = [
+        "baseline_money_logratio_no_timing",
+        "baseline_no_timing",
+        "tenure_replacement_money_14d",
+        "tenure_replacement_no_money",
+    ]
+    frame["information_horizon"] = horizon
+    return frame
+
+
+def test_operational_pairing_preserves_routes_and_horizon():
+    paired = compare.paired_frame(
+        operational_predictions(),
+        "forecast_14d",
+        "forecast_tenure_replacement_14d",
+        "two_party_or_strongest",
+    )
+    assert paired["component_route"].tolist() == ["money", "fallback"]
+    assert set(paired["information_horizon_left"]) == {"election-14d"}
+
+
+def test_operational_pairing_names_election_with_route_or_horizon_mismatch():
+    route = operational_predictions()
+    route.loc[route.index[-1], "component_route"] = "money"
+    with pytest.raises(ValueError, match="component_route.*fallback"):
+        compare.paired_frame(
+            route,
+            "forecast_14d",
+            "forecast_tenure_replacement_14d",
+            "two_party_or_strongest",
+        )
+
+    with pytest.raises(ValueError, match="money.*expected 'election-14d'"):
+        compare.paired_frame(
+            operational_predictions("election-60d"),
+            "forecast_14d",
+            "forecast_tenure_replacement_14d",
+            "two_party_or_strongest",
+        )
+
+
+def test_operational_report_marks_primary_general_row_and_route_segments(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "predictions.csv.gz"
+    operational_predictions().to_csv(path, index=False, compression="gzip")
+    monkeypatch.setattr(config, "HOLDOUT_PREDICTIONS", path)
+    monkeypatch.setattr(compare, "BOOTSTRAP_RESAMPLES", 20)
+    monkeypatch.setattr(compare, "_censor_exclusions", lambda *args: 0)
+
+    report = compare.run(
+        "forecast_14d",
+        "forecast_tenure_replacement_14d",
+        "two_party_or_strongest",
+        write=False,
+    )
+
+    decision = report[report["decision_row"]]
+    assert decision[["segment_type", "segment_value"]].values.tolist() == [
+        ["general_election", "all"]
+    ]
+    assert decision["adoption_decision"].item() == (
+        "retain_operational_forecasts_undecided"
+    )
+    assert set(report.loc[~report["decision_row"], "adoption_decision"]) == {
+        "not_decision_row"
+    }
+    routes = report[report["segment_type"] == "component_route"]
+    assert routes.set_index("segment_value")["n_races"].to_dict() == {
+        "money": 1,
+        "fallback": 1,
+    }
+    assert set(report["frozen_control_revision"]) == {
+        variants.TENURE_REPLACEMENT_CONTROL_REVISION
+    }
+    assert report["symmetry_disclosure"].str.contains("equal-magnitude").all()
+    assert not routes["interval_available"].any()
+
+
+def test_operational_report_retains_a_zero_count_fallback(tmp_path, monkeypatch):
+    predictions = operational_predictions()
+    predictions = predictions[predictions["election_id"] == "money"]
+    path = tmp_path / "predictions.csv.gz"
+    predictions.to_csv(path, index=False, compression="gzip")
+    monkeypatch.setattr(config, "HOLDOUT_PREDICTIONS", path)
+    monkeypatch.setattr(compare, "_censor_exclusions", lambda *args: 0)
+
+    report = compare.run(
+        "forecast_14d",
+        "forecast_tenure_replacement_14d",
+        "two_party_or_strongest",
+        write=False,
+    )
+    fallback = report[
+        (report["segment_type"] == "component_route")
+        & (report["segment_value"] == "fallback")
+    ].iloc[0]
+    assert fallback["n_races"] == 0
+    assert not fallback["interval_available"]
+    assert fallback["verdict"] == "undecided"

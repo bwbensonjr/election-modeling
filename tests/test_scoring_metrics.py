@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from legmodel import metrics, score
+from legmodel import definitions, metrics, score, variants
 
 
 def test_brier_score_uses_posterior_democratic_win_probability():
@@ -102,3 +102,49 @@ def test_operational_segments_use_general_folds_components_and_probabilities():
         changed_card["segment_type"] == "cross_fitted_probability_band"
     ][["segment_value", "n_races"]].reset_index(drop=True)
     pd.testing.assert_frame_equal(original_counts, changed_counts)
+
+
+def test_composite_predictions_carry_normalized_route_and_horizon(monkeypatch):
+    races = pd.DataFrame(
+        {
+            "election_id": ["money", "fallback"],
+            "money_complete": [True, False],
+            "incumbent_tenure_years": [4.0, 4.0],
+            "incumbent_tenure_left_censored": [False, False],
+            "scoreable": [True, True],
+        }
+    )
+
+    def fake_score(component, component_races, definition, eligible, restricted):
+        predicted = component_races[component_races["scoreable"]].copy()
+        prediction = pd.DataFrame(
+            {
+                "definition": definition.name,
+                "variant": component.name,
+                "fold": "2024-11-05",
+                "election_id": predicted["election_id"],
+            }
+        )
+        coefficient = pd.DataFrame([{"variant": component.name, "term": "PVI_N"}])
+        diagnostic = pd.DataFrame(
+            [{"variant": component.name, "fold": "2024-11-05"}]
+        )
+        return prediction, coefficient, diagnostic, []
+
+    monkeypatch.setattr(score, "score_variant", fake_score)
+    predictions, coefficients, diagnostics, _ = score.score_composite(
+        variants.get("forecast_tenure_replacement_14d"),
+        races,
+        definitions.adopted(),
+    )
+
+    assert predictions.set_index("election_id")["component_route"].to_dict() == {
+        "money": "money",
+        "fallback": "fallback",
+    }
+    assert set(predictions["information_horizon"]) == {"election-14d"}
+    assert set(coefficients["component"]) == {
+        "tenure_replacement_no_money",
+        "tenure_replacement_money_14d",
+    }
+    assert set(diagnostics["component"]) == set(coefficients["component"])

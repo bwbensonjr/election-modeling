@@ -188,7 +188,14 @@ def score_composite(
             component, component_races, definition, eligible, restricted=True
         )
         part_predictions, part_coefficients, part_diagnostics, part_skipped = part
-        predictions.append(part_predictions.assign(component=component.name))
+        route = "money" if bool(value) else "fallback"
+        predictions.append(
+            part_predictions.assign(
+                component=component.name,
+                component_route=route,
+                information_horizon=variant.as_of,
+            )
+        )
         coefficients.append(part_coefficients.assign(component=component.name))
         diagnostics.append(part_diagnostics.assign(component=component.name))
         skipped.extend(part_skipped)
