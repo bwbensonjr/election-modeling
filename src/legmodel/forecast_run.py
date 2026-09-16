@@ -475,6 +475,13 @@ def run(horizon: str, variant_name: str | None = None) -> dict[str, bytes]:
         variant_name,
         definitions.adopted().name,
     )
+    directory = config.FORECAST_2026_SNAPSHOTS / horizon
+    manifest_path = directory / "manifest.json"
+    code_commit = (
+        json.loads(manifest_path.read_text())["code_commit"]
+        if manifest_path.exists()
+        else git_commit()
+    )
     contents = snapshot_contents(
         races,
         chamber,
@@ -483,9 +490,8 @@ def run(horizon: str, variant_name: str | None = None) -> dict[str, bytes]:
         target_path,
         finance_path,
         config.RACE_TRAINING_SET,
-        git_commit(),
+        code_commit,
     )
-    directory = config.FORECAST_2026_SNAPSHOTS / horizon
     result = publish_snapshot(contents, directory)
     print(f"{result} forecast snapshot -> {directory.relative_to(config.ROOT)}")
     print(f"target races: {len(races)}; posterior draws: {len(chamber)}")
