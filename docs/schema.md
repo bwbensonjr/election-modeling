@@ -54,6 +54,8 @@ after. It reports, for instance, +38.6 for a 2012 race the Republican won
 |---|---|---|
 | `PVI_N` | float | Partisan Voter Index for this precinct, in percentage points. The precinct's Democratic share of the combined two-party presidential vote across the two presidential elections preceding the race, minus the national share computed the same way |
 | `incumbent_status` | string | `No_Incumbent`, `Dem_Incumbent`, or `GOP_Incumbent`. An unenrolled incumbent is classified as `GOP_Incumbent`, following the established model |
+| `incumbent_tenure_years` | float | Years of uninterrupted service before `election_date`, measured as elapsed days divided by 365.2425 from the victory that began the current chain. Regular and special victories count, career gaps reset the value, and predecessor-district links preserve service across redistricting. Open seats carry `0` |
+| `incumbent_tenure_left_censored` | boolean | Whether upstream history ends before the incumbent's true service start, making `incumbent_tenure_years` a lower bound. The committed value is still exact after applying any tested cap of at most six years because every censored lower bound exceeds six years |
 | `pres_elec` | boolean | Whether the race shared a ballot with a presidential general election |
 | `is_special` | boolean | Whether the race was a special election |
 | `num_candidates` | integer | Candidates in the race, as published in `ma-election-db`. Counts ballot lines, so a write-in is not included |

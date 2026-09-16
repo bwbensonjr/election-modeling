@@ -213,6 +213,7 @@ uv run legmodel score                              # score under the adopted def
 uv run legmodel folds                              # print the fold schedule
 uv run legmodel compare baseline baseline_year      # paired comparison of variants
 uv run legmodel compare-definitions current two_party_or_strongest
+uv run legmodel tenure                            # run the incumbency-tenure experiment
 uv run legmodel importance                         # variable importance and effect sizes
 uv run legmodel target-finance --horizon 60d --dry-run
 uv run legmodel forecast --horizon 60d
@@ -255,7 +256,7 @@ presidential-year bias swinging from -6.4 to +2.7 points. Both are settled in
 ## Model Enhancements
 
 - [x] Incorporate OCPF fundraising data -- [`docs/money_results.md`](docs/money_results.md)
-- A finer-grained incumbency variable (take into account number of years)
+- [x] Test a tenure-aware incumbency variable -- [`docs/tenure_result.md`](docs/tenure_result.md)
 - Incorporate Census demographic data
 - Candidate-committee money is collected; independent expenditures, PAC money
   and party committee spending are not, and are a separate collection problem
@@ -274,6 +275,7 @@ presidential-year bias swinging from -6.4 to +2.7 points. Both are settled in
 - [x] Settle the data definition -- who counts as a candidate and what the margin is measured against - [`docs/definition_result.md`](docs/definition_result.md)
 - [x] Test the deferred variables: presidential-year bias and `num_candidates` - [`docs/variant_results.md`](docs/variant_results.md)
 - [x] Collect OCPF campaign finance and test it as a predictor - [`docs/money_results.md`](docs/money_results.md)
+- [x] Derive and test uninterrupted incumbency tenure - [`docs/tenure_result.md`](docs/tenure_result.md)
 - Put together expanded variable data set and evaluate the variables via principle component analysis (PCA) or something similar.
 - Evaluate different machine learning algorithm alternatives to Bayesian regression and decide on how to matrix testing of algorithms vs. variables.
 - Resolve the [open issues](#open-issues) carried forward. The `baseline_year` convergence failure is resolved; special elections and the provisional data definition remain.
@@ -398,6 +400,13 @@ filer. Every figure is reconstructed from report line items over a window
 ending at a stated pre-election date. **The result is not evidence that
 spending changes outcomes**; see
 [`docs/money_results.md`](docs/money_results.md#endogeneity).
+
+**7. Incumbency tenure — primary result undecided; retain the baseline.** The
+pre-declared four-year capped term lowers adopted-definition RMSE by +0.056,
+but its election-date-clustered interval [-0.052, +0.185] contains zero. The
+six-year sensitivity is favorable, but it cannot replace the primary arm after
+scoring. Tenure remains experimental, and the operational forecast is
+unchanged. See [`docs/tenure_result.md`](docs/tenure_result.md).
 
 ### Accuracy under the adopted definition
 

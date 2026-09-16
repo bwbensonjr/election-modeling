@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from . import build, candidates, config, crosswalk, pvi
+from . import build, candidates, config, crosswalk, incumbency, pvi
 
 KEY = crosswalk.KEY
 
@@ -50,6 +50,8 @@ TRAINING_COLUMNS = [
     "dem_margin_two_party",
     "PVI_N",
     "incumbent_status",
+    "incumbent_tenure_years",
+    "incumbent_tenure_left_censored",
     "pres_elec",
     "is_special",
     "num_candidates",
@@ -171,6 +173,10 @@ def _precinct_votes_over(race_rows: pd.DataFrame, names) -> pd.Series:
 def build_rows(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build training rows from normalized legislative results."""
     summaries = config.general_summaries().set_index("election_id")
+    relevant_summaries = summaries.loc[results["election_id"].unique()].reset_index()
+    tenure = incumbency.derive_incumbent_tenure(
+        relevant_summaries, config.general_candidates()
+    ).set_index("election_id")
     all_totals = candidates.race_candidate_totals(results)
     assert_thresholds_resolvable(all_totals)
     totals_by_race = dict(tuple(all_totals.groupby("election_id", sort=False)))
@@ -344,6 +350,12 @@ def build_rows(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         frame["district"] = meta["district"]
         frame["district_display"] = meta["district_display"]
         frame["incumbent_status"] = incumbent_status(meta["party_incumbent"])
+        frame["incumbent_tenure_years"] = tenure.loc[
+            election_id, "incumbent_tenure_years"
+        ]
+        frame["incumbent_tenure_left_censored"] = bool(
+            tenure.loc[election_id, "incumbent_tenure_left_censored"]
+        )
         frame["pres_elec"] = meta["election_date"] in PRESIDENTIAL_ELECTION_DATES
         frame["is_special"] = bool(meta["is_special"])
         frame["num_candidates"] = num_candidates

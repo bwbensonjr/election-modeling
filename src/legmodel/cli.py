@@ -115,6 +115,14 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("parity", help="check baseline coefficients against mapoli")
     sub.add_parser("variants", help="list registered variants")
     sub.add_parser("definitions", help="list registered data definitions")
+    tenure_cmd = sub.add_parser(
+        "tenure", help="run the pre-declared incumbency-tenure experiment"
+    )
+    tenure_cmd.add_argument(
+        "--no-write",
+        action="store_true",
+        help="run without changing committed model outputs",
+    )
 
     finance_cmd = sub.add_parser(
         "target-finance", help="collect or verify future-target OCPF finance"
@@ -344,6 +352,10 @@ def main(argv: list[str] | None = None) -> int:
                 ]
             ].to_string(index=False)
         )
+    elif args.command == "tenure":
+        from . import tenure
+
+        tenure.run(write=not args.no_write)
     elif args.command == "target-finance":
         from . import forecast_finance
 

@@ -344,6 +344,14 @@ than two dates has no estimable interval and is `undecided`. Each row records
 The separate sensitivity tables repeat the point comparison after omitting
 each general-election date.
 
+Tenure comparisons additionally publish the pre-declared experiment role,
+signed-tenure bands (`open`, `gt0_lt2`, `2_to_lt4`, and `ge4`), incumbent-party
+segments, left-censored counts, and exclusions where a censored lower bound is
+below the tested cap. `uv run legmodel tenure` scores the unchanged baseline
+and the two-, four-, and six-year capped arms under every definition. The
+four-year arm is primary; the others are sensitivity checks. See
+[`tenure_result.md`](tenure_result.md).
+
 Race-bootstrap intervals published before the 2026 forecast-readiness change
 are superseded history. They are not interchangeable with the current
 election-date-clustered intervals.
@@ -419,8 +427,8 @@ record and nowhere inside an early fold's training window.
 |---|---|
 | `data/models/holdout_predictions.csv.gz` | One row per definition per variant per holdout race: point prediction, 90% interval, win probability, observed response, the per-race error terms every metric is built from, and the `ballot_timing` level the race's own predictor carried |
 | `data/models/scorecard.csv` | One row per definition per variant per segment, with `n_races` and each metric |
-| `data/models/variant_comparison.csv` | Paired differences between variants, within one definition |
-| `data/models/variant_comparison_sensitivity.csv` | Variant comparisons after omitting each general-election date |
+| `data/models/variant_comparison.csv` | Paired differences between variants within one definition, including tenure experiment roles, censoring coverage, and tenure-band segments where applicable |
+| `data/models/variant_comparison_sensitivity.csv` | Variant comparisons after omitting each general-election date, including all pre-declared tenure arms |
 | `data/models/definition_comparison.csv` | The three sections above, per definition pair |
 | `data/models/definition_comparison_sensitivity.csv` | Definition comparisons after omitting each general-election date |
 | `data/models/probability_calibration.csv` | Fixed Democratic-win probability bins with forecast means, outcomes, and counts |

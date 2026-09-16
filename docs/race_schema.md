@@ -75,6 +75,8 @@ vote-weighted margin is -9.6 and the precinct average is +13.3.
 |---|---|---|
 | `PVI_N` | float | Partisan Voter Index for the district, in percentage points. The district's Democratic share of the combined two-party presidential vote across the two presidential elections preceding the race, minus the national share computed the same way |
 | `incumbent_status` | string | `No_Incumbent`, `Dem_Incumbent`, or `GOP_Incumbent`. An unenrolled incumbent is classified as `GOP_Incumbent`, following the established model |
+| `incumbent_tenure_years` | float | Years of uninterrupted service before `election_date`, carried unchanged from the precinct table. It is measured as elapsed days divided by 365.2425 from the victory that began the current chain; open seats carry `0` |
+| `incumbent_tenure_left_censored` | boolean | Whether `incumbent_tenure_years` is a lower bound because the service chain reaches the beginning of `ma-election-db` history. The flag preserves this provenance even where a capped predictor is known exactly |
 | `pres_elec` | boolean | Whether the race shared a ballot with a presidential general election |
 | `is_special` | boolean | Whether the race was a special election. 38 of the 633 races |
 | `num_candidates` | integer | Candidates in the race, as published in `ma-election-db`. Counts ballot lines, so a write-in is not included |

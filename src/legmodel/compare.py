@@ -35,6 +35,67 @@ COMPARISON_SEGMENTS = [
     "no_dem_candidate",
     "incumbent_status",
 ]
+TENURE_COMPARISON_SEGMENTS = [
+    "incumbent_tenure_band",
+    "incumbent_tenure_left_censored",
+]
+TENURE_SEGMENT_VALUES = {
+    "incumbent_tenure_band": ["open", "gt0_lt2", "2_to_lt4", "ge4"],
+    "incumbent_tenure_left_censored": ["False", "True"],
+}
+
+PER_RACE_METRICS = [
+    "error",
+    "absolute_error",
+    "within_interval_90",
+    "crps",
+    "win_correct",
+    "brier_score",
+    "win_log_loss",
+]
+
+
+def is_tenure_comparison(left: str, right: str) -> bool:
+    return bool({left, right} & set(variants_module.TENURE_VARIANT_ROLES))
+
+
+def tenure_band(frame: pd.DataFrame) -> pd.Series:
+    """The pre-declared tenure range of each race."""
+    status = frame["incumbent_status"]
+    years = frame["incumbent_tenure_years"].astype(float)
+    invalid = (status != "No_Incumbent") & (years <= 0)
+    if invalid.any():
+        example = frame.loc[invalid, "election_id"].iloc[0]
+        raise ValueError(f"incumbent election {example} has non-positive tenure")
+    return pd.Series(
+        np.select(
+            [
+                status == "No_Incumbent",
+                years < 2,
+                years < 4,
+            ],
+            ["open", "gt0_lt2", "2_to_lt4"],
+            default="ge4",
+        ),
+        index=frame.index,
+    )
+
+
+def _with_tenure(predictions: pd.DataFrame) -> pd.DataFrame:
+    required = {
+        "incumbent_tenure_years",
+        "incumbent_tenure_left_censored",
+    }
+    if not required <= set(predictions.columns):
+        lookup = config.load_races()[["election_id", *sorted(required)]]
+        predictions = predictions.merge(
+            lookup, on="election_id", how="left", validate="many_to_one"
+        )
+    if predictions[list(required)].isna().any().any():
+        raise ValueError("tenure comparison has predictions without tenure provenance")
+    predictions = predictions.copy()
+    predictions["incumbent_tenure_band"] = tenure_band(predictions)
+    return predictions
 
 
 def term_difference(left: str, right: str) -> tuple[list, list]:
@@ -104,7 +165,10 @@ def paired_frame(
     definition, so this compares variants; comparing definitions is a different
     operation with different hazards (compare_definitions.py).
     """
-    predictions = predictions[predictions["definition"] == definition]
+    predictions = predictions[
+        (predictions["definition"] == definition)
+        & predictions["variant"].isin([left, right])
+    ]
     # Read from the predictions where they carry the level the race's own
     # predictor held, and derived by the same function where they predate the
     # column, so the comparison's segments and the variant's coefficients are
@@ -112,10 +176,15 @@ def paired_frame(
     predictions = predictions.assign(
         ballot_timing=score.ballot_timing(predictions)
     )
+    if is_tenure_comparison(left, right):
+        predictions = _with_tenure(predictions)
     columns = ["election_id", "fold", "squared_error", "observed", "prediction"]
+    columns += [column for column in PER_RACE_METRICS if column in predictions.columns]
     segments = score.SEGMENTS + [
         s for s in COMPARISON_SEGMENTS if s not in score.SEGMENTS
     ]
+    if is_tenure_comparison(left, right):
+        segments += TENURE_COMPARISON_SEGMENTS
     a = predictions[predictions["variant"] == left][columns + segments]
     b = predictions[predictions["variant"] == right][columns]
     if a.empty or b.empty:
@@ -193,6 +262,43 @@ def leave_one_general_date_out(paired: pd.DataFrame) -> pd.DataFrame:
 
 def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
          segment_value: str, rng: np.random.Generator) -> dict:
+    if paired.empty:
+        row = {
+            "left_variant": left,
+            "right_variant": right,
+            "segment_type": segment_type,
+            "segment_value": segment_value,
+            "n_races": 0,
+            "left_rmse": float("nan"),
+            "right_rmse": float("nan"),
+            "rmse_difference": float("nan"),
+            "ci_low": float("nan"),
+            "ci_high": float("nan"),
+            "interval_spans_zero": pd.NA,
+            "interval_available": False,
+            "verdict": "undecided",
+            "races_favouring_left": 0,
+            "races_favouring_right": 0,
+            "small_sample": True,
+            "resampling_unit": "election_date",
+            "n_clusters": 0,
+            "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
+            "bootstrap_seed": BOOTSTRAP_SEED,
+        }
+        for metric in (
+            "mae",
+            "bias",
+            "r2",
+            "coverage_90",
+            "crps",
+            "win_accuracy",
+            "brier_score",
+            "win_log_loss",
+        ):
+            row[f"left_{metric}"] = float("nan")
+            row[f"right_{metric}"] = float("nan")
+            row[f"{metric}_difference"] = float("nan")
+        return row
     left_rmse = float(np.sqrt(paired["squared_error_left"].mean()))
     right_rmse = float(np.sqrt(paired["squared_error_right"].mean()))
     difference = left_rmse - right_rmse
@@ -209,7 +315,7 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
         verdict = "undecided"
     else:
         verdict = f"{left} lower" if difference < 0 else f"{right} lower"
-    return {
+    row = {
         "left_variant": left,
         "right_variant": right,
         "segment_type": segment_type,
@@ -236,6 +342,61 @@ def _row(paired: pd.DataFrame, left: str, right: str, segment_type: str,
         "bootstrap_resamples": BOOTSTRAP_RESAMPLES,
         "bootstrap_seed": BOOTSTRAP_SEED,
     }
+    source_columns = {
+        "mae": "absolute_error",
+        "bias": "error",
+        "coverage_90": "within_interval_90",
+        "crps": "crps",
+        "win_accuracy": "win_correct",
+        "brier_score": "brier_score",
+        "win_log_loss": "win_log_loss",
+    }
+    for metric, source in source_columns.items():
+        left_column, right_column = f"{source}_left", f"{source}_right"
+        if left_column not in paired.columns:
+            continue
+        left_value = float(paired[left_column].mean())
+        right_value = float(paired[right_column].mean())
+        row[f"left_{metric}"] = left_value
+        row[f"right_{metric}"] = right_value
+        row[f"{metric}_difference"] = left_value - right_value
+    if "observed_left" in paired.columns:
+        observed = paired["observed_left"].to_numpy(dtype=float)
+        total = float(((observed - observed.mean()) ** 2).sum())
+        for side in ("left", "right"):
+            residual = float(paired[f"squared_error_{side}"].sum())
+            row[f"{side}_r2"] = (
+                float(1 - residual / total) if total > 0 else float("nan")
+            )
+        row["r2_difference"] = row["left_r2"] - row["right_r2"]
+    return row
+
+
+def _censor_exclusions(name: str, definition_name: str) -> int:
+    role = variants_module.TENURE_VARIANT_ROLES.get(name)
+    if role is None:
+        return 0
+    from . import definitions as definitions_module
+    from . import folds
+
+    races, roster = config.load_races(), config.load_roster()
+    admitted, _ = definitions_module.apply(
+        definitions_module.get(definition_name), races, roster
+    )
+    variant = variants_module.get(name)
+    cap_flag = variant.requires[0]
+    flagged = variants_module.with_flags(admitted)
+    scoreable = flagged.get("scoreable", True)
+    in_holdout = pd.to_datetime(flagged["election_date"]) >= pd.Timestamp(
+        folds.SEED_CUTOFF
+    )
+    excluded = (
+        scoreable
+        & in_holdout
+        & flagged["incumbent_tenure_left_censored"].astype(bool)
+        & ~flagged[cap_flag].astype(bool)
+    )
+    return int(excluded.sum())
 
 
 def run(
@@ -252,7 +413,7 @@ def run(
             "run `uv run legmodel score` first"
         )
     definition = definition or definitions_module.adopted().name
-    predictions = pd.read_csv(config.HOLDOUT_PREDICTIONS)
+    predictions = pd.read_csv(config.HOLDOUT_PREDICTIONS, low_memory=False)
     scoped = predictions[predictions["definition"] == definition]
     if scoped.empty:
         raise ValueError(
@@ -295,8 +456,14 @@ def run(
             np.random.default_rng(BOOTSTRAP_SEED),
         )
     ]
-    for segment in COMPARISON_SEGMENTS:
-        for value, group in paired.groupby(segment, sort=True):
+    segments = list(COMPARISON_SEGMENTS)
+    if is_tenure_comparison(left, right):
+        segments += TENURE_COMPARISON_SEGMENTS
+    for segment in segments:
+        grouped = {str(value): group for value, group in paired.groupby(segment, sort=True)}
+        values = TENURE_SEGMENT_VALUES.get(segment, sorted(grouped))
+        for value in values:
+            group = grouped.get(str(value), paired.iloc[0:0])
             rows.append(
                 _row(
                     group,
@@ -315,6 +482,18 @@ def run(
     report["terms_removed"] = removed
     report["left_components"] = _components(left)
     report["right_components"] = _components(right)
+    report["left_experiment_role"] = variants_module.TENURE_VARIANT_ROLES.get(
+        left, "reference" if is_tenure_comparison(left, right) else ""
+    )
+    report["right_experiment_role"] = variants_module.TENURE_VARIANT_ROLES.get(
+        right, "reference" if is_tenure_comparison(left, right) else ""
+    )
+    if is_tenure_comparison(left, right):
+        report["left_censored_races"] = int(
+            paired["incumbent_tenure_left_censored"].astype(bool).sum()
+        )
+        report["censor_exclusions_left"] = _censor_exclusions(left, definition)
+        report["censor_exclusions_right"] = _censor_exclusions(right, definition)
     sensitivity = leave_one_general_date_out(paired)
     if not sensitivity.empty:
         sensitivity.insert(0, "definition", definition)

@@ -123,6 +123,34 @@ DERIVED = {
     },
 }
 
+# Pre-declared diminishing-return shapes for the tenure experiment. Four years
+# is the primary hypothesis; two and six are sensitivity checks, not a sweep
+# from which the best historical point estimate may be selected.
+TENURE_CAPS = {
+    "tenure_cap2_signed": 2.0,
+    "tenure_cap4_signed": 4.0,
+    "tenure_cap6_signed": 6.0,
+}
+TENURE_VARIANT_ROLES = {
+    "baseline_tenure_cap4": "primary",
+    "baseline_tenure_cap2": "sensitivity",
+    "baseline_tenure_cap6": "sensitivity",
+}
+for _predictor, _cap in TENURE_CAPS.items():
+    DERIVED[_predictor] = {
+        "from": (
+            "incumbent_tenure_years",
+            "incumbent_tenure_left_censored",
+            "incumbent_status",
+        ),
+        "description": (
+            f"signed incumbent tenure capped at {_cap:g} years: positive for "
+            "a Democratic incumbent, negative for a Republican incumbent, "
+            "and zero for an open seat"
+        ),
+    }
+del _predictor, _cap
+
 # The money windows the race table carries, each named by how far before a
 # race's own election it was measured. The window is trailing rather than
 # calendar year-to-date, so a January special is measured over the year its
@@ -322,6 +350,14 @@ def derive(races: "pd.DataFrame") -> "pd.DataFrame":
         frame["pres_elec_x_incumbent_gop"] = pres * (
             frame["incumbent_status"] == "GOP_Incumbent"
         ).astype(int)
+        if "incumbent_tenure_years" in frame.columns:
+            signs = frame["incumbent_status"].map(
+                {"No_Incumbent": 0.0, "Dem_Incumbent": 1.0, "GOP_Incumbent": -1.0}
+            )
+            for predictor, cap in TENURE_CAPS.items():
+                frame[predictor] = signs * frame["incumbent_tenure_years"].clip(
+                    upper=cap
+                )
     for measure, spec in MONEY_MEASURES.items():
         prefix = spec["prefix"]
         for window in MONEY_WINDOWS:
@@ -1033,6 +1069,23 @@ register(
         description="the established model in mapoli/model/ma_leg_model.R",
     )
 )
+for _name, _predictor in (
+    ("baseline_tenure_cap2", "tenure_cap2_signed"),
+    ("baseline_tenure_cap4", "tenure_cap4_signed"),
+    ("baseline_tenure_cap6", "tenure_cap6_signed"),
+):
+    _cap = int(TENURE_CAPS[_predictor])
+    register(
+        Variant(
+            name=_name,
+            predictors=BASELINE_PREDICTORS + (_predictor,),
+            requires=(f"tenure_cap{_cap}_known",),
+            description=(
+                f"the baseline plus signed incumbent tenure capped at {_cap} years"
+            ),
+        )
+    )
+del _name, _predictor, _cap
 # The three special-election handling arms. Every special election in the
 # record carries `pres_elec = False` -- none has ever fallen on a presidential
 # general date -- so specials sit inside the `pres_elec` segment and inside
@@ -1372,6 +1425,19 @@ DERIVED_FLAGS = {
         "description": "the race is a general election, not a special",
     },
 }
+for _cap in (2, 4, 6):
+    DERIVED_FLAGS[f"tenure_cap{_cap}_known"] = {
+        "from": ("incumbent_tenure_years", "incumbent_tenure_left_censored"),
+        "compute": lambda frame, cap=float(_cap): (
+            ~frame["incumbent_tenure_left_censored"].astype(bool)
+            | (frame["incumbent_tenure_years"] >= cap)
+        ),
+        "description": (
+            f"tenure is exact after applying the {_cap}-year cap, including "
+            "a censored lower bound already at or above the cap"
+        ),
+    }
+del _cap
 
 
 def with_flags(races: "pd.DataFrame") -> "pd.DataFrame":

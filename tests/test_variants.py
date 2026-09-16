@@ -191,6 +191,73 @@ def test_the_plain_arm_matches_the_baseline():
     )
 
 
+# --- incumbency tenure ------------------------------------------------------
+
+
+def tenure_races() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "election_id": ["open", "dem1", "dem4", "dem10", "dem12", "gop4"],
+            "incumbent_status": [
+                "No_Incumbent",
+                "Dem_Incumbent",
+                "Dem_Incumbent",
+                "Dem_Incumbent",
+                "Dem_Incumbent",
+                "GOP_Incumbent",
+            ],
+            "incumbent_tenure_years": [0.0, 1.0, 4.0, 10.0, 12.0, 4.0],
+            "incumbent_tenure_left_censored": [False] * 6,
+            "pres_elec": [False] * 6,
+        }
+    )
+
+
+def test_signed_capped_tenure_has_the_declared_shape():
+    prepared = variants.prepare(tenure_races()).set_index("election_id")
+    assert prepared.loc["open", "tenure_cap4_signed"] == 0.0
+    assert prepared.loc["dem1", "tenure_cap4_signed"] == 1.0
+    assert prepared.loc["dem4", "tenure_cap4_signed"] == 4.0
+    assert prepared.loc["dem10", "tenure_cap4_signed"] == 4.0
+    assert prepared.loc["dem12", "tenure_cap4_signed"] == 4.0
+    assert prepared.loc["gop4", "tenure_cap4_signed"] == -4.0
+
+
+def test_each_tenure_cap_is_derived():
+    prepared = variants.prepare(tenure_races())
+    assert set(variants.TENURE_CAPS) <= set(prepared.columns)
+    assert prepared.loc[prepared["election_id"] == "dem4", "tenure_cap2_signed"].item() == 2.0
+    assert prepared.loc[prepared["election_id"] == "dem10", "tenure_cap6_signed"].item() == 6.0
+
+
+def test_censored_tenure_is_admitted_only_when_the_cap_is_known():
+    frame = tenure_races().iloc[:2].copy()
+    frame.loc[:, "incumbent_tenure_left_censored"] = [True, True]
+    frame.loc[:, "incumbent_tenure_years"] = [1.0, 6.0]
+    kept = variants.restrict(variants.get("baseline_tenure_cap4"), frame)
+    assert kept["election_id"].tolist() == ["dem1"]
+    assert kept["incumbent_tenure_years"].item() == 6.0
+
+
+def test_tenure_variants_add_only_their_capped_term():
+    baseline = variants.get("baseline")
+    assert baseline.predictors == variants.BASELINE_PREDICTORS
+    for cap in (2, 4, 6):
+        variant = variants.get(f"baseline_tenure_cap{cap}")
+        assert variant.predictors == variants.BASELINE_PREDICTORS + (
+            f"tenure_cap{cap}_signed",
+        )
+        assert variant.requires == (f"tenure_cap{cap}_known",)
+
+
+def test_four_year_tenure_is_primary_and_other_caps_are_sensitivity_checks():
+    assert variants.TENURE_VARIANT_ROLES == {
+        "baseline_tenure_cap4": "primary",
+        "baseline_tenure_cap2": "sensitivity",
+        "baseline_tenure_cap6": "sensitivity",
+    }
+
+
 def test_forecast_candidates_are_horizon_matched_and_no_timing_is_explicit():
     timing_60 = variants.get("baseline_timing_money_wide")
     no_timing_60 = variants.get("baseline_money_logratio_no_timing_wide")

@@ -98,6 +98,8 @@ IDENTITY = [
     "district_display",
     "redistricting_cycle",
     "incumbent_status",
+    "incumbent_tenure_years",
+    "incumbent_tenure_left_censored",
     "pres_elec",
     "is_special",
     "no_dem_candidate",
@@ -290,7 +292,8 @@ def score_variant(
         holdout = fold.holdout.assign(
             ballot_timing=variants.ballot_timing_levels(fold.holdout)
         )
-        frame = holdout[IDENTITY].reset_index(drop=True)
+        identity = [column for column in IDENTITY if column in holdout.columns]
+        frame = holdout[identity].reset_index(drop=True)
         frame.insert(0, "definition", definition.name)
         frame.insert(1, "variant", variant.name)
         frame.insert(2, "fold", fold.key)
