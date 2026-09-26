@@ -4,6 +4,11 @@
 .venv/
 __pycache__/
 *.pyc
+web/node_modules/
+web/dist/
+web/public/data/
+web/playwright-report/
+web/test-results/
 
 # Raw upstream responses and third-party GIS inputs are re-downloadable
 # inputs, not outputs: too large to commit and reproducible from cache/*.

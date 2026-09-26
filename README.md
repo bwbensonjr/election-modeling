@@ -219,7 +219,11 @@ uv run legmodel tenure --legacy                   # reproduce the historical inc
 uv run legmodel importance                         # variable importance and effect sizes
 uv run legmodel target-finance --horizon 60d --dry-run
 uv run legmodel forecast --horizon 60d
+uv run legmodel forecast-web --horizon 60d       # export the static explorer bundle
 ```
+
+The GitHub Pages forecast explorer, its local development commands, and its
+deployment process are documented in [`docs/interactive_forecast.md`](docs/interactive_forecast.md).
 
 ### Baseline accuracy
 

@@ -1,0 +1,31 @@
+{
+  "name": "election-modeling-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "sync-data": "node scripts/sync-data.mjs",
+    "validate-bundle": "node scripts/validate-bundle.mjs",
+    "build": "npm run validate-bundle && npm run sync-data && tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:browser": "GITHUB_ACTIONS=true playwright test"
+  },
+  "dependencies": {
+    "d3-array": "^3.2.4",
+    "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.51.1",
+    "@types/d3-array": "^3.2.1",
+    "@types/d3-scale": "^4.0.9",
+    "@types/d3-shape": "^3.1.7",
+    "@types/node": "^26.6.3",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
+    "vitest": "^5.0.2"
+  }
+}

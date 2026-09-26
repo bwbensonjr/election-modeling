@@ -346,6 +346,32 @@ class Fit:
             )
         return values
 
+    def parameter_draws(self, names: list[str] | tuple[str, ...]) -> dict[str, np.ndarray]:
+        """Aligned posterior draws for scalar parameters.
+
+        The sample dimension is stacked in the same chain/draw order used by
+        :meth:`predict_draws`, so a browser can apply a changed predictor to
+        the coefficient draw that produced the corresponding predictive draw.
+        """
+        draws = {}
+        for name in names:
+            if name not in self.idata.posterior:
+                available = sorted(self.idata.posterior.data_vars)
+                raise KeyError(
+                    f"parameter {name!r} is absent from {self.variant.name!r}; "
+                    f"available parameters: {available}"
+                )
+            parameter = self.idata.posterior[name]
+            stacked = parameter.stack(sample=("chain", "draw"))
+            extra_dimensions = [dimension for dimension in stacked.dims if dimension != "sample"]
+            if extra_dimensions:
+                raise ValueError(
+                    f"parameter {name!r} is not scalar per posterior draw; "
+                    f"extra dimensions: {extra_dimensions}"
+                )
+            draws[name] = stacked.transpose("sample").values
+        return draws
+
     def coefficients(self) -> pd.DataFrame:
         """Posterior summary of the fitted parameters."""
         with warnings.catch_warnings():

@@ -253,6 +253,7 @@ def generate(
     races: pd.DataFrame | None = None,
     roster: pd.DataFrame | None = None,
     fit_provider=fitmod.fit,
+    capture: dict | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     """Fit every routed component and return snapshot-ready forecast artifacts."""
     variant = variants.get(variant_name)
@@ -312,11 +313,44 @@ def generate(
         draws = fitted.predict_draws(target_part)
         if draws.shape[1] != len(target_part):
             raise ForecastRunError("component prediction count does not match routing")
+        if capture is not None:
+            terms = [
+                column
+                for predictor in component.predictors
+                for column in variants.expand(predictor)
+                if column in {"incumbent_dem", "incumbent_gop"}
+                or predictor.startswith("money_logratio_")
+            ]
+            prepared_training = variants.prepare(component_training)
+            numeric_support = {
+                term: {
+                    "minimum": float(prepared_training[term].min()),
+                    "maximum": float(prepared_training[term].max()),
+                }
+                for term in terms
+                if term in prepared_training
+                and pd.api.types.is_numeric_dtype(prepared_training[term])
+            }
+            categorical_support = {}
+            if "incumbent_status" in component.predictors:
+                counts = component_training["incumbent_status"].value_counts()
+                categorical_support["incumbent_status"] = {
+                    level: int(counts.get(level, 0))
+                    for level in variants.CATEGORICAL_LEVELS["incumbent_status"]
+                }
+            capture.setdefault("components", {})[component.name] = {
+                "predictors": list(component.predictors),
+                "terms": fitted.parameter_draws(terms),
+                "numeric_support": numeric_support,
+                "categorical_support": categorical_support,
+            }
         for column_index, target_id_value in enumerate(target_part["target_id"]):
             race_draws = draws[:, column_index]
             if target_id_value in draws_by_target:
                 raise ForecastRunError(f"target race was multiply routed: {target_id_value}")
             draws_by_target[target_id_value] = race_draws
+            if capture is not None:
+                capture.setdefault("races", {})[target_id_value] = race_draws
             predictions.append(
                 {
                     "target_id": target_id_value,

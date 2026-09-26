@@ -147,6 +147,11 @@ def main(argv: list[str] | None = None) -> int:
         "forecast", help="fit and publish an immutable election forecast snapshot"
     )
     forecast_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    web_cmd = sub.add_parser(
+        "forecast-web",
+        help="export or verify a static interactive bundle for a locked forecast",
+    )
+    web_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
     forecast_score_cmd = sub.add_parser(
         "forecast-score", help="score a locked forecast against certified results"
     )
@@ -372,6 +377,10 @@ def main(argv: list[str] | None = None) -> int:
         from . import forecast_run
 
         forecast_run.run(args.horizon)
+    elif args.command == "forecast-web":
+        from . import interactive
+
+        interactive.run(args.horizon)
     elif args.command == "forecast-score":
         from . import forecast_score
 

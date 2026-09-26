@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Explore how incumbency and fundraising inputs change the Massachusetts 2026 legislative forecast." />
+    <title>Massachusetts 2026 Legislative Forecast Explorer</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#explorer">Skip to forecast explorer</a>
+    <header class="hero">
+      <div class="hero__eyebrow">Massachusetts legislative elections</div>
+      <h1>2026 forecast explorer</h1>
+      <p class="hero__lede">Choose a contested race, then change incumbency or fundraising to see how the fitted model responds.</p>
+      <p class="hero__note">Scenarios are model-sensitivity illustrations. They are not official forecast updates or estimates of what would causally happen.</p>
+    </header>
+
+    <main id="explorer" class="layout" aria-busy="true" tabindex="-1">
+      <section class="panel race-picker" aria-labelledby="race-picker-title">
+        <div>
+          <p class="section-label">Race</p>
+          <h2 id="race-picker-title">Select a matchup</h2>
+        </div>
+        <label for="race-select">District</label>
+        <select id="race-select"></select>
+        <div id="race-context" class="race-context"></div>
+      </section>
+
+      <section class="panel published" aria-labelledby="published-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Locked result</p>
+            <h2 id="published-title">Published forecast</h2>
+          </div>
+          <span class="status-pill">Official snapshot</span>
+        </div>
+        <div id="published-summary" class="summary-grid"></div>
+        <dl id="published-inputs" class="input-facts"></dl>
+      </section>
+
+      <section class="panel controls" aria-labelledby="controls-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Model sensitivity</p>
+            <h2 id="controls-title">Change the inputs</h2>
+          </div>
+          <button id="reset" class="button" type="button">Reset</button>
+        </div>
+        <div class="control-grid">
+          <div class="field">
+            <label for="incumbency">Incumbency status</label>
+            <select id="incumbency">
+              <option value="No_Incumbent">Open seat</option>
+              <option value="Dem_Incumbent">Democratic incumbent</option>
+              <option value="GOP_Incumbent">Republican incumbent</option>
+            </select>
+            <p id="incumbency-support" class="field-note"></p>
+          </div>
+          <div class="field">
+            <label for="dem-receipts">Democratic receipts</label>
+            <div class="money-input"><span aria-hidden="true">$</span><input id="dem-receipts" type="number" min="0" step="1000" inputmode="decimal" /></div>
+          </div>
+          <div class="field">
+            <label for="opponent-receipts">Opponent receipts</label>
+            <div class="money-input"><span aria-hidden="true">$</span><input id="opponent-receipts" type="number" min="0" step="1000" inputmode="decimal" /></div>
+          </div>
+        </div>
+        <p id="finance-note" class="field-note"></p>
+        <p id="input-error" class="message message--error" role="alert" hidden></p>
+        <p id="support-warning" class="message message--warning" role="status" hidden></p>
+      </section>
+
+      <section class="panel scenario" aria-labelledby="scenario-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Hypothetical result</p>
+            <h2 id="scenario-title">Your scenario</h2>
+          </div>
+          <span id="scenario-status" class="status-pill status-pill--scenario">Matches published</span>
+        </div>
+        <div id="scenario-summary" class="summary-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="panel distribution" aria-labelledby="distribution-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">Predictive uncertainty</p>
+            <h2 id="distribution-title">Forecast distributions</h2>
+          </div>
+          <div class="legend" aria-label="Chart legend">
+            <span><i class="legend__published"></i> Published</span>
+            <span><i class="legend__scenario"></i> Scenario</span>
+          </div>
+        </div>
+        <div id="chart" class="chart" role="img" aria-label="Published and scenario predictive margin distributions"></div>
+        <div class="chart-axis-labels"><span>Favors opponent</span><span>Democratic margin</span><span>Favors Democrat</span></div>
+      </section>
+
+      <section class="panel methodology" aria-labelledby="methodology-title">
+        <p class="section-label">Read this correctly</p>
+        <h2 id="methodology-title">What the controls mean</h2>
+        <p>The model associates race outcomes with district partisanship, incumbency, and—where complete—candidate receipts measured at the forecast horizon. Changing fundraising here does not show the causal effect of raising that money; fundraising can itself reflect how competitive a race appears.</p>
+        <p>The published forecast stays fixed. A scenario applies only your edited inputs to the same paired posterior draws, so differences are not browser resampling noise.</p>
+        <dl id="provenance" class="provenance"></dl>
+        <p><a id="snapshot-link" href="" rel="noreferrer">Inspect the locked forecast snapshot on GitHub</a></p>
+      </section>
+    </main>
+
+    <noscript>This forecast explorer requires JavaScript to calculate scenarios.</noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "published_draws": [-1.0, 0.0, 1.0],
+  "terms": {
+    "incumbent_dem": [2.0, 3.0, 4.0],
+    "incumbent_gop": [-2.0, -3.0, -4.0],
+    "money_logratio_wide": [0.5, 1.0, 1.5]
+  },
+  "cases": [
+    {
+      "name": "incumbency_only",
+      "published_incumbency": "No_Incumbent",
+      "scenario_incumbency": "Dem_Incumbent",
+      "published_money_logratio": null,
+      "scenario_money_logratio": null,
+      "money_predictor": null,
+      "expected_draws": [1.0, 3.0, 5.0],
+      "expected_summary": {
+        "point_margin": 3.0,
+        "lower_90": 1.2,
+        "upper_90": 4.8,
+        "dem_win_probability": 1.0
+      }
+    },
+    {
+      "name": "fundraising_only",
+      "published_incumbency": "No_Incumbent",
+      "scenario_incumbency": "No_Incumbent",
+      "published_money_logratio": 0.0,
+      "scenario_money_logratio": 1.0,
+      "money_predictor": "money_logratio_wide",
+      "expected_draws": [-0.5, 1.0, 2.5],
+      "expected_summary": {
+        "point_margin": 1.0,
+        "lower_90": -0.35,
+        "upper_90": 2.35,
+        "dem_win_probability": 0.6666666666666666
+      }
+    }
+  ]
+}
