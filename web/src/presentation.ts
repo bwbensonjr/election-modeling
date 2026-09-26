@@ -65,6 +65,19 @@ export function formatCandidate(candidate: CandidateMeta): string {
   return `${candidate.name}${incumbent} (${candidate.party}-${candidate.municipality})`;
 }
 
+export function districtDetailsUrl(race: Pick<RaceMeta, "office" | "district">): string {
+  let officePath: string;
+  if (race.office === "State Representative") officePath = "state-rep";
+  else if (race.office === "State Senate") officePath = "state-senate";
+  else throw new Error(`MAPOLI district links do not support ${race.office}`);
+  const districtPath = race.district
+    .toLowerCase()
+    .replaceAll("&", "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return `https://mapoli.us/districts/${officePath}/${districtPath}.html`;
+}
+
 export function formatPercent(probability: number): string {
   if (!Number.isFinite(probability) || probability < 0 || probability > 1) {
     throw new Error("probability must be between zero and one");

@@ -140,6 +140,10 @@ test("matchup uses whole numbers, grouped receipts, exact reset state, and acces
   await expect(page.locator("#published-inputs")).not.toContainText(/\d+\.\d/);
   await expect(page.locator("#race-context")).toContainText(/\*? \([DR]-[^)]+\)/);
   await expect(page.locator("#race-context")).toContainText("An asterisk (*) marks an incumbent candidate.");
+  await expect(page.locator("#race-picker-title")).toHaveText("Matchup");
+  await expect(page.locator("#race-context .district-details")).toHaveText("District Details");
+  await expect(page.locator("#race-context .district-details"))
+    .toHaveAttribute("href", /^https:\/\/mapoli\.us\/districts\/state-(?:rep|senate)\/[a-z0-9-]+\.html$/);
   await expect(page.locator("#published-summary")).toContainText("Likely Margin");
   await expect(page.locator("#published-inputs")).toContainText(/(?:D|R)\+\d+|Even/);
   await expect(page.locator("#dem-receipts")).toHaveValue(/^\d{1,3}(,\d{3})+$/);

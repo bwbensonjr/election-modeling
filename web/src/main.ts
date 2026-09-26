@@ -2,6 +2,7 @@ import "./style.css";
 import { renderDistribution } from "./chart";
 import { BundleClient } from "./data";
 import {
+  districtDetailsUrl,
   formatDollarInput,
   formatDollars,
   formatInterval,
@@ -113,7 +114,7 @@ function renderRaceContext(race: RaceMeta): void {
   required<HTMLElement>("#race-context").innerHTML = `
     <p class="matchup"><strong>${formatCandidate(race.dem_candidate)}</strong><span>vs.</span><strong>${formatCandidate(race.comparison_candidate)}</strong></p>
     <p class="field-note">An asterisk (*) marks an incumbent candidate.</p>
-    <p>${race.office} · ${race.district_display}</p>
+    <p>${race.office} · ${race.district_display} · <a class="district-details" href="${districtDetailsUrl(race)}">District Details</a></p>
   `;
   required<HTMLElement>("#published-summary").innerHTML = summaryMarkup(race.published);
   required<HTMLElement>("#published-inputs").innerHTML = `

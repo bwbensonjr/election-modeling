@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  districtDetailsUrl,
   formatCandidate,
   formatDollarInput,
   formatDollars,
@@ -63,6 +64,13 @@ describe("whole-unit presentation", () => {
       .toBe("Margaret R. Scarsdale* (D-Pepperell)");
     expect(formatCandidate({ name: "Alex Republican", party: "R", municipality: "Amesbury", is_incumbent: false }))
       .toBe("Alex Republican (R-Amesbury)");
+  });
+
+  it("links House and Senate races to their MAPOLI district pages", () => {
+    expect(districtDetailsUrl(race("house", 1, "State Representative", "Ninth Norfolk")))
+      .toBe("https://mapoli.us/districts/state-rep/ninth-norfolk.html");
+    expect(districtDetailsUrl(race("senate", 1, "State Senate", "Worcester & Hampshire")))
+      .toBe("https://mapoli.us/districts/state-senate/worcester-and-hampshire.html");
   });
 
   it("rejects non-finite or out-of-range display values", () => {
