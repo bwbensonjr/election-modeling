@@ -8,7 +8,7 @@
     "sync-data": "node scripts/sync-data.mjs",
     "validate-bundle": "node scripts/validate-bundle.mjs",
     "build": "npm run validate-bundle && npm run sync-data && tsc --noEmit && vite build",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/*.test.mjs",
     "test:browser": "GITHUB_ACTIONS=true playwright test"
   },
   "dependencies": {

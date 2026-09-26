@@ -6,6 +6,8 @@ import {
   receiptLogRatio,
   scenarioDraws,
   summarize,
+  withScenarioIncumbency,
+  withScenarioReceipt,
 } from "./scenario";
 import type { ComponentAsset, Incumbency, RaceInputs } from "./types";
 
@@ -67,13 +69,35 @@ describe("scenario calculations", () => {
   });
 
   it("resets state from immutable published inputs", () => {
-    const published = inputs(true);
+    const published = {
+      ...inputs(true),
+      dem_receipts: 1000.4,
+      opponent_receipts: 999.6,
+    };
     const changed = initialScenario(published);
     changed.dem_receipts = 500;
     expect(initialScenario(published)).toEqual({
       incumbent_status: "No_Incumbent",
-      dem_receipts: 0,
-      opponent_receipts: 0,
+      dem_receipts: 1000.4,
+      opponent_receipts: 999.6,
+    });
+  });
+
+  it("updates one scenario field without reparsing rounded receipt displays", () => {
+    const exact = initialScenario({
+      ...inputs(true),
+      dem_receipts: 1000.4,
+      opponent_receipts: 999.6,
+    });
+    expect(withScenarioIncumbency(exact, "Dem_Incumbent")).toEqual({
+      incumbent_status: "Dem_Incumbent",
+      dem_receipts: 1000.4,
+      opponent_receipts: 999.6,
+    });
+    expect(withScenarioReceipt(exact, "dem_receipts", 2500)).toEqual({
+      incumbent_status: "No_Incumbent",
+      dem_receipts: 2500,
+      opponent_receipts: 999.6,
     });
   });
 });

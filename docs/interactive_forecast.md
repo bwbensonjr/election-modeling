@@ -1,8 +1,21 @@
 # Interactive forecast application
 
-The forecast explorer is a static GitHub Pages application for the locked 2026 legislative forecast. It displays every race in one published horizon and recalculates paired predictive draws when a reader changes incumbency or, where the selected component uses it, candidate receipts.
+The forecast explorer is a static GitHub Pages application for the locked 2026 legislative forecast. Its landing page lists every race in one published horizon with the closest published point margins first. Selecting a district opens its matchup page, where the explorer recalculates paired predictive draws when a reader changes incumbency or, where the selected component uses it, candidate receipts.
 
 The explorer does not refit a model, change the official forecast, switch a race between composite components, or estimate a causal effect of fundraising. Race-subset and massnumbers.us embed builds are outside this application.
+
+## Read and link to the forecast
+
+The overview is the application root:
+
+- Local development: `http://localhost:5173/`
+- GitHub Pages: `https://bwbensonjr.github.io/election-modeling/`
+
+Each table row links to a stable matchup URL using the locked race identity, for example `?race=<target_id>`. A local link therefore looks like `http://localhost:5173/?race=<target_id>`, and the deployed equivalent is `https://bwbensonjr.github.io/election-modeling/?race=<target_id>`. Direct links and browser refreshes restore that race; an unknown identity returns to the complete overview with an error instead of substituting another race.
+
+The overview and matchup views show margins, interval endpoints, PVI, probabilities, and changes as whole numbers. This is display rounding only: ordering, scenario calculations, forecast verification, and predictive draws retain full precision. Win probability is labeled for the likely winner, so a 40 percent Democratic probability is displayed as a 60 percent Republican probability; exactly 50 percent is labeled a toss-up.
+
+Published receipts and receipt controls use comma-separated whole dollars. The application retains the locked full-precision receipt value until that particular control is edited. Readers may enter grouped or ungrouped non-negative whole dollars; invalid or fractional entries do not replace the last valid scenario value.
 
 ## Prerequisites
 
@@ -41,6 +54,8 @@ npm run dev
 ```
 
 The build validates every committed asset digest, copies the committed bundle into Vite's ignored `public/data/` staging directory, type-checks the application, and writes `web/dist/`.
+
+Bundle validation also matches every interactive race to `data/forecast/2026/target.csv` and verifies the initial application's all-Republican comparison-candidate invariant before the interface uses Republican-facing labels. A future bundle with another comparison party must carry an explicit presentation update rather than being silently mislabeled.
 
 Run the production browser and accessibility suite with:
 

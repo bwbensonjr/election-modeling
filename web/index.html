@@ -7,19 +7,49 @@
     <title>Massachusetts 2026 Legislative Forecast Explorer</title>
   </head>
   <body>
-    <a class="skip-link" href="#explorer">Skip to forecast explorer</a>
+    <a id="skip-link" class="skip-link" href="#overview-view">Skip to forecast</a>
     <header class="hero">
       <div class="hero__eyebrow">Massachusetts legislative elections</div>
       <h1>2026 forecast explorer</h1>
-      <p class="hero__lede">Choose a contested race, then change incumbency or fundraising to see how the fitted model responds.</p>
+      <p class="hero__lede">Review the closest contests, open a matchup, then change incumbency or fundraising to see how the fitted model responds.</p>
       <p class="hero__note">Scenarios are model-sensitivity illustrations. They are not official forecast updates or estimates of what would causally happen.</p>
     </header>
 
-    <main id="explorer" class="layout" aria-busy="true" tabindex="-1">
+    <main id="overview-view" class="layout" aria-busy="true" tabindex="-1">
+      <section class="panel overview" aria-labelledby="overview-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">All races</p>
+            <h2 id="overview-title">Race forecast overview</h2>
+          </div>
+          <span class="status-pill">Closest races first</span>
+        </div>
+        <p class="overview-intro">Published margins determine the order. Select a matchup to inspect its full distribution or try a model-sensitivity scenario.</p>
+        <p id="route-error" class="message message--error" role="alert" hidden></p>
+        <div class="race-table-wrap" role="region" aria-label="Scrollable race forecast table" tabindex="0">
+          <table id="race-overview">
+            <caption id="overview-caption">Published forecasts for every race in the locked snapshot</caption>
+            <thead>
+              <tr>
+                <th scope="col">Race</th>
+                <th scope="col">Matchup</th>
+                <th scope="col">Likely winner</th>
+                <th scope="col">Win chance</th>
+                <th scope="col">Margin</th>
+              </tr>
+            </thead>
+            <tbody id="race-overview-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <main id="explorer" class="layout" aria-busy="true" tabindex="-1" hidden>
       <section class="panel race-picker" aria-labelledby="race-picker-title">
         <div>
           <p class="section-label">Race</p>
           <h2 id="race-picker-title">Select a matchup</h2>
+          <p class="overview-return"><a id="overview-link" href="./">View all races</a></p>
         </div>
         <label for="race-select">District</label>
         <select id="race-select"></select>
@@ -58,11 +88,11 @@
           </div>
           <div class="field">
             <label for="dem-receipts">Democratic receipts</label>
-            <div class="money-input"><span aria-hidden="true">$</span><input id="dem-receipts" type="number" min="0" step="1000" inputmode="decimal" /></div>
+            <div class="money-input"><span aria-hidden="true">$</span><input id="dem-receipts" type="text" inputmode="numeric" autocomplete="off" /></div>
           </div>
           <div class="field">
-            <label for="opponent-receipts">Opponent receipts</label>
-            <div class="money-input"><span aria-hidden="true">$</span><input id="opponent-receipts" type="number" min="0" step="1000" inputmode="decimal" /></div>
+            <label for="opponent-receipts">Republican receipts</label>
+            <div class="money-input"><span aria-hidden="true">$</span><input id="opponent-receipts" type="text" inputmode="numeric" autocomplete="off" /></div>
           </div>
         </div>
         <p id="finance-note" class="field-note"></p>
@@ -93,7 +123,7 @@
           </div>
         </div>
         <div id="chart" class="chart" role="img" aria-label="Published and scenario predictive margin distributions"></div>
-        <div class="chart-axis-labels"><span>Favors opponent</span><span>Democratic margin</span><span>Favors Democrat</span></div>
+        <div class="chart-axis-labels"><span>Favors Republican</span><span>Democratic margin</span><span>Favors Democrat</span></div>
       </section>
 
       <section class="panel methodology" aria-labelledby="methodology-title">

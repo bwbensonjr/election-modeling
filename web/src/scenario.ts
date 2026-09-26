@@ -95,3 +95,15 @@ export function initialScenario(inputs: RaceInputs): ScenarioInputs {
     opponent_receipts: inputs.opponent_receipts,
   };
 }
+
+export function withScenarioIncumbency(inputs: ScenarioInputs, incumbentStatus: Incumbency): ScenarioInputs {
+  return { ...inputs, incumbent_status: incumbentStatus };
+}
+
+export function withScenarioReceipt(
+  inputs: ScenarioInputs,
+  key: "dem_receipts" | "opponent_receipts",
+  value: number,
+): ScenarioInputs {
+  return { ...inputs, [key]: value };
+}
