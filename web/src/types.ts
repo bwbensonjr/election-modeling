@@ -28,14 +28,21 @@ export interface SupportRow {
   warning: string;
 }
 
+export interface CandidateMeta {
+  name: string;
+  party: "D" | "R";
+  municipality: string;
+  is_incumbent: boolean;
+}
+
 export interface RaceMeta {
   target_id: string;
   election_date: string;
   office: string;
   district: string;
   district_display: string;
-  dem_candidate_name: string;
-  comparison_candidate_name: string;
+  dem_candidate: CandidateMeta;
+  comparison_candidate: CandidateMeta;
   component: string;
   asset: string;
   published: Summary;

@@ -9,8 +9,8 @@ function fixture() {
         target_id: "race-1",
         office: "State Representative",
         district: "First Example",
-        dem_candidate_name: "Alex Democrat",
-        comparison_candidate_name: "Riley Republican, Jr.",
+        dem_candidate: { name: "Alex Democrat", party: "D", municipality: "Example", is_incumbent: false },
+        comparison_candidate: { name: "Riley Republican, Jr.", party: "R", municipality: "Example", is_incumbent: false },
       }],
     },
     targets: [{
@@ -20,6 +20,10 @@ function fixture() {
       dem_candidate_name: "Alex Democrat",
       comparison_candidate_name: "Riley Republican, Jr.",
       comparison_candidate_party: "Republican",
+      dem_candidate_municipality: "Example",
+      dem_candidate_incumbent: "False",
+      comparison_candidate_municipality: "Example",
+      comparison_candidate_incumbent: "False",
     }],
   };
 }

@@ -81,7 +81,7 @@ dd { margin: 0; text-align: right; font-size: 0.84rem; font-weight: 700; }
 .race-table-wrap td:nth-child(3), .race-table-wrap td:nth-child(4), .race-table-wrap td:nth-child(5) { white-space: nowrap; }
 .race-link { font-weight: 800; }
 .race-office { display: block; margin-top: 0.2rem; color: var(--muted); font-size: 0.76rem; }
-.race-matchup { line-height: 1.4; }
+.race-matchup { max-width: 30rem; line-height: 1.4; white-space: normal !important; }
 .legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.8rem; font-weight: 700; }
 .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
 .legend i { width: 24px; border-top: 3px solid var(--blue); }

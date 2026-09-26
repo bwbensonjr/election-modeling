@@ -50,9 +50,33 @@ export function validateComparisonParties(manifest, targetRows) {
   for (const race of manifest.races) {
     const target = targets.get(race.target_id);
     if (!target) throw new Error(`${race.target_id}: bundle race is missing from target data`);
-    for (const field of ["office", "district", "dem_candidate_name", "comparison_candidate_name"]) {
+    for (const field of ["office", "district"]) {
       if (String(race[field]) !== String(target[field])) {
         throw new Error(`${race.target_id}: bundle ${field} disagrees with target data`);
+      }
+    }
+    for (const [key, targetName, targetParty] of [
+      ["dem_candidate", "dem_candidate_name", "Democratic"],
+      ["comparison_candidate", "comparison_candidate_name", "Republican"],
+    ]) {
+      const candidate = race[key];
+      if (!candidate?.name || !candidate.municipality || typeof candidate.is_incumbent !== "boolean") {
+        throw new Error(`${race.target_id}: bundle ${key} metadata is incomplete`);
+      }
+      if (String(candidate.name) !== String(target[targetName])) {
+        throw new Error(`${race.target_id}: bundle ${key} name disagrees with target data`);
+      }
+      const targetMunicipality = target[key === "dem_candidate" ? "dem_candidate_municipality" : "comparison_candidate_municipality"];
+      if (String(candidate.municipality) !== String(targetMunicipality)) {
+        throw new Error(`${race.target_id}: bundle ${key} municipality disagrees with target data`);
+      }
+      const expectedParty = targetParty === "Democratic" ? "D" : "R";
+      if (candidate.party !== expectedParty) {
+        throw new Error(`${race.target_id}: bundle ${key} party disagrees with target data`);
+      }
+      const targetIncumbent = target[key === "dem_candidate" ? "dem_candidate_incumbent" : "comparison_candidate_incumbent"];
+      if (String(candidate.is_incumbent).toLowerCase() !== String(targetIncumbent).toLowerCase()) {
+        throw new Error(`${race.target_id}: bundle ${key} incumbency disagrees with target data`);
       }
     }
     if (target.comparison_candidate_party !== "Republican") {

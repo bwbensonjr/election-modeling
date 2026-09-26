@@ -1,4 +1,4 @@
-import type { RaceMeta } from "./types";
+import type { CandidateMeta, RaceMeta } from "./types";
 
 export type LikelyWinner = "Democratic" | "Republican" | "Toss-up";
 
@@ -46,7 +46,7 @@ export function formatMargin(value: number): string {
   requireFinite(value);
   const rounded = Math.round(Math.abs(value));
   if (rounded === 0) return "Even";
-  return `${value > 0 ? "D" : "R"} +${wholeNumber.format(rounded)}`;
+  return `${value > 0 ? "Dem." : "Rep."} +${wholeNumber.format(rounded)} points`;
 }
 
 export function formatInterval(lower: number, upper: number): string {
@@ -54,7 +54,15 @@ export function formatInterval(lower: number, upper: number): string {
 }
 
 export function formatPvi(value: number): string {
-  return formatSignedInteger(value);
+  requireFinite(value);
+  const rounded = Math.round(value);
+  if (rounded === 0) return "Even";
+  return `${rounded > 0 ? "D" : "R"}+${wholeNumber.format(Math.abs(rounded))}`;
+}
+
+export function formatCandidate(candidate: CandidateMeta): string {
+  const incumbent = candidate.is_incumbent ? "*" : "";
+  return `${candidate.name}${incumbent} (${candidate.party}-${candidate.municipality})`;
 }
 
 export function formatPercent(probability: number): string {

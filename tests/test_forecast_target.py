@@ -13,9 +13,13 @@ def valid_target():
         "district_display": "5th Essex",
         "dem_candidate_id": "d1",
         "dem_candidate_name": "Dem Candidate",
+        "dem_candidate_municipality": "Example",
+        "dem_candidate_incumbent": False,
         "comparison_candidate_id": "r1",
         "comparison_candidate_name": "Other Candidate",
         "comparison_candidate_party": "Republican",
+        "comparison_candidate_municipality": "Example",
+        "comparison_candidate_incumbent": False,
         "incumbent_status": "No_Incumbent",
         "PVI_N": 5.0,
         "pvi_year": 2024,
@@ -68,6 +72,13 @@ def test_missing_provenance_is_refused():
         forecast.validate_target(target)
 
 
+def test_missing_candidate_municipality_is_refused():
+    target = valid_target()
+    target["comparison_candidate_municipality"] = ""
+    with pytest.raises(forecast.TargetValidationError, match="municipality"):
+        forecast.validate_target(target)
+
+
 @pytest.mark.parametrize(
     "column", ["num_votes", "is_winner", "dem_margin", "certified_result"]
 )
@@ -89,6 +100,7 @@ def primary_sources():
                 "party": "Democratic",
                 "name": "Mark D. Sylvia",
                 "is_incumbent": 1,
+                "municipality": "Example",
             }
         ]
     )
@@ -105,6 +117,7 @@ def primary_sources():
                 "num_candidates": 1,
                 "is_winner": True,
                 "is_write_in": False,
+                "municipality": "Example",
             },
             {
                 "election_date": "2026-09-01",
@@ -117,6 +130,7 @@ def primary_sources():
                 "num_candidates": 1,
                 "is_winner": True,
                 "is_write_in": True,
+                "municipality": "Example",
             },
         ]
     )
@@ -130,6 +144,8 @@ def test_primary_builder_retains_result_only_write_in_nominee_without_general_re
 
     assert len(matchups) == 1
     assert matchups.loc[0, "comparison_candidate_name"] == "Brendalee A. Smith"
+    assert matchups.loc[0, "dem_candidate_municipality"] == "Example"
+    assert matchups.loc[0, "comparison_candidate_municipality"] == "Example"
     assert (
         matchups.loc[0, "comparison_nominee_basis"]
         == "final_primary_write_in_nominee"

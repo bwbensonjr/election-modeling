@@ -7,7 +7,7 @@ function assert(condition: unknown, message: string): asserts condition {
 export function validateManifest(value: unknown): Manifest {
   assert(typeof value === "object" && value !== null, "manifest must be an object");
   const manifest = value as Manifest;
-  assert(manifest.schema_version === 1, `unsupported bundle schema ${manifest.schema_version}`);
+  assert(manifest.schema_version === 2, `unsupported bundle schema ${manifest.schema_version}`);
   assert(Number.isInteger(manifest.draw_count) && manifest.draw_count > 0, "invalid draw count");
   assert(Array.isArray(manifest.races) && manifest.races.length > 0, "manifest has no races");
   const ids = manifest.races.map((race) => race.target_id);
@@ -16,6 +16,11 @@ export function validateManifest(value: unknown): Manifest {
   for (const race of manifest.races) {
     assert(Boolean(manifest.components[race.component]), `${race.target_id}: missing component ${race.component}`);
     assert(Boolean(manifest.assets[race.asset]), `${race.target_id}: missing race asset digest`);
+    for (const [key, candidate] of [["dem_candidate", race.dem_candidate], ["comparison_candidate", race.comparison_candidate]] as const) {
+      assert(candidate && candidate.name && candidate.municipality, `${race.target_id}: invalid ${key} metadata`);
+      assert(candidate.party === "D" || candidate.party === "R", `${race.target_id}: invalid ${key} party`);
+      assert(typeof candidate.is_incumbent === "boolean", `${race.target_id}: invalid ${key} incumbency`);
+    }
   }
   return manifest;
 }
@@ -45,7 +50,7 @@ export class BundleClient {
     const race = this.manifest.races.find((candidate) => candidate.target_id === targetId);
     if (!race) throw new Error(`unknown target ${targetId}`);
     const asset = await this.loadAsset<RaceAsset>(race.asset);
-    assert(asset.schema_version === 1, `${race.asset}: unsupported schema`);
+    assert(asset.schema_version === 2, `${race.asset}: unsupported race asset schema`);
     assert(asset.target_id === targetId, `${race.asset}: target identity mismatch`);
     assert(asset.draws.length === this.manifest.draw_count, `${race.asset}: inconsistent draw count`);
     return asset;
@@ -57,7 +62,7 @@ export class BundleClient {
     const metadata = this.manifest.components[name];
     if (!metadata) return Promise.reject(new Error(`unknown component ${name}`));
     const promise = this.loadAsset<ComponentAsset>(metadata.asset).then((asset) => {
-      assert(asset.schema_version === 1, `${metadata.asset}: unsupported schema`);
+      assert(asset.schema_version === 2, `${metadata.asset}: unsupported schema`);
       assert(asset.component === name, `${metadata.asset}: component identity mismatch`);
       for (const term of metadata.scenario_terms) {
         assert(Array.isArray(asset.terms[term]), `${metadata.asset}: missing term ${term}`);

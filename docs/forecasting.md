@@ -27,9 +27,12 @@ therefore absent from the pre-primary roster. Their
 that path explicit. Candidate IDs are stable hashes of primary date, office,
 district, party, and source name.
 
-`dem_candidate_id`/`dem_candidate_name` name the Democratic nominee.
-`comparison_candidate_id`, `comparison_candidate_name`, and
-`comparison_candidate_party` lock the other side. `comparison_rule` records
+`dem_candidate_id`/`dem_candidate_name` name the Democratic nominee, while
+`dem_candidate_municipality` and `dem_candidate_incumbent` carry the
+Secretary roster's residence and incumbency flag. `comparison_candidate_id`,
+`comparison_candidate_name`, `comparison_candidate_party`,
+`comparison_candidate_municipality`, and `comparison_candidate_incumbent`
+lock the other side and its presentation metadata. `comparison_rule` records
 the outcome-blind rule and `comparison_review_status` records whether several
 non-Democrats required an explicit pre-election choice. The four
 `*_nominee_basis` and `*_nominee_review_status` fields record how each nominee
@@ -52,7 +55,8 @@ used.
 identify the roster inputs. `pvi_source` and `pvi_source_digest` identify the
 precinct PVI, district map, and national baseline inputs. Validation refuses
 duplicate keys, unsupported offices, missing provenance, stale target IDs,
-source-roster disagreement, non-recomputable PVI, and any result-bearing
+source-roster disagreement, missing candidate municipality data,
+non-recomputable PVI, and any result-bearing
 column.
 
 ## Finance horizons

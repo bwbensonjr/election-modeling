@@ -9,7 +9,7 @@ const root = path.resolve(here, "../../data/forecast/2026/interactive/60d");
 const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8"));
 const targetRows = parseCsv(await readFile(path.resolve(here, "../../data/forecast/2026/target.csv"), "utf8"));
 
-if (manifest.schema_version !== 1) {
+if (manifest.schema_version !== 2) {
   throw new Error(`unsupported bundle schema ${manifest.schema_version}`);
 }
 if (manifest.races.length === 0 || new Set(manifest.races.map((race) => race.target_id)).size !== manifest.races.length) {

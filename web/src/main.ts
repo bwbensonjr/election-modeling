@@ -5,6 +5,7 @@ import {
   formatDollarInput,
   formatDollars,
   formatInterval,
+  formatCandidate,
   formatMargin,
   formatPercent,
   formatPvi,
@@ -64,7 +65,7 @@ function summaryMarkup(summary: Summary, comparison?: Summary): string {
     ? probabilityComparison(summary.dem_win_probability, comparison.dem_win_probability)
     : "";
   return `
-    <div class="stat"><span class="stat__label">Point margin</span><strong>${formatMargin(summary.point_margin)}</strong>${comparison ? `<small>${marginDelta}</small>` : ""}</div>
+    <div class="stat"><span class="stat__label">Likely Margin</span><strong>${formatMargin(summary.point_margin)}</strong>${comparison ? `<small>${marginDelta}</small>` : ""}</div>
     <div class="stat"><span class="stat__label">90% interval</span><strong>${formatInterval(summary.lower_90, summary.upper_90)}</strong></div>
     <div class="stat"><span class="stat__label">${winnerLabel}</span><strong>${formatPercent(winner.probability)}</strong>${comparison ? `<small>${probabilityDelta}</small>` : ""}</div>
   `;
@@ -110,7 +111,8 @@ function recalculate(): void {
 
 function renderRaceContext(race: RaceMeta): void {
   required<HTMLElement>("#race-context").innerHTML = `
-    <p class="matchup"><strong>${race.dem_candidate_name}</strong><span>vs.</span><strong>${race.comparison_candidate_name}</strong></p>
+    <p class="matchup"><strong>${formatCandidate(race.dem_candidate)}</strong><span>vs.</span><strong>${formatCandidate(race.comparison_candidate)}</strong></p>
+    <p class="field-note">An asterisk (*) marks an incumbent candidate.</p>
     <p>${race.office} · ${race.district_display}</p>
   `;
   required<HTMLElement>("#published-summary").innerHTML = summaryMarkup(race.published);
@@ -240,7 +242,7 @@ function renderOverview(races: RaceMeta[], client: BundleClient): void {
 
     const matchup = document.createElement("td");
     matchup.className = "race-matchup";
-    matchup.textContent = `${race.dem_candidate_name} vs. ${race.comparison_candidate_name}`;
+    matchup.textContent = `${formatCandidate(race.dem_candidate)} vs. ${formatCandidate(race.comparison_candidate)}`;
     const party = document.createElement("td");
     party.textContent = winner.party;
     const chance = document.createElement("td");

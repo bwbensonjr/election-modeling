@@ -5,7 +5,7 @@ import type { Manifest } from "./types";
 
 function manifest(): Manifest {
   return {
-    schema_version: 1,
+    schema_version: 2,
     election: "2026-11-03",
     horizon: "60d",
     variant: "forecast_60d",
@@ -46,8 +46,8 @@ function manifest(): Manifest {
         office: "State Representative",
         district: "First Example",
         district_display: "1st Example",
-        dem_candidate_name: "A",
-        comparison_candidate_name: "B",
+        dem_candidate: { name: "A", party: "D", municipality: "Example", is_incumbent: false },
+        comparison_candidate: { name: "B", party: "R", municipality: "Example", is_incumbent: false },
         component: "model",
         asset: "races/race.json",
         published: {
@@ -80,7 +80,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("bundle loading", () => {
   it("rejects unsupported schemas, duplicates, and absent components", () => {
     const unsupported = manifest();
-    unsupported.schema_version = 2;
+    unsupported.schema_version = 1;
     expect(() => validateManifest(unsupported)).toThrow(/unsupported/);
 
     const duplicate = manifest();
@@ -94,7 +94,7 @@ describe("bundle loading", () => {
 
   it("verifies asset digests and draw lengths", async () => {
     const value = manifest();
-    const raceText = JSON.stringify({ schema_version: 1, target_id: "race", draws: [-1, 0, 1] });
+    const raceText = JSON.stringify({ schema_version: 2, target_id: "race", draws: [-1, 0, 1] });
     value.assets["races/race.json"] = digest(raceText);
     const fetchMock = vi.fn(async () => new Response(raceText));
     vi.stubGlobal("fetch", fetchMock);

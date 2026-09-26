@@ -7,9 +7,9 @@ const digest = (value: string) => `sha256:${createHash("sha256").update(value).d
 async function installFixture(page: Page, options: { draws: number[]; probability: number; finance?: boolean }): Promise<void> {
   const finance = options.finance ?? false;
   const targetId = "fallback";
-  const raceAsset = JSON.stringify({ schema_version: 1, target_id: targetId, draws: options.draws }) + "\n";
+  const raceAsset = JSON.stringify({ schema_version: 2, target_id: targetId, draws: options.draws }) + "\n";
   const componentAsset = JSON.stringify({
-    schema_version: 1,
+    schema_version: 2,
     component: "baseline_no_timing",
     predictors: finance ? ["PVI_N", "incumbent_status", "money_logratio_wide"] : ["PVI_N", "incumbent_status"],
     terms: {
@@ -21,7 +21,7 @@ async function installFixture(page: Page, options: { draws: number[]; probabilit
     categorical_support: { incumbent_status: { No_Incumbent: 10, Dem_Incumbent: 20, GOP_Incumbent: 5 } },
   }) + "\n";
   const manifest = {
-    schema_version: 1,
+    schema_version: 2,
     election: "2026-11-03",
     horizon: "60d",
     variant: "forecast_60d",
@@ -50,8 +50,8 @@ async function installFixture(page: Page, options: { draws: number[]; probabilit
       office: "State Representative",
       district: "Example",
       district_display: "Example",
-      dem_candidate_name: "Dem Candidate",
-      comparison_candidate_name: "Republican Candidate",
+      dem_candidate: { name: "Margaret R. Scarsdale", party: "D", municipality: "Pepperell", is_incumbent: true },
+      comparison_candidate: { name: "Republican Candidate", party: "R", municipality: "Example", is_incumbent: false },
       component: "baseline_no_timing",
       asset: "races/fallback.json",
       published: {
@@ -138,6 +138,10 @@ test("matchup uses whole numbers, grouped receipts, exact reset state, and acces
   await expect(page.locator("#explorer")).toHaveAttribute("aria-busy", "false");
   await expect(page.locator("#published-summary")).not.toContainText(/\d+\.\d/);
   await expect(page.locator("#published-inputs")).not.toContainText(/\d+\.\d/);
+  await expect(page.locator("#race-context")).toContainText(/\*? \([DR]-[^)]+\)/);
+  await expect(page.locator("#race-context")).toContainText("An asterisk (*) marks an incumbent candidate.");
+  await expect(page.locator("#published-summary")).toContainText("Likely Margin");
+  await expect(page.locator("#published-inputs")).toContainText(/(?:D|R)\+\d+|Even/);
   await expect(page.locator("#dem-receipts")).toHaveValue(/^\d{1,3}(,\d{3})+$/);
   await expect(page.locator("#opponent-receipts")).toHaveValue(/^\d{1,3}(,\d{3})+$/);
 

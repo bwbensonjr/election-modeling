@@ -23,9 +23,13 @@ TARGET_REQUIRED = [
     "district_display",
     "dem_candidate_id",
     "dem_candidate_name",
+    "dem_candidate_municipality",
+    "dem_candidate_incumbent",
     "comparison_candidate_id",
     "comparison_candidate_name",
     "comparison_candidate_party",
+    "comparison_candidate_municipality",
+    "comparison_candidate_incumbent",
     "incumbent_status",
     "PVI_N",
     "pvi_year",
@@ -106,6 +110,20 @@ def _truthy(series: pd.Series) -> pd.Series:
     return series.astype(str).str.lower().isin({"1", "true", "yes"})
 
 
+def _candidate_municipality(frame: pd.DataFrame) -> pd.Series:
+    """Return the municipality column used by an authoritative candidate source."""
+    values = None
+    for base in ("municipality", "city_town"):
+        for column in (f"{base}_roster", f"{base}_result", base):
+            if column in frame:
+                values = frame[column] if values is None else values.combine_first(frame[column])
+    if values is not None:
+        return values
+    raise TargetValidationError(
+        "candidate source is missing municipality data; expected municipality or city_town"
+    )
+
+
 def build_target_candidates(
     primary_roster: pd.DataFrame,
     primary_results: pd.DataFrame,
@@ -138,6 +156,8 @@ def build_target_candidates(
         indicator=True,
     )
     joined["candidate_name"] = joined["name_roster"].fillna(joined["name_result"])
+    joined["candidate_municipality"] = _candidate_municipality(joined).fillna("")
+    joined["candidate_municipality"] = joined["candidate_municipality"].astype(str).str.strip()
     joined["district_display"] = joined["district_display_roster"].fillna(
         joined["district_display_result"]
     )
@@ -168,6 +188,7 @@ def build_target_candidates(
         "party",
         "candidate_id",
         "candidate_name",
+        "candidate_municipality",
         "is_incumbent",
         "nominee_basis",
         "nominee_review_status",
@@ -295,9 +316,15 @@ def expected_target_matchups(
                 "district_display": dem["district_display"],
                 "dem_candidate_id": dem["candidate_id"],
                 "dem_candidate_name": dem["candidate_name"],
+                "dem_candidate_municipality": dem["candidate_municipality"],
+                "dem_candidate_incumbent": bool(dem["is_incumbent"]),
                 "comparison_candidate_id": comparison["candidate_id"],
                 "comparison_candidate_name": comparison["candidate_name"],
                 "comparison_candidate_party": comparison["party"],
+                "comparison_candidate_municipality": comparison[
+                    "candidate_municipality"
+                ],
+                "comparison_candidate_incumbent": bool(comparison["is_incumbent"]),
                 "incumbent_status": (
                     "Dem_Incumbent"
                     if dem["is_incumbent"]
@@ -331,9 +358,13 @@ def verify_target_sources(
     identity = [
         "dem_candidate_id",
         "dem_candidate_name",
+        "dem_candidate_municipality",
+        "dem_candidate_incumbent",
         "comparison_candidate_id",
         "comparison_candidate_name",
         "comparison_candidate_party",
+        "comparison_candidate_municipality",
+        "comparison_candidate_incumbent",
     ]
     matched = target.merge(
         expected[key + identity], on=key, how="outer", suffixes=("", "_expected"), indicator=True
@@ -415,6 +446,20 @@ def validate_target(target: pd.DataFrame) -> pd.DataFrame:
         raise TargetValidationError(
             "forecast target has missing provenance in: "
             + ", ".join(absent_provenance)
+        )
+    missing_municipality = [
+        column
+        for column in (
+            "dem_candidate_municipality",
+            "comparison_candidate_municipality",
+        )
+        if target[column].isna().any()
+        or target[column].astype(str).str.strip().eq("").any()
+    ]
+    if missing_municipality:
+        raise TargetValidationError(
+            "forecast target has missing candidate municipality data in: "
+            + ", ".join(missing_municipality)
         )
     expected = pd.Series(
         [target_id(*row) for row in target[TARGET_KEY].itertuples(index=False, name=None)],

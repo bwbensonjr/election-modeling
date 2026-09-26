@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatCandidate,
   formatDollarInput,
   formatDollars,
   formatInteger,
@@ -22,8 +23,8 @@ function race(targetId: string, margin: number, office = "State Representative",
     office,
     district,
     district_display: district,
-    dem_candidate_name: "Democrat",
-    comparison_candidate_name: "Republican",
+    dem_candidate: { name: "Democrat", party: "D", municipality: "Pepperell", is_incumbent: false },
+    comparison_candidate: { name: "Republican", party: "R", municipality: "Example", is_incumbent: false },
     component: "model",
     asset: `races/${targetId}.json`,
     published: { point_margin: margin, lower_90: -1, upper_90: 1, dem_win_probability: 0.5 },
@@ -44,15 +45,24 @@ describe("whole-unit presentation", () => {
     const value = 1234.6;
     expect(formatInteger(value)).toBe("1,235");
     expect(formatInterval(-3.6, 8.4)).toBe("-4 to 8");
-    expect(formatMargin(2.6)).toBe("D +3");
-    expect(formatMargin(-2.6)).toBe("R +3");
+    expect(formatMargin(2.6)).toBe("Dem. +3 points");
+    expect(formatMargin(-2.6)).toBe("Rep. +3 points");
     expect(formatMargin(0.4)).toBe("Even");
-    expect(formatPvi(4.6)).toBe("+5");
+    expect(formatPvi(4.6)).toBe("D+5");
+    expect(formatPvi(-1.6)).toBe("R+2");
+    expect(formatPvi(0.4)).toBe("Even");
     expect(formatPercent(0.604)).toBe("60%");
     expect(formatProbabilityPointDelta(-0.016)).toBe("-2 pts");
     expect(formatDollars(1234567.8)).toBe("$1,234,568");
     expect(formatDollarInput(1234567.8)).toBe("1,234,568");
     expect(value).toBe(1234.6);
+  });
+
+  it("formats candidate identity and incumbent status", () => {
+    expect(formatCandidate({ name: "Margaret R. Scarsdale", party: "D", municipality: "Pepperell", is_incumbent: true }))
+      .toBe("Margaret R. Scarsdale* (D-Pepperell)");
+    expect(formatCandidate({ name: "Alex Republican", party: "R", municipality: "Amesbury", is_incumbent: false }))
+      .toBe("Alex Republican (R-Amesbury)");
   });
 
   it("rejects non-finite or out-of-range display values", () => {

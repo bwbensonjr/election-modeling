@@ -12,7 +12,7 @@ import {
 import type { ComponentAsset, Incumbency, RaceInputs } from "./types";
 
 const component: ComponentAsset = {
-  schema_version: 1,
+  schema_version: 2,
   component: "fixture",
   predictors: ["PVI_N", "incumbent_status", "money_logratio_wide"],
   terms: golden.terms,

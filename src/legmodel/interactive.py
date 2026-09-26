@@ -11,7 +11,7 @@ import pandas as pd
 from . import config, definitions, forecast, forecast_run, variants
 from . import fit as fitmod
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SUMMARY_TOLERANCES = {
     "point_margin": 1e-9,
     "lower_90": 1e-9,
@@ -22,6 +22,16 @@ SUMMARY_TOLERANCES = {
 
 class InteractiveBundleError(ValueError):
     """An interactive bundle disagrees with its locked source forecast."""
+
+
+def _party_letter(party: str) -> str:
+    letters = {"Democratic": "D", "Republican": "R"}
+    try:
+        return letters[party]
+    except KeyError as exc:
+        raise InteractiveBundleError(
+            f"unsupported candidate party for web presentation: {party!r}"
+        ) from exc
 
 
 def json_bytes(value: object) -> bytes:
@@ -168,6 +178,10 @@ def validate_contents(contents: dict[str, bytes]) -> dict:
     components = manifest.get("components", {})
     for component_name, component_meta in components.items():
         component = json.loads(contents[component_meta["asset"]])
+        if component.get("schema_version") != SCHEMA_VERSION:
+            raise InteractiveBundleError(
+                f"component schema version mismatch: {component_name}"
+            )
         if component.get("component") != component_name:
             raise InteractiveBundleError(f"component identity mismatch: {component_name}")
         terms = component.get("terms", {})
@@ -177,11 +191,28 @@ def validate_contents(contents: dict[str, bytes]) -> dict:
                     f"component {component_name!r} has an invalid {term!r} draw array"
                 )
     for race in races:
+        for key in ("dem_candidate", "comparison_candidate"):
+            candidate = race.get(key)
+            if not isinstance(candidate, dict) or not all(
+                candidate.get(field) not in (None, "")
+                for field in ("name", "party", "municipality")
+            ) or not isinstance(candidate.get("is_incumbent"), bool):
+                raise InteractiveBundleError(
+                    f"{race.get('target_id')}: invalid {key} metadata"
+                )
+            if candidate["party"] not in {"D", "R"}:
+                raise InteractiveBundleError(
+                    f"{race.get('target_id')}: unsupported {key} party"
+                )
         if race.get("component") not in components:
             raise InteractiveBundleError(
                 f"{race.get('target_id')}: component is absent from bundle"
             )
         asset = json.loads(contents[race["asset"]])
+        if asset.get("schema_version") != SCHEMA_VERSION:
+            raise InteractiveBundleError(
+                f"race schema version mismatch: {race['target_id']}"
+            )
         if asset.get("target_id") != race["target_id"]:
             raise InteractiveBundleError(f"race identity mismatch: {race['target_id']}")
         if len(asset.get("draws", [])) != draw_count:
@@ -289,8 +320,18 @@ def build_contents(
                 "office": str(row["office"]),
                 "district": str(row["district"]),
                 "district_display": str(row["district_display"]),
-                "dem_candidate_name": str(row["dem_candidate_name"]),
-                "comparison_candidate_name": str(row["comparison_candidate_name"]),
+                "dem_candidate": {
+                    "name": str(row["dem_candidate_name"]),
+                    "party": "D",
+                    "municipality": str(row["dem_candidate_municipality"]),
+                    "is_incumbent": bool(row["dem_candidate_incumbent"]),
+                },
+                "comparison_candidate": {
+                    "name": str(row["comparison_candidate_name"]),
+                    "party": _party_letter(str(row["comparison_candidate_party"])),
+                    "municipality": str(row["comparison_candidate_municipality"]),
+                    "is_incumbent": bool(row["comparison_candidate_incumbent"]),
+                },
                 "component": str(locked["component"]),
                 "asset": race_path,
                 "published": {
