@@ -41,7 +41,7 @@ uv run legmodel forecast-web --horizon 60d
 
 The command refits the snapshot's declared component with its recorded seed, verifies every race and summary against the locked snapshot, and creates or verifies `data/forecast/2026/interactive/60d/`. It refuses conflicting existing bytes rather than overwriting them.
 
-A later official 14-day snapshot can use the same command with `--horizon 14d`. The initial web application intentionally points to the 60-day bundle until a separate application update selects a newer horizon.
+The 14-day snapshot uses the same command with `--horizon 14d`. The web application now points to the 14-day bundle, the latest published horizon; the 60-day bundle remains committed and unchanged.
 
 ## Develop and verify locally
 

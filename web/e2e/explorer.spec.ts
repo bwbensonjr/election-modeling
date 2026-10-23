@@ -23,12 +23,12 @@ async function installFixture(page: Page, options: { draws: number[]; probabilit
   const manifest = {
     schema_version: 2,
     election: "2026-11-03",
-    horizon: "60d",
-    variant: "forecast_60d",
+    horizon: "14d",
+    variant: "forecast_14d",
     variant_declaration: "fixture",
     definition: "two_party_or_strongest",
     training_cutoff: "2024-11-05",
-    finance_cutoff: "2026-09-04",
+    finance_cutoff: "2026-10-20",
     source_code_commit: "abc123456789",
     source_snapshot: "fixture",
     source_snapshot_url: "https://example.com",
@@ -76,15 +76,15 @@ async function installFixture(page: Page, options: { draws: number[]; probabilit
     },
   };
 
-  await page.route("**/data/2026/60d/manifest.json", (route) => route.fulfill({ json: manifest }));
-  await page.route("**/data/2026/60d/races/fallback.json", (route) => route.fulfill({ body: raceAsset, contentType: "application/json" }));
-  await page.route("**/data/2026/60d/components/baseline_no_timing.json", (route) => route.fulfill({ body: componentAsset, contentType: "application/json" }));
+  await page.route("**/data/2026/14d/manifest.json", (route) => route.fulfill({ json: manifest }));
+  await page.route("**/data/2026/14d/races/fallback.json", (route) => route.fulfill({ body: raceAsset, contentType: "application/json" }));
+  await page.route("**/data/2026/14d/components/baseline_no_timing.json", (route) => route.fulfill({ body: componentAsset, contentType: "application/json" }));
 }
 
 test("overview contains every race in competitiveness order without eager asset loads", async ({ page }) => {
   const assetRequests: string[] = [];
   page.on("request", (request) => {
-    if (/\/data\/2026\/60d\/(races|components)\//.test(request.url())) assetRequests.push(request.url());
+    if (/\/data\/2026\/14d\/(races|components)\//.test(request.url())) assetRequests.push(request.url());
   });
   await page.goto("./");
   await expect(page.locator("#overview-view")).toHaveAttribute("aria-busy", "false");

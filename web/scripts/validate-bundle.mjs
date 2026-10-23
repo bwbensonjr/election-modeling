@@ -5,7 +5,7 @@ import path from "node:path";
 import { parseCsv, validateComparisonParties } from "./bundle-validation.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(here, "../../data/forecast/2026/interactive/60d");
+const root = path.resolve(here, "../../data/forecast/2026/interactive/14d");
 const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8"));
 const targetRows = parseCsv(await readFile(path.resolve(here, "../../data/forecast/2026/target.csv"), "utf8"));
 

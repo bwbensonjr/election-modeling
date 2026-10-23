@@ -283,7 +283,7 @@ function renderFatalError(error: unknown): void {
 }
 
 async function start(): Promise<void> {
-  const baseUrl = `${import.meta.env.BASE_URL}data/2026/60d`.replace(/\/$/, "");
+  const baseUrl = `${import.meta.env.BASE_URL}data/2026/14d`.replace(/\/$/, "");
   const client = await BundleClient.load(baseUrl);
   const manifest = client.getManifest();
   const selectorRaces = [...manifest.races].sort((left, right) =>
