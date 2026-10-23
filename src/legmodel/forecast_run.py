@@ -433,6 +433,20 @@ def git_commit() -> str:
     return completed.stdout.strip()
 
 
+def added_commit(path: Path) -> str:
+    """Return the commit that first added a committed path."""
+    completed = subprocess.run(
+        ["git", "log", "--diff-filter=A", "--format=%H", "--", str(path)],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    commits = completed.stdout.split()
+    if not commits:
+        raise ForecastRunError(f"{path} has not been committed")
+    return commits[-1]
+
+
 def clean_worktree() -> bool:
     completed = subprocess.run(
         ["git", "status", "--porcelain"], capture_output=True, text=True, check=True

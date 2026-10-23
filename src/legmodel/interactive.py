@@ -229,6 +229,7 @@ def build_contents(
     official: pd.DataFrame,
     snapshot_manifest: dict,
     snapshot_support: pd.DataFrame,
+    snapshot_commit: str,
     races: pd.DataFrame | None = None,
     roster: pd.DataFrame | None = None,
     fit_provider=fitmod.fit,
@@ -371,7 +372,7 @@ def build_contents(
         "source_snapshot": f"data/forecast/2026/snapshots/{horizon}",
         "source_snapshot_url": (
             "https://github.com/bwbensonjr/election-modeling/tree/"
-            f"{source_commit}/data/forecast/2026/snapshots/{horizon}"
+            f"{snapshot_commit}/data/forecast/2026/snapshots/{horizon}"
         ),
         "source_digests": {
             "target": snapshot_manifest["target_digest"],
@@ -459,6 +460,7 @@ def run(horizon: str) -> dict[str, bytes]:
         pd.read_csv(snapshot_directory / "races.csv"),
         snapshot_manifest,
         pd.read_csv(snapshot_directory / "support_warnings.csv"),
+        forecast_run.added_commit(snapshot_directory / "manifest.json"),
     )
     directory = config.FORECAST_2026_INTERACTIVE / horizon
     result = publish_contents(contents, directory)

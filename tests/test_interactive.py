@@ -124,7 +124,7 @@ def bundle_inputs():
 
 def build_fixture():
     return interactive.build_contents(
-        "60d", *bundle_inputs(), fit_provider=fake_fit
+        "60d", *bundle_inputs(), "def456", fit_provider=fake_fit
     )
 
 
@@ -155,6 +155,7 @@ def test_bundle_rejects_locked_summary_mismatch():
             official,
             snapshot,
             support,
+            "def456",
             fit_provider=fake_fit,
         )
 
@@ -224,3 +225,13 @@ def test_shared_golden_scenarios_match_python_reference():
         np.testing.assert_allclose(actual, case["expected_draws"], rtol=0, atol=1e-12)
         for name, expected in case["expected_summary"].items():
             assert interactive.summarize(actual)[name] == pytest.approx(expected)
+
+
+def test_snapshot_link_uses_the_commit_that_added_the_snapshot():
+    manifest = interactive.validate_contents(build_fixture())
+
+    assert manifest["source_code_commit"] == "abc123"
+    assert manifest["source_snapshot_url"] == (
+        "https://github.com/bwbensonjr/election-modeling/tree/"
+        "def456/data/forecast/2026/snapshots/60d"
+    )
