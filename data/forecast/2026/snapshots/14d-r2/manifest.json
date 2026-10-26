@@ -1,0 +1,80 @@
+{
+  "added_target_ids": [
+    "1893c9c1712f3827bba2",
+    "2a78753dfe26bdfbbea5",
+    "3dd8b9d3ba60b74b72a2",
+    "4ffd5db14c87fb33db31",
+    "7464f93ab97eea1e688c",
+    "7712573e04d9cfcb4d46",
+    "a15843001d2be9ab12da",
+    "a737f306e5280a56147c",
+    "c9263d8b4207c41ab8fc",
+    "cb18a458524f39cf9e45",
+    "e401dcef4c533f9b1aa6"
+  ],
+  "aggregate_limitation": "Aligned draws preserve represented posterior dependence but do not add a shared statewide election shock or correlation between fits.",
+  "code_commit": "56149c6f36b46c111fa2ebb4d1e1dc49c6fdb15f",
+  "components": [
+    {
+      "component": "baseline_no_timing",
+      "declaration": "response ~ PVI_N + incumbent_status",
+      "route_value": false,
+      "seed": null,
+      "target_races": 0,
+      "training_races": 0
+    },
+    {
+      "component": "baseline_money_logratio_no_timing",
+      "declaration": "response ~ PVI_N + incumbent_status + money_logratio_primary",
+      "diagnostics": {
+        "as_of": "election-14d",
+        "chains": 4,
+        "diagnostics_passed": true,
+        "divergences": 0,
+        "draws": 2000,
+        "group_prior": "library defaults",
+        "level_counts": "incumbent_status: No_Incumbent=165, Dem_Incumbent=322, GOP_Incumbent=106",
+        "max_rhat": 1.0008,
+        "min_ess_bulk": 6699.6,
+        "min_ess_tail": 6055.9,
+        "n_train": 593,
+        "refused_reason": "",
+        "seed": 967025674,
+        "separating_races": "none",
+        "target_accept": 0.8,
+        "tune": 1000
+      },
+      "route_value": true,
+      "seed": 967025674,
+      "seed_inputs": {
+        "component": "baseline_money_logratio_no_timing",
+        "definition": "two_party_or_strongest",
+        "horizon": "14d",
+        "target_election": "2026-11-03",
+        "training_cutoff": "2024-11-05",
+        "variant": "forecast_14d"
+      },
+      "target_races": 57,
+      "training_races": 593
+    }
+  ],
+  "definition": "two_party_or_strongest",
+  "files": {
+    "chamber_draws.csv.gz": "sha256:a473833ba963e3169c8fae7b9f23fb0f8bce8519f9785ac73937a3b2a1c659ff",
+    "races.csv": "sha256:8274c1125cd5647d18665733ddbcb6743a8f000515f8f3f90e5b4b0f0223a180",
+    "support_warnings.csv": "sha256:d4609b65b877f35d5aa5f0368cf305ae565c78e8975ee5df6d3b2d1666b9f0da"
+  },
+  "finance_cutoff": "2026-10-20",
+  "finance_digest": "sha256:506ff83fed9ebf79c720ef9575631ea81b45c2e109c027d70ec001f88d309f3f",
+  "horizon": "14d",
+  "removed_target_ids": [],
+  "revision": "14d-r2",
+  "supersedes": "14d",
+  "target_digest": "sha256:b44c3979e73d0c12cdc463b8d4b00d5a854b6e3c00443a6d5add2756099b834a",
+  "target_election": "2026-11-03",
+  "training_cutoff": "2024-11-05",
+  "training_digest": "sha256:110fe4d7b1e787172eee8b308ddd067ca750a2480bde020cc59e83087eed68d1",
+  "training_races": 610,
+  "variant": "forecast_14d",
+  "variant_declaration": "route on money_complete -- False: response ~ PVI_N + incumbent_status; True: response ~ PVI_N + incumbent_status + money_logratio_primary"
+}

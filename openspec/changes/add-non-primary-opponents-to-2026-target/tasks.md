@@ -26,7 +26,7 @@
 ## 5. Finance and forecast for the revision
 
 - [x] 5.1 Run finance collection for `14d-r2` to produce `data/forecast/2026/finance_14d_r2.csv` with the 2026-10-20 cutoff. Verify the original 92 rows match `finance_14d.csv`, and list any new candidate with `available=False` and its `roster_error`. If a failure needs a new `ocpf-cli` lookup, stop and raise it with the user.
-- [ ] 5.2 Commit inputs, then publish `data/forecast/2026/snapshots/14d-r2` from a clean worktree. Verify 57 races, every new race routed to a component (fallbacks naming their reason), and a manifest naming `supersedes: "14d"`.
+- [x] 5.2 Commit inputs, then publish `data/forecast/2026/snapshots/14d-r2` from a clean worktree. Verify 57 races, every new race routed to a component (fallbacks naming their reason), and a manifest naming `supersedes: "14d"`.
 - [ ] 5.3 Export `data/forecast/2026/interactive/14d-r2` and run `legmodel forecast-web` verification against the snapshot. Verify the export passes its tolerances for all 57 races.
 
 ## 6. Explorer and writeup
