@@ -105,14 +105,6 @@ def scenario_draws(
     return values
 
 
-def _finance_path(horizon: str) -> Path:
-    if horizon == "60d":
-        return config.FORECAST_2026_FINANCE_60D
-    if horizon == "14d":
-        return config.FORECAST_2026_FINANCE_14D
-    raise InteractiveBundleError(f"unknown forecast horizon {horizon!r}")
-
-
 def _money_columns(predictor: str) -> tuple[str, str]:
     if predictor == "money_logratio_wide":
         return "dem_receipts_wide", "opp_receipts_wide"
@@ -233,8 +225,14 @@ def build_contents(
     races: pd.DataFrame | None = None,
     roster: pd.DataFrame | None = None,
     fit_provider=fitmod.fit,
+    forecast_name: str | None = None,
 ) -> dict[str, bytes]:
-    """Create a validated interactive bundle without writing it."""
+    """Create a validated interactive bundle without writing it.
+
+    `forecast_name` names the published forecast when it differs from its
+    horizon, as a superseding revision's does.
+    """
+    forecast_name = forecast_name or horizon
     capture: dict = {}
     generated, _, _, metadata = forecast_run.generate(
         target,
@@ -369,10 +367,10 @@ def build_contents(
         "training_cutoff": snapshot_manifest["training_cutoff"],
         "finance_cutoff": snapshot_manifest["finance_cutoff"],
         "source_code_commit": source_commit,
-        "source_snapshot": f"data/forecast/2026/snapshots/{horizon}",
+        "source_snapshot": f"data/forecast/2026/snapshots/{forecast_name}",
         "source_snapshot_url": (
             "https://github.com/bwbensonjr/election-modeling/tree/"
-            f"{snapshot_commit}/data/forecast/2026/snapshots/{horizon}"
+            f"{snapshot_commit}/data/forecast/2026/snapshots/{forecast_name}"
         ),
         "source_digests": {
             "target": snapshot_manifest["target_digest"],
@@ -389,6 +387,9 @@ def build_contents(
             "components": metadata["components"],
         },
     }
+    if "supersedes" in snapshot_manifest:
+        manifest["revision"] = snapshot_manifest["revision"]
+        manifest["supersedes"] = snapshot_manifest["supersedes"]
     contents["manifest.json"] = json_bytes(manifest)
     validate_contents(contents)
     return contents
@@ -439,30 +440,33 @@ def load_contents(directory: Path) -> dict[str, bytes]:
     return contents
 
 
-def run(horizon: str) -> dict[str, bytes]:
+def run(name: str) -> dict[str, bytes]:
     """Refit, validate, and publish one locked forecast as interactive data."""
     if not forecast_run.clean_worktree():
         raise InteractiveBundleError(
             "interactive publication requires a clean worktree"
         )
-    snapshot_directory = config.FORECAST_2026_SNAPSHOTS / horizon
+    revision = config.forecast_revision(name)
+    horizon = revision.horizon
+    snapshot_directory = revision.snapshot
     required = {"manifest.json", "races.csv", "support_warnings.csv"}
     missing = sorted(name for name in required if not (snapshot_directory / name).exists())
     if missing:
         raise InteractiveBundleError(
-            f"locked {horizon} snapshot is incomplete; missing {missing}"
+            f"locked {name} snapshot is incomplete; missing {missing}"
         )
     snapshot_manifest = json.loads((snapshot_directory / "manifest.json").read_text())
     contents = build_contents(
         horizon,
-        forecast.load_target(config.FORECAST_2026_TARGET),
-        pd.read_csv(_finance_path(horizon)),
+        forecast.load_target(revision.target),
+        pd.read_csv(revision.finance),
         pd.read_csv(snapshot_directory / "races.csv"),
         snapshot_manifest,
         pd.read_csv(snapshot_directory / "support_warnings.csv"),
         forecast_run.added_commit(snapshot_directory / "manifest.json"),
+        forecast_name=name,
     )
-    directory = config.FORECAST_2026_INTERACTIVE / horizon
+    directory = revision.interactive
     result = publish_contents(contents, directory)
     manifest = json.loads(contents["manifest.json"])
     print(f"{result} interactive bundle -> {directory.relative_to(config.ROOT)}")

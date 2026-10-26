@@ -51,6 +51,30 @@ TARGET_REQUIRED = [
     "comparison_nominee_basis",
     "comparison_nominee_review_status",
 ]
+COMPARISON_RULE = "republican_else_sole_non_democrat"
+CANDIDATE_COLUMNS = [
+    "office",
+    "district",
+    "district_display",
+    "party",
+    "candidate_id",
+    "candidate_name",
+    "candidate_municipality",
+    "is_incumbent",
+    "nominee_basis",
+    "nominee_review_status",
+]
+SUPPLEMENT_REQUIRED = [
+    "office",
+    "district",
+    "district_display",
+    "party",
+    "name",
+    "municipality",
+    "is_incumbent",
+    "source_url",
+    "source_as_of",
+]
 RESULT_COLUMN_PARTS = (
     "result",
     "winner",
@@ -181,19 +205,64 @@ def build_target_candidates(
     joined.loc[result_only | write_in, "nominee_review_status"] = (
         "confirmed_final_primary_result_only"
     )
-    columns = [
-        "office",
-        "district",
-        "district_display",
-        "party",
-        "candidate_id",
-        "candidate_name",
-        "candidate_municipality",
-        "is_incumbent",
-        "nominee_basis",
-        "nominee_review_status",
+    return joined[CANDIDATE_COLUMNS].sort_values(
+        ["office", "district", "party"], ignore_index=True
+    )
+
+
+def build_supplement_candidates(
+    supplement: pd.DataFrame,
+    primary_candidates: pd.DataFrame,
+    general_date: str = GENERAL_DATE_2026,
+) -> pd.DataFrame:
+    """Add general-election candidates who qualified by nomination papers.
+
+    The reviewed supplement lists every legislative candidate on the
+    Secretary's general-election page who is not a primary nominee. A row that
+    repeats a primary nominee means the transcription is wrong, so it fails.
+    """
+    missing = [
+        column for column in SUPPLEMENT_REQUIRED if column not in supplement.columns
     ]
-    return joined[columns].sort_values(
+    if missing:
+        raise TargetValidationError(
+            "nomination supplement is missing column(s): " + ", ".join(missing)
+        )
+    rows = supplement[supplement["office"].isin(TARGET_OFFICES)].copy()
+    for column in SUPPLEMENT_REQUIRED:
+        blank = rows[column].isna() | rows[column].astype(str).str.strip().eq("")
+        if blank.any():
+            bad = rows.loc[blank, ["office", "district", "name"]].to_dict("records")
+            raise TargetValidationError(
+                f"nomination supplement row(s) missing {column}: {bad}"
+            )
+    rows["_name_key"] = rows["name"].map(_name_key)
+    key = ["office", "district", "_name_key"]
+    repeated = rows.duplicated(key, keep=False)
+    if repeated.any():
+        bad = rows.loc[repeated, ["office", "district", "name"]].to_dict("records")
+        raise TargetValidationError(f"nomination supplement repeats a row: {bad}")
+    primary_keys = primary_candidates.assign(
+        _name_key=primary_candidates["candidate_name"].map(_name_key)
+    )[key]
+    duplicate = rows.merge(primary_keys, on=key, how="inner")
+    if not duplicate.empty:
+        bad = duplicate[["office", "district", "name"]].to_dict("records")
+        raise TargetValidationError(
+            f"nomination supplement duplicates a primary nominee: {bad}"
+        )
+    rows["candidate_name"] = rows["name"]
+    rows["candidate_municipality"] = rows["municipality"].astype(str).str.strip()
+    rows["candidate_id"] = [
+        source_candidate_id(general_date, office, district, party, name)
+        for office, district, party, name in rows[
+            ["office", "district", "party", "name"]
+        ].itertuples(index=False, name=None)
+    ]
+    rows["is_incumbent"] = _truthy(rows["is_incumbent"])
+    rows["nominee_basis"] = "nomination_paper"
+    rows["nominee_review_status"] = "confirmed_secretary_general_candidate_list"
+    return rows[CANDIDATE_COLUMNS].sort_values(
         ["office", "district", "party"], ignore_index=True
     )
 
@@ -201,8 +270,16 @@ def build_target_candidates(
 def select_comparison_candidate(
     candidates: pd.DataFrame, reviewed_candidate_id: str | None = None
 ) -> tuple[pd.Series, str]:
-    """Select a non-Democrat without consulting general-election outcomes."""
+    """Select a non-Democrat without consulting general-election outcomes.
+
+    Mirrors the adopted `two_party_or_strongest` response: the Republican where
+    one stands, otherwise the only non-Democrat. Several non-Democrats with no
+    Republican among them need an explicit pre-election choice.
+    """
     comparison = candidates[candidates["party"].ne("Democratic")]
+    republicans = comparison[comparison["party"].eq("Republican")]
+    if len(republicans) == 1 and len(comparison) > 1:
+        return republicans.iloc[0], "not_required_republican_present"
     if len(comparison) == 1:
         return comparison.iloc[0], "not_required_one_non_democratic_candidate"
     if comparison.empty:
@@ -332,7 +409,7 @@ def expected_target_matchups(
                     if comparison["is_incumbent"]
                     else "No_Incumbent"
                 ),
-                "comparison_rule": "primary_nominee_then_pre_election_review",
+                "comparison_rule": COMPARISON_RULE,
                 "comparison_review_status": review_status,
                 "dem_nominee_basis": dem["nominee_basis"],
                 "dem_nominee_review_status": dem["nominee_review_status"],
@@ -365,6 +442,13 @@ def verify_target_sources(
         "comparison_candidate_party",
         "comparison_candidate_municipality",
         "comparison_candidate_incumbent",
+        "incumbent_status",
+        "comparison_rule",
+        "comparison_review_status",
+        "dem_nominee_basis",
+        "dem_nominee_review_status",
+        "comparison_nominee_basis",
+        "comparison_nominee_review_status",
     ]
     matched = target.merge(
         expected[key + identity], on=key, how="outer", suffixes=("", "_expected"), indicator=True
@@ -477,3 +561,152 @@ def load_target(path=config.FORECAST_2026_TARGET) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"forecast target is missing: {path}")
     return validate_target(pd.read_csv(path))
+
+
+TARGET_COLUMNS = [
+    "target_id",
+    *TARGET_KEY,
+    *TARGET_REQUIRED[
+        TARGET_REQUIRED.index("district_display") : TARGET_REQUIRED.index("pvi_provenance")
+    ],
+    "pvi_interpolated_share",
+    *TARGET_REQUIRED[TARGET_REQUIRED.index("pvi_provenance") :],
+]
+CANDIDATE_SOURCE = (
+    "ma-election-db 2026 primary candidate roster, final electionstats.state.ma.us "
+    "primary results, and reviewed Secretary general-election nomination-paper "
+    "supplement"
+)
+PVI_SOURCE = "2024 precinct PVI, 2021 precinct-district map, and national baseline"
+BALLOT_TIMING_2026 = "midterm_gop_pres"
+
+
+def build_target(
+    candidates: pd.DataFrame,
+    district_pvi: pd.DataFrame,
+    provenance: dict,
+    finance: dict[str, pd.DataFrame],
+    general_date: str = GENERAL_DATE_2026,
+) -> pd.DataFrame:
+    """Assemble a response-free target from candidates and district PVI.
+
+    `finance` maps a horizon to any finance snapshot already collected when the
+    target is built; a race absent from it is not yet money-complete there.
+    """
+    matchups = expected_target_matchups(candidates)
+    matchups["election_date"] = general_date
+    matchups["district_key"] = matchups["district"].map(normalize_district)
+    target = matchups.merge(
+        district_pvi, on=["office", "district_key"], how="left", validate="one_to_one"
+    )
+    if target["PVI_N"].isna().any():
+        bad = target.loc[target["PVI_N"].isna(), ["office", "district"]]
+        raise TargetValidationError(
+            f"target district has no recomputable PVI: {bad.to_dict('records')}"
+        )
+    target["target_id"] = [
+        target_id(*row) for row in target[TARGET_KEY].itertuples(index=False, name=None)
+    ]
+    target["pvi_interpolated_share"] = pd.to_numeric(target["pvi_interpolated_share"])
+    target["ballot_timing"] = BALLOT_TIMING_2026
+    for horizon in ("60d", "14d"):
+        frame = finance.get(horizon)
+        complete = (
+            frame.groupby("target_id")["race_complete"].first().astype(bool)
+            if frame is not None
+            else pd.Series(dtype=bool)
+        )
+        target[f"money_complete_{horizon}"] = (
+            target["target_id"].map(complete).fillna(False).astype(bool)
+        )
+    for column, value in provenance.items():
+        target[column] = value
+    return validate_target(target[TARGET_COLUMNS])
+
+
+def check_supplement_districts(
+    supplement: pd.DataFrame, district_pvi: pd.DataFrame
+) -> None:
+    """Refuse a supplement district that names no current legislative district."""
+    keys = set(zip(district_pvi["office"], district_pvi["district_key"], strict=True))
+    unknown = [
+        {"office": office, "district": district}
+        for office, district in supplement[["office", "district"]].itertuples(
+            index=False, name=None
+        )
+        if (office, normalize_district(district)) not in keys
+    ]
+    if unknown:
+        raise TargetValidationError(
+            f"nomination supplement names unknown district(s): {unknown}"
+        )
+
+
+def _target_csv_bytes(target: pd.DataFrame) -> bytes:
+    # 15 significant digits, the precision the original 2026 target was written at.
+    return target.to_csv(index=False, lineterminator="\n", float_format="%.15g").encode(
+        "utf-8"
+    )
+
+
+def run_target(name: str) -> pd.DataFrame:
+    """Build, verify, and create once the target of a superseding forecast.
+
+    Original forecast targets predate this builder and stay as published.
+    """
+    from maprecinct import config as source_config
+
+    revision = config.forecast_revision(name)
+    if revision.supersedes is None:
+        raise TargetValidationError(
+            f"{name} is an original forecast; its target is not rebuilt"
+        )
+    database = source_config.MA_ELECTION_DB / "data"
+    roster_path = database / "primary_2026" / "ma_primary_2026_candidates.csv.gz"
+    results_path = database / "ma_primary_election_candidates.csv.gz"
+    supplement_path = config.FORECAST_2026_NOMINATION_CANDIDATES
+    pvi_paths = [
+        source_config.PVI_DIR / "ma_precinct_pvi.csv.gz",
+        source_config.PRECINCT_DIR / "ma_precinct_district.csv.gz",
+        source_config.REFERENCE_DIR / "national_presidential_baseline.csv",
+    ]
+    primary = build_target_candidates(pd.read_csv(roster_path), pd.read_csv(results_path))
+    supplement = pd.read_csv(supplement_path)
+    district_pvi = rollup_target_pvi(*(pd.read_csv(path) for path in pvi_paths))
+    check_supplement_districts(supplement, district_pvi)
+    candidates = pd.concat(
+        [primary, build_supplement_candidates(supplement, primary)], ignore_index=True
+    )
+    finance = {
+        horizon: pd.read_csv(path)
+        for horizon, path in (
+            ("60d", config.FORECAST_2026_FINANCE_60D),
+            ("14d", config.FORECAST_2026_FINANCE_14D),
+        )
+        if path.exists()
+    }
+    provenance = {
+        "candidate_source": CANDIDATE_SOURCE,
+        "candidate_source_digest": source_digest(
+            [roster_path, results_path, supplement_path]
+        ),
+        "candidate_data_as_of": str(supplement["source_as_of"].max()),
+        "pvi_source": PVI_SOURCE,
+        "pvi_source_digest": source_digest(pvi_paths),
+    }
+    target = build_target(candidates, district_pvi, provenance, finance)
+    verify_target_sources(target, candidates, district_pvi)
+    content = _target_csv_bytes(target)
+    if revision.target.exists():
+        if revision.target.read_bytes() != content:
+            raise TargetValidationError(
+                f"refusing to overwrite different forecast target: {revision.target}"
+            )
+        result = "verified"
+    else:
+        revision.target.write_bytes(content)
+        result = "created"
+    counts = target.groupby("office").size().to_dict()
+    print(f"{result} {len(target)} target races -> {revision.target.relative_to(config.ROOT)}")
+    print(f"by office: {counts}")
+    return target

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from legmodel import cli, definitions, forecast, forecast_run, variants
+from legmodel import cli, config, definitions, forecast, forecast_run, variants
 
 
 def targets():
@@ -212,3 +212,35 @@ def test_forecast_command_routes_horizon_and_dirty_publish_is_refused(monkeypatc
     monkeypatch.setattr(forecast_run, "clean_worktree", lambda: False)
     with pytest.raises(forecast_run.ForecastRunError, match="clean worktree"):
         forecast_run.run("60d")
+
+
+def test_superseding_revision_manifest_names_added_races(monkeypatch):
+    earlier = targets().iloc[:1]
+    current = targets()
+    monkeypatch.setattr(forecast, "load_target", lambda path: earlier)
+
+    original = forecast_run.revision_metadata(config.forecast_revision("14d"), current)
+    revised = forecast_run.revision_metadata(
+        config.forecast_revision("14d-r2"), current
+    )
+
+    assert original == {}
+    assert revised == {
+        "revision": "14d-r2",
+        "supersedes": "14d",
+        "added_target_ids": [current["target_id"].iloc[1]],
+        "removed_target_ids": [],
+    }
+
+
+def test_revision_owns_its_files_and_keeps_its_horizon():
+    revision = config.forecast_revision("14d-r2")
+    original = config.forecast_revision("14d")
+
+    assert revision.horizon == original.horizon == "14d"
+    assert revision.target != original.target
+    assert revision.finance != original.finance
+    assert revision.snapshot.name == "14d-r2"
+    assert revision.interactive.name == "14d-r2"
+    with pytest.raises(ValueError, match="unknown forecast"):
+        config.forecast_revision("7d")

@@ -158,14 +158,6 @@ def publish_create_once(frame: pd.DataFrame, path: Path) -> str:
     return "created"
 
 
-def path_for(horizon: str) -> Path:
-    if horizon == "60d":
-        return config.FORECAST_2026_FINANCE_60D
-    if horizon == "14d":
-        return config.FORECAST_2026_FINANCE_14D
-    raise ForecastFinanceError(f"unknown finance horizon {horizon!r}")
-
-
 def summary(resolved: pd.DataFrame, horizon: str) -> dict:
     matched = resolved["match_rule"].isin(filer_match.MATCHED_RULES)
     _, cutoff = horizon_window(resolved["election_date"].iloc[0], horizon)
@@ -178,15 +170,17 @@ def summary(resolved: pd.DataFrame, horizon: str) -> dict:
     }
 
 
-def run(horizon: str, dry_run: bool = False, cache_only: bool = False) -> pd.DataFrame:
-    """Resolve, collect, and create or verify one 2026 finance horizon."""
-    target = forecast.load_target()
+def run(name: str, dry_run: bool = False, cache_only: bool = False) -> pd.DataFrame:
+    """Resolve, collect, and create or verify one 2026 forecast's finance."""
+    revision = config.forecast_revision(name)
+    horizon = revision.horizon
+    target = forecast.load_target(revision.target)
     prior_cache_only = ocpf.CACHE_ONLY
     ocpf.CACHE_ONLY = cache_only
     try:
         resolved = resolve(target)
         details = summary(resolved, horizon)
-        print(f"target: {config.FORECAST_2026_TARGET.relative_to(config.ROOT)}")
+        print(f"target: {revision.target.relative_to(config.ROOT)}")
         for key, value in details.items():
             print(f"{key}: {value}")
         unresolved = resolved[
@@ -201,7 +195,7 @@ def run(horizon: str, dry_run: bool = False, cache_only: bool = False) -> pd.Dat
         if dry_run:
             return resolved
         frame = collect(resolved, horizon)
-        path = path_for(horizon)
+        path = revision.finance
         result = publish_create_once(frame, path)
         print(f"{result} {len(frame)} rows -> {path.relative_to(config.ROOT)}")
         return frame

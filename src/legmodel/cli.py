@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .config import FORECAST_2026_REVISIONS
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="legmodel", description=__doc__)
@@ -132,7 +134,12 @@ def main(argv: list[str] | None = None) -> int:
     finance_cmd = sub.add_parser(
         "target-finance", help="collect or verify future-target OCPF finance"
     )
-    finance_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    finance_cmd.add_argument(
+        "--horizon",
+        choices=sorted(FORECAST_2026_REVISIONS),
+        required=True,
+        help="forecast horizon, or a revision of one such as 14d-r2",
+    )
     finance_cmd.add_argument(
         "--dry-run",
         action="store_true",
@@ -143,19 +150,48 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="refuse any OCPF request that is not already cached",
     )
+    target_cmd = sub.add_parser(
+        "forecast-target",
+        help="build or verify the target of a superseding forecast revision",
+    )
+    target_cmd.add_argument(
+        "--horizon",
+        choices=sorted(
+            name
+            for name, revision in FORECAST_2026_REVISIONS.items()
+            if revision.supersedes
+        ),
+        required=True,
+        help="the forecast revision whose target to build, such as 14d-r2",
+    )
     forecast_cmd = sub.add_parser(
         "forecast", help="fit and publish an immutable election forecast snapshot"
     )
-    forecast_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    forecast_cmd.add_argument(
+        "--horizon",
+        choices=sorted(FORECAST_2026_REVISIONS),
+        required=True,
+        help="forecast horizon, or a revision of one such as 14d-r2",
+    )
     web_cmd = sub.add_parser(
         "forecast-web",
         help="export or verify a static interactive bundle for a locked forecast",
     )
-    web_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    web_cmd.add_argument(
+        "--horizon",
+        choices=sorted(FORECAST_2026_REVISIONS),
+        required=True,
+        help="forecast horizon, or a revision of one such as 14d-r2",
+    )
     forecast_score_cmd = sub.add_parser(
         "forecast-score", help="score a locked forecast against certified results"
     )
-    forecast_score_cmd.add_argument("--horizon", choices=["60d", "14d"], required=True)
+    forecast_score_cmd.add_argument(
+        "--horizon",
+        choices=sorted(FORECAST_2026_REVISIONS),
+        required=True,
+        help="forecast horizon, or a revision of one such as 14d-r2",
+    )
     forecast_score_cmd.add_argument("--results", type=Path, required=True)
     forecast_score_cmd.add_argument("--result-source", required=True)
 
@@ -373,6 +409,10 @@ def main(argv: list[str] | None = None) -> int:
         forecast_finance.run(
             args.horizon, dry_run=args.dry_run, cache_only=args.cache_only
         )
+    elif args.command == "forecast-target":
+        from . import forecast
+
+        forecast.run_target(args.horizon)
     elif args.command == "forecast":
         from . import forecast_run
 

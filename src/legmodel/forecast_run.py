@@ -505,25 +505,44 @@ def publish_snapshot(contents: dict[str, bytes], directory: Path) -> str:
     return "created"
 
 
-def run(horizon: str, variant_name: str | None = None) -> dict[str, bytes]:
-    """Generate and publish one horizon from a committed clean revision."""
+def revision_metadata(
+    revision: config.ForecastRevision, target: pd.DataFrame
+) -> dict:
+    """State what a superseding forecast changed; empty for an original one."""
+    if revision.supersedes is None:
+        return {}
+    earlier = forecast.load_target(
+        config.forecast_revision(revision.supersedes).target
+    )
+    return {
+        "revision": revision.name,
+        "supersedes": revision.supersedes,
+        "added_target_ids": sorted(set(target["target_id"]) - set(earlier["target_id"])),
+        "removed_target_ids": sorted(
+            set(earlier["target_id"]) - set(target["target_id"])
+        ),
+    }
+
+
+def run(name: str, variant_name: str | None = None) -> dict[str, bytes]:
+    """Generate and publish one forecast from a committed clean revision."""
     if not clean_worktree():
         raise ForecastRunError("forecast publication requires a clean worktree")
+    revision = config.forecast_revision(name)
+    horizon = revision.horizon
     variant_name = variant_name or f"forecast_{horizon}"
-    target_path = config.FORECAST_2026_TARGET
-    finance_path = (
-        config.FORECAST_2026_FINANCE_60D
-        if horizon == "60d"
-        else config.FORECAST_2026_FINANCE_14D
-    )
+    target_path = revision.target
+    finance_path = revision.finance
+    target = forecast.load_target(target_path)
     races, chamber, support, metadata = generate(
-        forecast.load_target(target_path),
+        target,
         pd.read_csv(finance_path),
         horizon,
         variant_name,
         definitions.adopted().name,
     )
-    directory = config.FORECAST_2026_SNAPSHOTS / horizon
+    metadata = {**metadata, **revision_metadata(revision, target)}
+    directory = revision.snapshot
     manifest_path = directory / "manifest.json"
     code_commit = (
         json.loads(manifest_path.read_text())["code_commit"]

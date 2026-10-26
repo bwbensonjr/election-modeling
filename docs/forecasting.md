@@ -59,6 +59,78 @@ source-roster disagreement, missing candidate municipality data,
 non-recomputable PVI, and any result-bearing
 column.
 
+## Nomination-paper candidates and forecast revisions
+
+The original `target.csv` holds only primary nominees, so it misses races in
+which a Democrat faces a candidate who reached the ballot by nomination papers
+(unenrolled, independent, or a minor-party designation). The adopted
+`two_party_or_strongest` definition trains on races of that kind, so they
+belong in the target.
+
+`data/forecast/2026/nomination_candidates.csv` is a hand-reviewed transcription
+of every legislative candidate on the Secretary's
+[2026 State Election Candidates](https://www.sec.state.ma.us/divisions/elections/research-and-statistics/2026-state-election-candidates.htm)
+page who is not a primary nominee. The page blocks scripted downloads, so it
+is transcribed by hand. Columns are `office`, canonical `district`,
+`district_display`, `party` (the ballot designation as printed), `name`,
+`municipality`, `is_incumbent`, `source_url`, and `source_as_of`. The file
+lists every such candidate, including third candidates in races that already
+have a Republican and candidates in districts with no Democrat, so it
+reconciles with the whole page. When it was transcribed, the page listed 186
+Democratic and 59 Republican legislative candidates, the same counts as the
+primary nominees, and every contested Democrat-versus-Republican race named
+the same candidates as the target. The build refuses a row that is missing a field, repeats a
+primary nominee, or names a district absent from the 2021 district map.
+Supplement candidate IDs hash the general-election date, so they cannot
+collide with primary IDs. Their `*_nominee_basis` is `nomination_paper`.
+
+The comparison candidate follows `comparison_rule=republican_else_sole_non_democrat`,
+which mirrors the adopted training response. It is the Republican when one is
+on the ballot (`comparison_review_status=not_required_republican_present`),
+otherwise the only non-Democrat
+(`not_required_one_non_democratic_candidate`). Only a race with no Republican
+and several other candidates requires an explicit pre-election review. A
+non-Democratic incumbent opponent of any designation is coded `GOP_Incumbent`,
+as the training data codes it. Opponent party is not a predictor.
+
+A change to the set of target races is published as a new forecast revision,
+leaving every earlier target, finance file, snapshot, and bundle untouched.
+`legmodel.config.FORECAST_2026_REVISIONS` maps each forecast to its horizon
+and files:
+
+| Forecast | Horizon | Target | Finance | Races |
+|---|---|---|---|---|
+| `60d` | 60d | `target.csv` | `finance_60d.csv` | 46 |
+| `14d` | 14d | `target.csv` | `finance_14d.csv` | 46 |
+| `14d-r2` | 14d | `target_r2.csv` | `finance_14d_r2.csv` | 57 |
+
+`14d-r2` supersedes `14d`. It uses the same 2026-10-20 cutoff and adds 11
+races, eight for State Representative and three for State Senate. Every
+`--horizon` option below accepts a forecast name, and the snapshot and bundle
+directories are named after it. Build or verify a revision's target with:
+
+```bash
+uv run legmodel forecast-target --horizon 14d-r2
+```
+
+The command reads the ma-election-db primary roster and results, the
+supplement, and the precinct PVI inputs. It recomputes PVI, runs the same
+source verification as the original target, and creates the target once.
+Later runs only verify the bytes. Its `candidate_source_digest` covers the
+roster, results, and supplement in that order. Its `money_complete_*` flags
+record which finance horizons were complete when the target was built.
+Forecasting recomputes completeness from the finance file. A superseding
+snapshot's manifest adds `revision`, `supersedes`, `added_target_ids`, and
+`removed_target_ids`.
+
+The original `target.csv` was written before the comparison rule had a name in
+code. Its `comparison_rule` and `comparison_review_status` values
+(`republican_nominee_from_2026_primary`, `not_required_one_republican_nominee`)
+are kept as published. The `60d` snapshot manifest also digests the target and
+training table as they stood before the 2026-09-26 presentation commit. Its
+races and chamber draws still regenerate byte-for-byte, but its manifest
+digests no longer match the current files.
+
 ## Finance horizons
 
 Run the candidate resolver without collecting money:

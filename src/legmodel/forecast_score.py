@@ -245,8 +245,8 @@ def score_contents(
     return contents
 
 
-def run(horizon: str, result_path: Path, result_source: str) -> None:
-    snapshot = config.FORECAST_2026_SNAPSHOTS / horizon
+def run(name: str, result_path: Path, result_source: str) -> None:
+    snapshot = config.forecast_revision(name).snapshot
     if not (snapshot / "manifest.json").exists():
         raise ProspectiveScoreError(f"forecast snapshot is missing: {snapshot}")
     before = {

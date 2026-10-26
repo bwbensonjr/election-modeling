@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -14,6 +15,55 @@ FORECAST_2026_FINANCE_60D = FORECAST_2026_DIR / "finance_60d.csv"
 FORECAST_2026_FINANCE_14D = FORECAST_2026_DIR / "finance_14d.csv"
 FORECAST_2026_SNAPSHOTS = FORECAST_2026_DIR / "snapshots"
 FORECAST_2026_INTERACTIVE = FORECAST_2026_DIR / "interactive"
+FORECAST_2026_NOMINATION_CANDIDATES = FORECAST_2026_DIR / "nomination_candidates.csv"
+
+
+@dataclass(frozen=True)
+class ForecastRevision:
+    """One published forecast: its information horizon and locked files.
+
+    A revision changes the target races without touching an earlier forecast,
+    so every forecast identifier owns its own target, finance file, snapshot,
+    and interactive bundle. `supersedes` names the forecast it replaces.
+    """
+
+    name: str
+    horizon: str
+    target: Path
+    finance: Path
+    supersedes: str | None = None
+
+    @property
+    def snapshot(self) -> Path:
+        return FORECAST_2026_SNAPSHOTS / self.name
+
+    @property
+    def interactive(self) -> Path:
+        return FORECAST_2026_INTERACTIVE / self.name
+
+
+FORECAST_2026_REVISIONS = {
+    revision.name: revision
+    for revision in (
+        ForecastRevision("60d", "60d", FORECAST_2026_TARGET, FORECAST_2026_FINANCE_60D),
+        ForecastRevision("14d", "14d", FORECAST_2026_TARGET, FORECAST_2026_FINANCE_14D),
+        ForecastRevision(
+            "14d-r2",
+            "14d",
+            FORECAST_2026_DIR / "target_r2.csv",
+            FORECAST_2026_DIR / "finance_14d_r2.csv",
+            supersedes="14d",
+        ),
+    )
+}
+
+
+def forecast_revision(name: str) -> ForecastRevision:
+    if name not in FORECAST_2026_REVISIONS:
+        raise ValueError(
+            f"unknown forecast {name!r}; choose from {sorted(FORECAST_2026_REVISIONS)}"
+        )
+    return FORECAST_2026_REVISIONS[name]
 RACE_DIR = DATA_DIR / "race"
 MODEL_DIR = DATA_DIR / "models"
 REPORT_DIR = DATA_DIR / "reports"
