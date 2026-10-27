@@ -40,7 +40,7 @@
 
 ## 7. Integration check
 
-- [ ] 7.1 Run `uv run pytest`, `ruff check`, and the web test suite. Confirm `git diff` touches no file under `data/forecast/2026/snapshots/60d`, `snapshots/14d`, `interactive/60d`, `interactive/14d`, `target.csv`, `finance_60d.csv`, or `finance_14d.csv`.
+- [x] 7.1 Run `uv run pytest`, `ruff check`, and the web test suite. Confirm `git diff` touches no file under `data/forecast/2026/snapshots/60d`, `snapshots/14d`, `interactive/60d`, `interactive/14d`, `target.csv`, `finance_60d.csv`, or `finance_14d.csv`.
 
 ## Workflow follow-up
 
