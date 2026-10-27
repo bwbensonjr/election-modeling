@@ -51,7 +51,31 @@ test("comparison-party validation rejects identity, metadata, and party mismatch
   mismatched.targets[0].district = "Second Example";
   assert.throws(() => validateComparisonParties(mismatched.manifest, mismatched.targets), /district disagrees/);
 
-  const nonRepublican = fixture();
-  nonRepublican.targets[0].comparison_candidate_party = "Unenrolled";
-  assert.throws(() => validateComparisonParties(nonRepublican.manifest, nonRepublican.targets), /not Republican/);
+  const misletteredOpponent = fixture();
+  misletteredOpponent.targets[0].comparison_candidate_party = "Unenrolled";
+  assert.throws(
+    () => validateComparisonParties(misletteredOpponent.manifest, misletteredOpponent.targets),
+    /party disagrees/,
+  );
+
+  const unknownDesignation = fixture();
+  unknownDesignation.targets[0].comparison_candidate_party = "Pirate";
+  assert.throws(
+    () => validateComparisonParties(unknownDesignation.manifest, unknownDesignation.targets),
+    /Pirate has no party letter/,
+  );
+
+  const democraticOpponent = fixture();
+  democraticOpponent.targets[0].comparison_candidate_party = "Democratic";
+  assert.throws(
+    () => validateComparisonParties(democraticOpponent.manifest, democraticOpponent.targets),
+    /comparison candidate is a Democrat/,
+  );
+});
+
+test("comparison-party validation accepts a non-Republican opponent with its designation letter", () => {
+  const { manifest, targets } = fixture();
+  targets[0].comparison_candidate_party = "Unenrolled";
+  manifest.races[0].comparison_candidate.party = "U";
+  assert.doesNotThrow(() => validateComparisonParties(manifest, targets));
 });

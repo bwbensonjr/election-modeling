@@ -3,9 +3,11 @@ import { createHash } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 
 const digest = (value: string) => `sha256:${createHash("sha256").update(value).digest("hex")}`;
+const FORECAST = "14d-r2";
 
-async function installFixture(page: Page, options: { draws: number[]; probability: number; finance?: boolean }): Promise<void> {
+async function installFixture(page: Page, options: { draws: number[]; probability: number; finance?: boolean; opponent?: string }): Promise<void> {
   const finance = options.finance ?? false;
+  const opponent = options.opponent ?? "R";
   const targetId = "fallback";
   const raceAsset = JSON.stringify({ schema_version: 2, target_id: targetId, draws: options.draws }) + "\n";
   const componentAsset = JSON.stringify({
@@ -51,7 +53,7 @@ async function installFixture(page: Page, options: { draws: number[]; probabilit
       district: "Example",
       district_display: "Example",
       dem_candidate: { name: "Margaret R. Scarsdale", party: "D", municipality: "Pepperell", is_incumbent: true },
-      comparison_candidate: { name: "Republican Candidate", party: "R", municipality: "Example", is_incumbent: false },
+      comparison_candidate: { name: "Opposing Candidate", party: opponent, municipality: "Example", is_incumbent: false },
       component: "baseline_no_timing",
       asset: "races/fallback.json",
       published: {
@@ -76,19 +78,19 @@ async function installFixture(page: Page, options: { draws: number[]; probabilit
     },
   };
 
-  await page.route("**/data/2026/14d/manifest.json", (route) => route.fulfill({ json: manifest }));
-  await page.route("**/data/2026/14d/races/fallback.json", (route) => route.fulfill({ body: raceAsset, contentType: "application/json" }));
-  await page.route("**/data/2026/14d/components/baseline_no_timing.json", (route) => route.fulfill({ body: componentAsset, contentType: "application/json" }));
+  await page.route(`**/data/2026/${FORECAST}/manifest.json`, (route) => route.fulfill({ json: manifest }));
+  await page.route(`**/data/2026/${FORECAST}/races/fallback.json`, (route) => route.fulfill({ body: raceAsset, contentType: "application/json" }));
+  await page.route(`**/data/2026/${FORECAST}/components/baseline_no_timing.json`, (route) => route.fulfill({ body: componentAsset, contentType: "application/json" }));
 }
 
 test("overview contains every race in competitiveness order without eager asset loads", async ({ page }) => {
   const assetRequests: string[] = [];
   page.on("request", (request) => {
-    if (/\/data\/2026\/14d\/(races|components)\//.test(request.url())) assetRequests.push(request.url());
+    if (request.url().includes(`/data/2026/${FORECAST}/races/`) || request.url().includes(`/data/2026/${FORECAST}/components/`)) assetRequests.push(request.url());
   });
   await page.goto("./");
   await expect(page.locator("#overview-view")).toHaveAttribute("aria-busy", "false");
-  await expect(page.locator("#race-overview-body tr")).toHaveCount(46);
+  await expect(page.locator("#race-overview-body tr")).toHaveCount(57);
   await expect(page.locator("#race-overview thead th")).toHaveCount(5);
   expect(assetRequests).toEqual([]);
 
@@ -96,7 +98,7 @@ test("overview contains every race in competitiveness order without eager asset 
     rows.map((row) => Number((row as HTMLElement).dataset.absoluteMargin)),
   );
   expect(margins).toEqual([...margins].sort((left, right) => left - right));
-  await expect(page.locator("#race-overview-body tr").first()).toContainText(/Democratic|Republican|Toss-up/);
+  await expect(page.locator("#race-overview-body tr").first()).toContainText(/Democratic|Republican|Unenrolled|Independent|Workers Party|Gulf War Veteran|Toss-up/);
   await expect(page.locator("#race-overview-body tr").first()).toContainText(/\d+%/);
 });
 
@@ -128,7 +130,7 @@ test("race links support pointer, keyboard, history, direct refresh, and invalid
   await page.goto("./?race=not-a-published-race");
   await expect(page.locator("#overview-view")).toBeVisible();
   await expect(page.locator("#route-error")).toContainText("No published race matches");
-  await expect(page.locator("#race-overview-body tr")).toHaveCount(46);
+  await expect(page.locator("#race-overview-body tr")).toHaveCount(57);
 });
 
 test("matchup uses whole numbers, grouped receipts, exact reset state, and accessible layouts", async ({ page }) => {
@@ -183,6 +185,21 @@ test("favored-party summaries handle Republican, Democratic, toss-up, and fallba
   await page.locator("#incumbency").selectOption("Dem_Incumbent");
   await expect(page.locator("#scenario-summary")).toContainText("Democratic win");
   await expect(page.locator("#scenario-summary")).toContainText("Favorite changes: Republican to Democratic");
+});
+
+test("a non-Republican opponent is labeled by ballot designation", async ({ page }) => {
+  await installFixture(page, { draws: [-3, -1, 1], probability: 1 / 3, finance: true, opponent: "U" });
+  await page.goto("./?race=fallback");
+  await expect(page.locator("#race-context")).toContainText("Opposing Candidate (U-Example)");
+  await expect(page.locator("#published-summary")).toContainText("Unenrolled win");
+  await expect(page.locator("#published-summary")).toContainText("Unenrolled +1 points");
+  await expect(page.locator("#published-inputs")).toContainText("Unenrolled receipts");
+  await expect(page.locator("#opponent-receipts-label")).toHaveText("Unenrolled receipts");
+  await expect(page.locator("#opponent-incumbent-option")).toHaveText("Unenrolled incumbent");
+  await expect(page.locator("#chart-opponent-label")).toHaveText("Favors Unenrolled");
+  await expect(page.locator("#published-summary")).not.toContainText("Republican");
+  await page.locator("#incumbency").selectOption("Dem_Incumbent");
+  await expect(page.locator("#scenario-summary")).toContainText("Favorite changes: Unenrolled to Democratic");
 });
 
 test("an exact even probability is displayed as a toss-up", async ({ page }) => {

@@ -1,3 +1,4 @@
+import { isPartyLetter } from "./presentation";
 import type { ComponentAsset, Manifest, RaceAsset } from "./types";
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -18,7 +19,7 @@ export function validateManifest(value: unknown): Manifest {
     assert(Boolean(manifest.assets[race.asset]), `${race.target_id}: missing race asset digest`);
     for (const [key, candidate] of [["dem_candidate", race.dem_candidate], ["comparison_candidate", race.comparison_candidate]] as const) {
       assert(candidate && candidate.name && candidate.municipality, `${race.target_id}: invalid ${key} metadata`);
-      assert(candidate.party === "D" || candidate.party === "R", `${race.target_id}: invalid ${key} party`);
+      assert(isPartyLetter(candidate.party), `${race.target_id}: invalid ${key} party`);
       assert(typeof candidate.is_incumbent === "boolean", `${race.target_id}: invalid ${key} incumbency`);
     }
   }

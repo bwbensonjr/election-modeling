@@ -81,7 +81,7 @@
             <select id="incumbency">
               <option value="No_Incumbent">Open seat</option>
               <option value="Dem_Incumbent">Democratic incumbent</option>
-              <option value="GOP_Incumbent">Republican incumbent</option>
+              <option id="opponent-incumbent-option" value="GOP_Incumbent">Republican incumbent</option>
             </select>
             <p id="incumbency-support" class="field-note"></p>
           </div>
@@ -90,7 +90,7 @@
             <div class="money-input"><span aria-hidden="true">$</span><input id="dem-receipts" type="text" inputmode="numeric" autocomplete="off" /></div>
           </div>
           <div class="field">
-            <label for="opponent-receipts">Republican receipts</label>
+            <label id="opponent-receipts-label" for="opponent-receipts">Republican receipts</label>
             <div class="money-input"><span aria-hidden="true">$</span><input id="opponent-receipts" type="text" inputmode="numeric" autocomplete="off" /></div>
           </div>
         </div>
@@ -122,7 +122,7 @@
           </div>
         </div>
         <div id="chart" class="chart" role="img" aria-label="Published and scenario predictive margin distributions"></div>
-        <div class="chart-axis-labels"><span>Favors Republican</span><span>Democratic margin</span><span>Favors Democrat</span></div>
+        <div class="chart-axis-labels"><span id="chart-opponent-label">Favors Republican</span><span>Democratic margin</span><span>Favors Democrat</span></div>
       </section>
 
       <section class="panel methodology" aria-labelledby="methodology-title">

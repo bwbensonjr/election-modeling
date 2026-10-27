@@ -10,7 +10,9 @@ import {
   formatPercent,
   formatProbabilityPointDelta,
   formatPvi,
+  isPartyLetter,
   likelyWinner,
+  PARTIES,
   parseDollarInput,
   probabilityComparison,
   racesByCompetitiveness,
@@ -64,6 +66,15 @@ describe("whole-unit presentation", () => {
       .toBe("Margaret R. Scarsdale* (D-Pepperell)");
     expect(formatCandidate({ name: "Alex Republican", party: "R", municipality: "Amesbury", is_incumbent: false }))
       .toBe("Alex Republican (R-Amesbury)");
+    expect(formatCandidate({ name: "Stephen M. Foley", party: "U", municipality: "Braintree", is_incumbent: false }))
+      .toBe("Stephen M. Foley (U-Braintree)");
+  });
+
+  it("labels a margin favoring a non-Republican opponent by designation", () => {
+    expect(formatMargin(-12.4, "R")).toBe("Rep. +12 points");
+    expect(formatMargin(-12.4, "U")).toBe("Unenrolled +12 points");
+    expect(formatMargin(-3.6, "WP")).toBe("Workers Party +4 points");
+    expect(formatMargin(12.4, "I")).toBe("Dem. +12 points");
   });
 
   it("links House and Senate races to their MAPOLI district pages", () => {
@@ -85,6 +96,22 @@ describe("likely-winner presentation", () => {
     expect(likelyWinner(0.64)).toEqual({ party: "Democratic", probability: 0.64 });
     expect(likelyWinner(0.4)).toEqual({ party: "Republican", probability: 0.6 });
     expect(likelyWinner(0.5)).toEqual({ party: "Toss-up", probability: 0.5 });
+  });
+
+  it("names a non-Republican opponent as the likely winner", () => {
+    expect(likelyWinner(0.3, "I")).toEqual({ party: "Independent", probability: 0.7 });
+    expect(likelyWinner(0.7, "I")).toEqual({ party: "Democratic", probability: 0.7 });
+  });
+
+  it("names the opponent's designation when the favorite changes", () => {
+    expect(probabilityComparison(0.6, 0.4, "U")).toBe("Favorite changes: Unenrolled to Democratic");
+  });
+
+  it("knows only the defined designations", () => {
+    expect(isPartyLetter("GWV")).toBe(true);
+    expect(isPartyLetter("P")).toBe(false);
+    expect(isPartyLetter("toString")).toBe(false);
+    expect(PARTIES.R).toEqual({ name: "Republican", margin: "Rep." });
   });
 
   it("compares the same party and names favorite changes", () => {

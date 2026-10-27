@@ -1,3 +1,5 @@
+import { PARTY_LETTERS } from "./forecast.mjs";
+
 export function parseCsv(text) {
   const records = [];
   let record = [];
@@ -55,9 +57,12 @@ export function validateComparisonParties(manifest, targetRows) {
         throw new Error(`${race.target_id}: bundle ${field} disagrees with target data`);
       }
     }
+    if (target.comparison_candidate_party === "Democratic") {
+      throw new Error(`${race.target_id}: comparison candidate is a Democrat`);
+    }
     for (const [key, targetName, targetParty] of [
       ["dem_candidate", "dem_candidate_name", "Democratic"],
-      ["comparison_candidate", "comparison_candidate_name", "Republican"],
+      ["comparison_candidate", "comparison_candidate_name", target.comparison_candidate_party],
     ]) {
       const candidate = race[key];
       if (!candidate?.name || !candidate.municipality || typeof candidate.is_incumbent !== "boolean") {
@@ -70,7 +75,10 @@ export function validateComparisonParties(manifest, targetRows) {
       if (String(candidate.municipality) !== String(targetMunicipality)) {
         throw new Error(`${race.target_id}: bundle ${key} municipality disagrees with target data`);
       }
-      const expectedParty = targetParty === "Democratic" ? "D" : "R";
+      const expectedParty = PARTY_LETTERS[targetParty];
+      if (!expectedParty) {
+        throw new Error(`${race.target_id}: ${key} designation ${targetParty || "missing"} has no party letter`);
+      }
       if (candidate.party !== expectedParty) {
         throw new Error(`${race.target_id}: bundle ${key} party disagrees with target data`);
       }
@@ -78,9 +86,6 @@ export function validateComparisonParties(manifest, targetRows) {
       if (String(candidate.is_incumbent).toLowerCase() !== String(targetIncumbent).toLowerCase()) {
         throw new Error(`${race.target_id}: bundle ${key} incumbency disagrees with target data`);
       }
-    }
-    if (target.comparison_candidate_party !== "Republican") {
-      throw new Error(`${race.target_id}: comparison candidate is ${target.comparison_candidate_party || "missing"}, not Republican`);
     }
   }
   const manifestIds = new Set(manifest.races.map((race) => race.target_id));

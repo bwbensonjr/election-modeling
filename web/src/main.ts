@@ -12,6 +12,7 @@ import {
   formatPvi,
   formatSignedInteger,
   likelyWinner,
+  PARTIES,
   parseDollarInput,
   probabilityComparison,
   racesByCompetitiveness,
@@ -25,7 +26,11 @@ import {
   withScenarioIncumbency,
   withScenarioReceipt,
 } from "./scenario";
-import type { ComponentAsset, Incumbency, RaceAsset, RaceMeta, ScenarioInputs, Summary } from "./types";
+import type { ComponentAsset, Incumbency, PartyLetter, RaceAsset, RaceMeta, ScenarioInputs, Summary } from "./types";
+
+// The published forecast the site presents; web/scripts/forecast.mjs names the
+// same bundle and target for the build.
+const FORECAST = "14d-r2";
 
 function required<T extends Element>(selector: string): T {
   const value = document.querySelector<T>(selector);
@@ -56,17 +61,17 @@ let currentScenario: ScenarioInputs;
 let loadSequence = 0;
 let receiptValidity = { dem_receipts: true, opponent_receipts: true };
 
-function summaryMarkup(summary: Summary, comparison?: Summary): string {
-  const winner = likelyWinner(summary.dem_win_probability);
+function summaryMarkup(summary: Summary, opponent: PartyLetter, comparison?: Summary): string {
+  const winner = likelyWinner(summary.dem_win_probability, opponent);
   const winnerLabel = winner.party === "Toss-up" ? "Toss-up" : `${winner.party} win`;
   const marginDelta = comparison
     ? formatSignedInteger(summary.point_margin - comparison.point_margin, " pts")
     : "";
   const probabilityDelta = comparison
-    ? probabilityComparison(summary.dem_win_probability, comparison.dem_win_probability)
+    ? probabilityComparison(summary.dem_win_probability, comparison.dem_win_probability, opponent)
     : "";
   return `
-    <div class="stat"><span class="stat__label">Likely Margin</span><strong>${formatMargin(summary.point_margin)}</strong>${comparison ? `<small>${marginDelta}</small>` : ""}</div>
+    <div class="stat"><span class="stat__label">Likely Margin</span><strong>${formatMargin(summary.point_margin, opponent)}</strong>${comparison ? `<small>${marginDelta}</small>` : ""}</div>
     <div class="stat"><span class="stat__label">90% interval</span><strong>${formatInterval(summary.lower_90, summary.upper_90)}</strong></div>
     <div class="stat"><span class="stat__label">${winnerLabel}</span><strong>${formatPercent(winner.probability)}</strong>${comparison ? `<small>${probabilityDelta}</small>` : ""}</div>
   `;
@@ -91,6 +96,7 @@ function recalculate(): void {
     const changed = isChanged();
     required<HTMLElement>("#scenario-summary").innerHTML = summaryMarkup(
       scenarioSummary,
+      currentRace.comparison_candidate.party,
       changed ? currentRace.published : undefined,
     );
     scenarioStatus.textContent = changed ? "Hypothetical" : "Matches published";
@@ -111,17 +117,21 @@ function recalculate(): void {
 }
 
 function renderRaceContext(race: RaceMeta): void {
+  const opponent = PARTIES[race.comparison_candidate.party].name;
+  required<HTMLElement>("#opponent-incumbent-option").textContent = `${opponent} incumbent`;
+  required<HTMLElement>("#opponent-receipts-label").textContent = `${opponent} receipts`;
+  required<HTMLElement>("#chart-opponent-label").textContent = `Favors ${opponent}`;
   required<HTMLElement>("#race-context").innerHTML = `
     <p class="matchup"><strong>${formatCandidate(race.dem_candidate)}</strong><span>vs.</span><strong>${formatCandidate(race.comparison_candidate)}</strong></p>
     <p class="field-note">An asterisk (*) marks an incumbent candidate.</p>
     <p>${race.office} · ${race.district_display} · <a class="district-details" href="${districtDetailsUrl(race)}">District Details</a></p>
   `;
-  required<HTMLElement>("#published-summary").innerHTML = summaryMarkup(race.published);
+  required<HTMLElement>("#published-summary").innerHTML = summaryMarkup(race.published, race.comparison_candidate.party);
   required<HTMLElement>("#published-inputs").innerHTML = `
     <div><dt>District PVI</dt><dd>${formatPvi(race.inputs.PVI_N)}</dd></div>
     <div><dt>Incumbency</dt><dd>${race.inputs.incumbent_status.replaceAll("_", " ")}</dd></div>
     <div><dt>Democratic receipts</dt><dd>${race.inputs.dem_receipts === null ? "Not used" : formatDollars(race.inputs.dem_receipts)}</dd></div>
-    <div><dt>Republican receipts</dt><dd>${race.inputs.opponent_receipts === null ? "Not used" : formatDollars(race.inputs.opponent_receipts)}</dd></div>
+    <div><dt>${opponent} receipts</dt><dd>${race.inputs.opponent_receipts === null ? "Not used" : formatDollars(race.inputs.opponent_receipts)}</dd></div>
   `;
 }
 
@@ -221,7 +231,7 @@ function renderOverview(races: RaceMeta[], client: BundleClient): void {
   const ordered = racesByCompetitiveness(races);
   overviewCaption.textContent = `Published forecasts for all ${ordered.length} races in the locked snapshot`;
   raceOverviewBody.replaceChildren(...ordered.map((race) => {
-    const winner = likelyWinner(race.published.dem_win_probability);
+    const winner = likelyWinner(race.published.dem_win_probability, race.comparison_candidate.party);
     const row = document.createElement("tr");
     row.dataset.targetId = race.target_id;
     row.dataset.absoluteMargin = String(Math.abs(race.published.point_margin));
@@ -249,7 +259,7 @@ function renderOverview(races: RaceMeta[], client: BundleClient): void {
     const chance = document.createElement("td");
     chance.textContent = formatPercent(winner.probability);
     const margin = document.createElement("td");
-    margin.textContent = formatMargin(race.published.point_margin);
+    margin.textContent = formatMargin(race.published.point_margin, race.comparison_candidate.party);
     row.append(raceCell, matchup, party, chance, margin);
     return row;
   }));
@@ -283,7 +293,7 @@ function renderFatalError(error: unknown): void {
 }
 
 async function start(): Promise<void> {
-  const baseUrl = `${import.meta.env.BASE_URL}data/2026/14d`.replace(/\/$/, "");
+  const baseUrl = `${import.meta.env.BASE_URL}data/2026/${FORECAST}`.replace(/\/$/, "");
   const client = await BundleClient.load(baseUrl);
   const manifest = client.getManifest();
   const selectorRaces = [...manifest.races].sort((left, right) =>

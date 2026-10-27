@@ -1,6 +1,27 @@
-import type { CandidateMeta, RaceMeta } from "./types";
+import type { CandidateMeta, PartyLetter, RaceMeta } from "./types";
 
-export type LikelyWinner = "Democratic" | "Republican" | "Toss-up";
+export interface PartyLabel {
+  // Full ballot designation, used for likely-winner and control labels.
+  name: string;
+  // Prefix for a margin favoring this party; only the two major parties
+  // are abbreviated, so no new abbreviation is invented for the others.
+  margin: string;
+}
+
+export const PARTIES: Record<PartyLetter, PartyLabel> = {
+  D: { name: "Democratic", margin: "Dem." },
+  R: { name: "Republican", margin: "Rep." },
+  U: { name: "Unenrolled", margin: "Unenrolled" },
+  I: { name: "Independent", margin: "Independent" },
+  WP: { name: "Workers Party", margin: "Workers Party" },
+  GWV: { name: "Gulf War Veteran", margin: "Gulf War Veteran" },
+};
+
+export function isPartyLetter(value: unknown): value is PartyLetter {
+  return typeof value === "string" && Object.hasOwn(PARTIES, value);
+}
+
+export type LikelyWinner = string;
 
 export interface WinnerProbability {
   party: LikelyWinner;
@@ -42,11 +63,12 @@ export function formatSignedInteger(value: number, suffix = ""): string {
   return `${signedWholeNumber.format(value)}${suffix}`;
 }
 
-export function formatMargin(value: number): string {
+export function formatMargin(value: number, opponent: PartyLetter = "R"): string {
   requireFinite(value);
   const rounded = Math.round(Math.abs(value));
   if (rounded === 0) return "Even";
-  return `${value > 0 ? "Dem." : "Rep."} +${wholeNumber.format(rounded)} points`;
+  const side = value > 0 ? PARTIES.D : PARTIES[opponent];
+  return `${side.margin} +${wholeNumber.format(rounded)} points`;
 }
 
 export function formatInterval(lower: number, upper: number): string {
@@ -117,20 +139,20 @@ export function parseDollarInput(text: string): number {
   return parsed;
 }
 
-export function likelyWinner(democraticProbability: number): WinnerProbability {
+export function likelyWinner(democraticProbability: number, opponent: PartyLetter = "R"): WinnerProbability {
   if (!Number.isFinite(democraticProbability) || democraticProbability < 0 || democraticProbability > 1) {
     throw new Error("probability must be between zero and one");
   }
   if (democraticProbability === 0.5) return { party: "Toss-up", probability: 0.5 };
   if (democraticProbability > 0.5) {
-    return { party: "Democratic", probability: democraticProbability };
+    return { party: PARTIES.D.name, probability: democraticProbability };
   }
-  return { party: "Republican", probability: 1 - democraticProbability };
+  return { party: PARTIES[opponent].name, probability: 1 - democraticProbability };
 }
 
-export function probabilityComparison(current: number, baseline: number): string {
-  const currentWinner = likelyWinner(current);
-  const baselineWinner = likelyWinner(baseline);
+export function probabilityComparison(current: number, baseline: number, opponent: PartyLetter = "R"): string {
+  const currentWinner = likelyWinner(current, opponent);
+  const baselineWinner = likelyWinner(baseline, opponent);
   if (currentWinner.party !== baselineWinner.party) {
     return `Favorite changes: ${baselineWinner.party} to ${currentWinner.party}`;
   }

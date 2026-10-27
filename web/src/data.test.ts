@@ -92,6 +92,18 @@ describe("bundle loading", () => {
     expect(() => validateManifest(missing)).toThrow(/missing component/);
   });
 
+  it("accepts defined opponent designations and rejects unknown ones", () => {
+    const unenrolled = manifest();
+    unenrolled.assets["races/race.json"] = "sha256:race";
+    unenrolled.races[0].comparison_candidate.party = "U";
+    expect(validateManifest(unenrolled).races[0].comparison_candidate.party).toBe("U");
+
+    const unknown = manifest();
+    unknown.assets["races/race.json"] = "sha256:race";
+    (unknown.races[0].comparison_candidate as { party: string }).party = "Pirate";
+    expect(() => validateManifest(unknown)).toThrow(/invalid comparison_candidate party/);
+  });
+
   it("verifies asset digests and draw lengths", async () => {
     const value = manifest();
     const raceText = JSON.stringify({ schema_version: 2, target_id: "race", draws: [-1, 0, 1] });

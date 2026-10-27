@@ -28,9 +28,13 @@ export interface SupportRow {
   warning: string;
 }
 
+// Ballot designation letters; web/src/presentation.ts and the Python exporter
+// (src/legmodel/interactive.py) share this table.
+export type PartyLetter = "D" | "R" | "U" | "I" | "WP" | "GWV";
+
 export interface CandidateMeta {
   name: string;
-  party: "D" | "R";
+  party: PartyLetter;
   municipality: string;
   is_incumbent: boolean;
 }

@@ -3,11 +3,12 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { parseCsv, validateComparisonParties } from "./bundle-validation.mjs";
+import { FORECAST, TARGET } from "./forecast.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(here, "../../data/forecast/2026/interactive/14d");
+const root = path.resolve(here, `../../data/forecast/2026/interactive/${FORECAST}`);
 const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8"));
-const targetRows = parseCsv(await readFile(path.resolve(here, "../../data/forecast/2026/target.csv"), "utf8"));
+const targetRows = parseCsv(await readFile(path.resolve(here, `../../data/forecast/2026/${TARGET}`), "utf8"));
 
 if (manifest.schema_version !== 2) {
   throw new Error(`unsupported bundle schema ${manifest.schema_version}`);
