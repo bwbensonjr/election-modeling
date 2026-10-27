@@ -13,7 +13,7 @@ The overview is the application root:
 
 Each table row links to a stable matchup URL using the locked race identity, for example `?race=<target_id>`. A local link therefore looks like `http://localhost:5173/?race=<target_id>`, and the deployed equivalent is `https://bwbensonjr.github.io/election-modeling/?race=<target_id>`. Direct links and browser refreshes restore that race; an unknown identity returns to the complete overview with an error instead of substituting another race.
 
-The overview and matchup views identify candidates by name, party, and source-roster municipality, with an asterisk marking an incumbent. They show likely margins as party-directed text such as `Dem. +4 points`, and PVI as compact party-directed text such as `D+4` or `R+2`. Margins, interval endpoints, PVI, probabilities, and changes use whole numbers. This is display rounding only: ordering, scenario calculations, forecast verification, and predictive draws retain full precision. Win probability is labeled for the likely winner, so a 40 percent Democratic probability is displayed as a 60 percent Republican probability; exactly 50 percent is labeled a toss-up.
+The overview and matchup views identify candidates by name, party, and source-roster municipality, with an asterisk marking an incumbent. They show likely margins as party-directed text such as `Dem. +4 points`, and PVI as compact party-directed text such as `D+4` or `R+2`. Margins, interval endpoints, PVI, probabilities, and changes use whole numbers. This is display rounding only: ordering, scenario calculations, forecast verification, and predictive draws retain full precision. Win probability is labeled for the likely winner, so a 40 percent Democratic probability is displayed as a 60 percent Republican probability; exactly 50 percent is labeled a toss-up. The non-Democratic side is named by the opponent's ballot designation: party letters are D, R, U (Unenrolled), I (Independent), WP (Workers Party), and GWV (Gulf War Veteran). Only Democratic and Republican margins are abbreviated (`Dem.`, `Rep.`); others use the full designation, such as `Unenrolled +12 points`. The incumbency option, opponent receipts label, and chart side label follow the same designation.
 
 Published receipts and receipt controls use comma-separated whole dollars. The application retains the locked full-precision receipt value until that particular control is edited. Readers may enter grouped or ungrouped non-negative whole dollars; invalid or fractional entries do not replace the last valid scenario value.
 
@@ -41,7 +41,7 @@ uv run legmodel forecast-web --horizon 60d
 
 The command refits the snapshot's declared component with its recorded seed, verifies every race and summary against the locked snapshot, and creates or verifies `data/forecast/2026/interactive/60d/`. It refuses conflicting existing bytes rather than overwriting them.
 
-The 14-day snapshot uses the same command with `--horizon 14d`. The web application now points to the 14-day bundle, the latest published horizon; the 60-day bundle remains committed and unchanged.
+The 14-day snapshot uses the same command with `--horizon 14d`, and its 57-race revision uses `--horizon 14d-r2` (see `docs/forecasting.md`). The web application points to the `14d-r2` bundle, named once in `web/src/main.ts` and `web/scripts/forecast.mjs`; the 60-day and original 14-day bundles remain committed and unchanged.
 
 ## Develop and verify locally
 
@@ -55,7 +55,7 @@ npm run dev
 
 The build validates every committed asset digest, copies the committed bundle into Vite's ignored `public/data/` staging directory, type-checks the application, and writes `web/dist/`.
 
-Bundle validation also matches every interactive race and its candidate name, municipality, party, and incumbency metadata to `data/forecast/2026/target.csv`. It verifies the initial application's all-Republican comparison-candidate invariant before the interface uses Republican-facing labels. A future bundle with another comparison party must carry an explicit presentation update rather than being silently mislabeled.
+Bundle validation also matches every interactive race and its candidate name, municipality, party, and incumbency metadata to the presented forecast's target (`data/forecast/2026/target_r2.csv`). Each comparison candidate's ballot designation must have an entry in the shared designation table, kept in `src/legmodel/interactive.py`, `web/scripts/forecast.mjs`, and `web/src/presentation.ts`. A bundle with a designation missing from the table fails export and site validation rather than being silently mislabeled.
 
 Run the production browser and accessibility suite with:
 
