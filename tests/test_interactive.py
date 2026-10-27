@@ -101,8 +101,8 @@ def fake_fit(component, training, fold, definition, seed):
     return FakeFit(component, seed)
 
 
-def bundle_inputs():
-    target = targets()
+def bundle_inputs(comparison_party="Republican"):
+    target = targets().assign(comparison_candidate_party=comparison_party)
     finance = finance_snapshot()
     official, _, support, metadata = forecast_run.generate(
         target,
@@ -141,6 +141,23 @@ def test_bundle_covers_money_and_fallback_components():
     fallback = manifest["components"]["baseline_no_timing"]
     assert "money_logratio_wide" in money["scenario_terms"]
     assert all(not term.startswith("money_") for term in fallback["scenario_terms"])
+
+
+def test_non_republican_opponent_exports_designation_letter():
+    contents = interactive.build_contents(
+        "60d", *bundle_inputs("Unenrolled"), "def456", fit_provider=fake_fit
+    )
+    manifest = interactive.validate_contents(contents)
+
+    assert {race["comparison_candidate"]["party"] for race in manifest["races"]} == {"U"}
+    assert {race["dem_candidate"]["party"] for race in manifest["races"]} == {"D"}
+
+
+def test_unknown_opponent_designation_fails_export():
+    with pytest.raises(interactive.InteractiveBundleError, match="Pirate"):
+        interactive.build_contents(
+            "60d", *bundle_inputs("Pirate"), "def456", fit_provider=fake_fit
+        )
 
 
 def test_bundle_rejects_locked_summary_mismatch():

@@ -35,7 +35,9 @@ to land as a new forecast revision before then.
   existing `60d` and `14d` snapshots, their target, and their finance files
   stay byte-for-byte unchanged and remain scorable.
 - Point the interactive explorer and the forecast writeup at the `14d-r2`
-  revision.
+  revision. The explorer, which assumes a Republican opponent throughout,
+  labels each opponent by ballot designation: party letter, margin and
+  likely-winner wording, incumbency option, receipts label, and chart sides.
 
 ## Capabilities
 
@@ -49,6 +51,8 @@ None.
   from a reviewed source, the comparison candidate follows a fixed rule that
   matches the adopted definition, and a revised target is published as a new
   revision without changing earlier snapshots.
+- `interactive-forecast-web`: the explorer names the non-Democratic side by
+  the opponent's ballot designation instead of assuming a Republican.
 
 ## Impact
 
@@ -60,8 +64,8 @@ None.
   `data/forecast/2026/target_r2.csv`, `data/forecast/2026/finance_14d_r2.csv`,
   `data/forecast/2026/snapshots/14d-r2/`, and
   `data/forecast/2026/interactive/14d-r2/`.
-- `web/` explorer and `artifacts/2026_massachusetts_legislative_forecast.*`
-  move to the revision.
+- `web/` explorer (presentation, data validation, build scripts) and
+  `artifacts/2026_massachusetts_legislative_forecast.*` move to the revision.
 - `docs/forecasting.md` documents the supplement, comparison rule, and
   revision.
 - The OCPF filer match for the new candidates uses the existing `ocpf-cli`

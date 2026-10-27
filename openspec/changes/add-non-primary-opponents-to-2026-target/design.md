@@ -124,6 +124,35 @@ The web build reads the `14d-r2` bundle. The writeup reports 57 races and
 notes that the 46-race `14d` snapshot remains the prospective record
 published on its date.
 
+**D8. One designation table drives every opponent label.**
+The bundle schema stays at version 2. A candidate's `party` remains a short
+letter, so the locked `60d` and `14d` bundles, which hold only `D` and `R`,
+regenerate byte-for-byte. The Python exporter and the web app share one table
+that maps a ballot designation to a letter, a likely-winner name, and a
+margin label:
+
+| Designation | Letter | Margin label |
+|---|---|---|
+| Democratic | D | Dem. |
+| Republican | R | Rep. |
+| Unenrolled | U | Unenrolled |
+| Independent | I | Independent |
+| Workers Party | WP | Workers Party |
+| Gulf War Veteran | GWV | Gulf War Veteran |
+
+Only the two major parties get abbreviated margin labels. The others use the
+full designation, so no new abbreviation is invented. The likely-winner,
+incumbency option, receipts label, and chart side label take the
+designation's name from the race's comparison candidate. The model still
+codes a non-Democratic incumbent as `GOP_Incumbent`. Only the label changes:
+`Unenrolled incumbent` and similar. The site build's comparison-party check
+changes from "must be Republican" to "must have a table entry that agrees with
+the target". The build reads `14d-r2` and its target from a single constant.
+Alternative considered: a schema-3 bundle that carries the full designation
+per candidate. Rejected, because it would make the locked bundles
+unverifiable without a schema branch, and a fixed table covers the six
+designations on the 2026 ballot.
+
 ## Risks / Trade-offs
 
 - [Transcription error in the supplement] → The supplement is reconciled

@@ -24,10 +24,22 @@ class InteractiveBundleError(ValueError):
     """An interactive bundle disagrees with its locked source forecast."""
 
 
+# Ballot designation -> the letter the web app shows. The web app holds the
+# same table (web/src/presentation.ts) for its labels; a designation missing
+# here cannot be presented and fails the export.
+PARTY_LETTERS = {
+    "Democratic": "D",
+    "Republican": "R",
+    "Unenrolled": "U",
+    "Independent": "I",
+    "Workers Party": "WP",
+    "Gulf War Veteran": "GWV",
+}
+
+
 def _party_letter(party: str) -> str:
-    letters = {"Democratic": "D", "Republican": "R"}
     try:
-        return letters[party]
+        return PARTY_LETTERS[party]
     except KeyError as exc:
         raise InteractiveBundleError(
             f"unsupported candidate party for web presentation: {party!r}"
@@ -192,7 +204,7 @@ def validate_contents(contents: dict[str, bytes]) -> dict:
                 raise InteractiveBundleError(
                     f"{race.get('target_id')}: invalid {key} metadata"
                 )
-            if candidate["party"] not in {"D", "R"}:
+            if candidate["party"] not in set(PARTY_LETTERS.values()):
                 raise InteractiveBundleError(
                     f"{race.get('target_id')}: unsupported {key} party"
                 )

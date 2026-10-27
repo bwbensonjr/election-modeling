@@ -27,12 +27,16 @@
 
 - [x] 5.1 Run finance collection for `14d-r2` to produce `data/forecast/2026/finance_14d_r2.csv` with the 2026-10-20 cutoff. Verify the original 92 rows match `finance_14d.csv`, and list any new candidate with `available=False` and its `roster_error`. If a failure needs a new `ocpf-cli` lookup, stop and raise it with the user.
 - [x] 5.2 Commit inputs, then publish `data/forecast/2026/snapshots/14d-r2` from a clean worktree. Verify 57 races, every new race routed to a component (fallbacks naming their reason), and a manifest naming `supersedes: "14d"`.
-- [ ] 5.3 Export `data/forecast/2026/interactive/14d-r2` and run `legmodel forecast-web` verification against the snapshot. Verify the export passes its tolerances for all 57 races.
+- [ ] 5.3 Export `data/forecast/2026/interactive/14d-r2` and run `legmodel forecast-web` verification against the snapshot. Verify the export passes its tolerances for all 57 races. (Blocked on the exporter's Democrat-and-Republican-only party check; done in 6.2.)
 
 ## 6. Explorer and writeup
 
-- [ ] 6.1 Point `web/src/main.ts`, the public data copy, and `web/e2e/explorer.spec.ts` at `14d-r2`. Verify `npm test` and the e2e suite pass and the explorer lists 57 races.
-- [ ] 6.2 Update `artifacts/2026_massachusetts_legislative_forecast.md` and regenerate the `.docx` for 57 races, noting the `14d` record and that opponent party is not a predictor. Verify race counts and chamber summaries in the text match `snapshots/14d-r2`.
+- [x] 6.1 Extend the exporter's designation table in `src/legmodel/interactive.py` to the D8 letters and allow them in bundle validation. Verify with a `tests/test_interactive.py` test that an Unenrolled opponent exports as `U` and an unknown designation fails, and re-verify the locked `60d` and `14d` bundles byte-for-byte.
+- [ ] 6.2 Export `data/forecast/2026/interactive/14d-r2` and verify it against the snapshot (completes 5.3).
+- [ ] 6.3 Add the designation table to `web/src/presentation.ts` and use it for candidate letters, margin labels, likely-winner names, and favorite changes; widen the `CandidateMeta.party` type and `web/src/data.ts` validation to the table. Verify with `web/src/presentation.test.ts` and `web/src/data.test.ts` cases for Republican (unchanged) and Unenrolled opponents.
+- [ ] 6.4 Label the incumbency option, receipts inputs, published-inputs list, and chart sides from the race's opponent designation in `web/src/main.ts` and `web/index.html`. Verify with an e2e case in `web/e2e/explorer.spec.ts` using an Unenrolled opponent.
+- [ ] 6.5 Point `web/scripts/validate-bundle.mjs`, `sync-data.mjs`, and `web/src/main.ts` at `14d-r2` and `target_r2.csv`, and change `bundle-validation.mjs` from "must be Republican" to "must match the designation table". Verify with `web/scripts/bundle-validation.test.mjs`, then `npm test`, `npm run build`, and `npm run test:browser`, and confirm the explorer lists 57 races.
+- [ ] 6.6 Update `artifacts/2026_massachusetts_legislative_forecast.md` and regenerate the `.docx` for 57 races, noting the `14d` record and that opponent party is not a predictor. Verify race counts and chamber summaries in the text match `snapshots/14d-r2`.
 
 ## 7. Integration check
 
